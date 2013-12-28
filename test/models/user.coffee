@@ -1,21 +1,6 @@
 should = require 'should'
 mongoose = require 'mongoose'
-
-mockJiraApi =
-  getUser: (u, p, cb)->
-    if u is 'testusername' and p is 'testpassword'
-      user =
-        name: 'testusername'
-        emailAddress:'test@test.com'
-      cb null, user
-    else
-      cb true
-  getDateTime: ->
-    return '01/01/2000 00:00:00'
-  getTotalStoryPointsSince: (l, ll, u, p, cb) ->
-    cb null, 1, []
-
-Users = require('../../lib/models/user')(mockJiraApi)
+Users = require('../util').Users
 
 describe "Users", ->
 

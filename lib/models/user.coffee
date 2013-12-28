@@ -13,8 +13,13 @@ _schema.methods.hasDeck = (deckId) ->
   return deckId in @decks
 
 User = (jira)->
-
   _model = mongoose.model('User', _schema)
+
+  _create = (name, email, cb) ->
+    user = new _model {name:name, email:email, lastLogin: jira.getDateTime()}
+    user.decks = []
+    user.save (err) ->
+      cb err, user
 
   _login = (username, password, cb) ->
     jira.getUser username, password, (err, jiraUser) ->
@@ -27,8 +32,7 @@ User = (jira)->
           else if user?
             cb null, user
           else
-            user = new _model {name:jiraUser.name, email:jiraUser.emailAddress, lastLogin:jira.getDateTime()}
-            cb null, user
+            _create jiraUser.name, jiraUser.emailAddress, cb
 
   _updateStoryPoints = (username, password, user, cb) ->
     currentTime = jira.getDateTime()
@@ -45,14 +49,18 @@ User = (jira)->
         user.save (err) ->
           cb err, user
 
+  _get = (id, cb) ->
+    _model.findOne {_id:id}, cb
+
   _fromSession = (sessionUser, cb) ->
-    _model.findOne {_id:sessionUser._id}, cb
+    _get sessionUser._id, cb
 
   ret =
     schema:_schema
     model:_model
     login:_login
     updateStoryPoints: _updateStoryPoints
+    get:_get
     fromSession:_fromSession
 
 module.exports = User
