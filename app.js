@@ -1,2 +1,11 @@
 require('coffee-script');
-require('./src/server');
+require('./src/jiraheroes');
+var Server = require('./src/server');
+
+var options = {
+	databaseServer:'localhost',
+	databasePort:27017,
+	database:'jira-heroes'
+};
+
+Server(options);

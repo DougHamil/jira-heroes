@@ -1,4 +1,4 @@
-exports.init = (app) ->
+module.exports = (app) ->
   app.get '/', (req, res) ->
     if req.session.user?
       res.render 'index', { entryModule: 'game/main', user: req.session.user}
