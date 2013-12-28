@@ -4,9 +4,7 @@ mongoose = require 'mongoose'
 util = require '../util'
 
 # Prepare server
-userController = require('../../lib/controllers/user')(server.app, util.Users)
 deckController = require('../../lib/controllers/deck')(server.app, util.Users)
-server.app.listen(util.port)
 
 describe 'DeckController', ->
   it 'should return no decks for new user', (done) ->
@@ -42,6 +40,23 @@ describe 'DeckController', ->
       should.not.exist(err)
       deck = JSON.parse(body)
       deck.should.have.property('name', 'My New Deck')
+      done()
+
+  it 'should allow setting the deck\'s cards', (done) ->
+    postdata =
+      cards:['test', 'test2']
+    util.post "/secure/deck/#{deckId}/cards", postdata, (err, res, body) ->
+      should.not.exist(err)
+      res.should.have.status(200)
+      body.should.equal(deckId)
+      done()
+
+  it 'should return newly added cards', (done) ->
+    util.get "/secure/deck/#{deckId}", (err, res, body) ->
+      should.not.exist(err)
+      deck = JSON.parse(body)
+      deck.cards.should.have.length(2)
+      deck.cards[0].should.eql('test')
       done()
 
   # Database

@@ -1,9 +1,11 @@
 mongoose = require 'mongoose'
+async = require 'async'
 fs = require 'fs'
 path = require 'path'
 
-schema = new mongoose.Schema
+_schema = new mongoose.Schema
   name:{type:String}
+  displayName:{type:String}
   health:{type:Number}
   damage:{type:Number}
   traits:[{type:String}]
@@ -15,20 +17,31 @@ schema = new mongoose.Schema
       hurt:{type:String}
       death:{type:String}
 
-Card = mongoose.model 'Card', schema
+_model = mongoose.model 'Card', _schema
 
-dir = process.cwd()
-dir = path.join dir, 'data/cards'
-for file in fs.readdirSync dir
-  if file.indexOf('.swp') != -1
-    continue
-  else
-    process.stdout.write "Building card #{file}..."
-    data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'))
-    Card.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->
-      if err?
-        console.log "Error upserting card: #{err}"
-      else
-        console.log "Done!"
+_load = (cb) ->
+  dir = path.join process.cwd(), 'data/cards'
+  files = fs.readdirSync dir
+  loadFile = (file, cb) ->
+    if file.indexOf('.swp') != -1
+      cb null
+    else
+      console.log "Loading card #{file}"
+      data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'))
+      _model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->
+        cb err
+  async.each files, loadFile, (err) ->
+    cb err
 
-module.exports = Card
+_get = (id, cb) ->
+  _model.findOne {_id:id}, cb
+
+_getAll = (cb) ->
+  _model.find {}, cb
+
+module.exports =
+  schema:_schema
+  model:_model
+  get:_get
+  getAll:_getAll
+  load:_load

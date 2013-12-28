@@ -1,4 +1,5 @@
 express        = require 'express'
+path = require 'path'
 login = require '../lib/middleware/login'
 
 module.exports = (config) ->
@@ -14,7 +15,7 @@ module.exports = (config) ->
   app.use express.session({store:sessionStore, secret: secret, key:sessionKey})
   app.use express.static('public')
   app.use login()
-  app.set 'views', __dirname + '/views'
+  app.set 'views', path.join(process.cwd(), 'lib/views')
   app.set 'view engine', 'jade'
 
   out =

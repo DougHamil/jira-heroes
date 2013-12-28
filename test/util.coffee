@@ -1,4 +1,11 @@
 request = require 'request'
+async = require 'async'
+Cards = require '../lib/models/card'
+Heroes = require '../lib/models/hero'
+
+exports.loadData = (cb) ->
+  async.series [Cards.load, Heroes.load], (err) ->
+    cb err
 
 exports.Jira =
   getUser: (u, p, cb)->
@@ -22,6 +29,7 @@ exports.Users = require('../lib/models/user')(exports.Jira)
 exports.get = (path, cb) ->
   request exports.getOpts(path), cb
 exports.post = (path, data, cb) ->
+  opts = exports.postOpts(path,data)
   request exports.postOpts(path, data), cb
 
 exports.postOpts= (path, form) ->

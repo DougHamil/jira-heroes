@@ -1,8 +1,28 @@
-UserController = require './user'
-HeroClass = require '../models/hero.class'
-Deck = require '../models/deck'
+Heroes = require '../models/hero'
+Decks = require '../models/deck'
 
 module.exports = (app, Users) ->
+  # Add a card to a deck
+  app.post '/secure/deck/:id/cards', (req, res) ->
+    id = req.params.id
+    cards = req.body.cards
+    if not id in req.session.user.decks
+      res.send 400, "Invalid deck #{id}"
+    else if not cards?
+      res.send 400, "Expected 'cards'"
+    else
+      # TODO: Validate cards (number of cards, availability to player)
+      Decks.get id, (err, deck) ->
+        if err?
+          res.send 500, err
+        else
+          deck.cards = cards
+          deck.save (err) ->
+            if err?
+              res.send 500, err
+            else
+              res.send 200, id
+
   # Create a new deck
   app.post '/secure/deck', (req, res) ->
     hero = req.body.hero
@@ -11,11 +31,11 @@ module.exports = (app, Users) ->
     if not hero? or not name?
       res.send 400, "Expected 'hero' and 'name'"
     else
-      HeroClass.fromName hero, (err, heroClass) ->
+      Heroes.fromName hero, (err, heroClass) ->
         if err? or not heroClass?
           res.send 400, "Bad hero class #{hero}"
         else
-          Deck.create (err, deck) ->
+          Decks.create (err, deck) ->
             if err?
               res.send 500, err
             else
@@ -43,7 +63,7 @@ module.exports = (app, Users) ->
   app.get '/secure/deck', (req, res) ->
     user = req.user
     if user.decks.length > 0
-      Deck.model.find({_id:{ $in: user.decks}}).exec (err, decks) ->
+      Decks.model.find({_id:{ $in: user.decks}}).exec (err, decks) ->
         if err?
           res.send 500, err
         else
@@ -58,7 +78,7 @@ module.exports = (app, Users) ->
     if not id in user.decks
       res.send 400, "Invalid deck ID: #{id}"
     else
-      Deck.get id, (err, deck) ->
+      Decks.get id, (err, deck) ->
         if err?
           res.send 500, err
         else if deck?

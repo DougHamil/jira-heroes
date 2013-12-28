@@ -4,24 +4,12 @@ mongoose = require 'mongoose'
 http = require 'http'
 request = require 'request'
 util = require '../util'
-userController = require('../../lib/controllers/user')(server.app, util.Users)
 
 # Mock secured endpoint
 server.app.get '/secure/test', (req, res) ->
   res.send 200
-server.app.get '/secure/user/deck/add', (req, res) ->
-  util.Users.fromSession req.session.user, (err, user) ->
-    should.exist(user)
-    should.not.exist(err)
-    user.decks.push 'ABC'
-    user.save (err) ->
-      should.not.exist(err)
-      req.session.user = user
-      res.send 200
 server.app.get '/secure/user', (req, res) ->
   res.json req.session.user
-
-server.app.listen(util.port)
 
 describe 'UserController', ->
   before (done) ->
@@ -37,13 +25,6 @@ describe 'UserController', ->
       res.statusCode.should.eql(302)
       res.headers.location.should.eql('/')
       done()
-  it 'should use the user model to store data', (done) ->
-    util.get '/secure/user/deck/add', (err, res) ->
-      res.statusCode.should.eql(200)
-      util.get '/secure/user', (err, res, body) ->
-        user = JSON.parse(body)
-        user.decks.should.include 'ABC'
-        done()
   it 'should provide logout endpoint', (done) ->
     util.get '/user/logout', (err, res) ->
       res.statusCode.should.eql(302)
