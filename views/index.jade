@@ -1,0 +1,17 @@
+doctype 5
+html(lang="en")
+	link(rel="stylesheet/less",type="text/css",href="/styles/game.less")
+	script(src="/socket.io/socket.io.js")
+	include includes/head
+	body
+		include includes/header
+		h1#title(style='position:fixed; left:-1000px;')
+			Jira Heroes
+		#content
+			canvas#mainCanvas
+			#overlay(style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;',unselectable='on',onselectstart='return false')
+				#heroName(style='display:none;')
+					h2 Name your hero:
+					input#heroNameText(type='text')
+					input#heroNameSave(type='button',value='Save')
+					input#heroNameCancel(type='button',value='Cancel')

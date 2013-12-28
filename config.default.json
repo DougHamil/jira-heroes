@@ -1,0 +1,7 @@
+{
+	"STORY_POINTS_FIELD": "customfield_10003",
+	"JIRA_PORT":80,
+	"JIRA_HOST":"jira",
+	"DASHBOARD_HOST":"dashboard",
+	"DASHBOARD_PORT":80
+}

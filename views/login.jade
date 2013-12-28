@@ -1,0 +1,17 @@
+doctype 5
+html(lang="en")
+	include includes/head
+	body
+		include includes/header
+		if failed
+			h4 Login failed, please check your username and password is correct
+		h3 Login
+		p Please login using your JIRA username and password
+		form(action="/user/login",method="post")
+			label Username:
+				input(type="text",name="username")
+				br
+			label Password:
+				input(type="password",name="password")
+				br
+			input(type="submit",value="Login")

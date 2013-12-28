@@ -1,0 +1,21 @@
+{
+  "name": "jira-heroes",
+  "description": "Jira Heroes",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.0.3",
+    "socket.io": "*",
+    "session.socket.io": "*",
+    "passport": "x",
+    "mongodb": "x",
+    "mongoose": "x",
+    "jade": "x",
+    "moment": "x",
+    "string": "~1.6.0",
+    "clone": "~0.1.11",
+    "async": "~0.2.9",
+    "coffee": "0.0.1",
+    "coffee-script": "~1.6.3"
+  }
+}

@@ -1,0 +1,13 @@
+doctype 5
+html(lang="en")
+	link(rel="stylesheet/less",type="text/css",href="/styles/game.less")
+	script
+		stories = !{JSON.stringify(stories)}
+		user = !{JSON.stringify(user)}
+	include includes/head
+	body
+		include includes/header
+		#content
+			canvas#mainCanvas
+			#overlay(style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;',unselectable='on',onselectstart='return false',onmousedown='return false;')
+		include includes/footer
