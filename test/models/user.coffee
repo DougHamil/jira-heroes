@@ -15,19 +15,25 @@ mockJiraApi =
   getTotalStoryPointsSince: (l, ll, u, p, cb) ->
     cb null, 1, []
 
-mongoose.connect 'mongodb://localhost/jira_heroes_test'
-
 Users = require('../../lib/models/user')(mockJiraApi)
 
 describe "Users", ->
+
+  before (done)->
+    mongoose.connect 'mongodb://localhost/jira_heroes_test'
+    done()
+
+  after (done)->
+    mongoose.disconnect()
+    done()
 
   afterEach (done) ->
     Users.model.remove {}, ->
       done()
 
   it 'logs in using Jira', (done) ->
-    Users.login 'testusername', 'testpassword', (err, user) ->
-      should.exist(user)
+    Users.login 'testusername', 'testpassword', (err, _user) ->
+      should.exist(_user)
       should.not.exist(err)
       done()
   it 'gets story points since last login using Jira', (done) ->
@@ -50,4 +56,11 @@ describe "Users", ->
       user.decks.push '0'
       user.hasDeck('0').should.be.true
       done()
-
+  it 'creates a model from user data stored in session', (done) ->
+    Users.login 'testusername', 'testpassword', (err, user) ->
+      user.save (err) ->
+        should.not.exist(err)
+        Users.fromSession {_id:user._id}, (err, userModel) ->
+          userModel.should.have.property('hasDeck')
+          userModel.should.have.property('save')
+          done()

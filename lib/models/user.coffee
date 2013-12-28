@@ -45,10 +45,14 @@ User = (jira)->
         user.save (err) ->
           cb err, user
 
+  _fromSession = (sessionUser, cb) ->
+    _model.findOne {_id:sessionUser._id}, cb
+
   ret =
     schema:_schema
     model:_model
     login:_login
     updateStoryPoints: _updateStoryPoints
+    fromSession:_fromSession
 
 module.exports = User
