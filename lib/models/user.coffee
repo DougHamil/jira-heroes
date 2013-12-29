@@ -4,6 +4,7 @@ ObjectId = Schema.ObjectId
 _schema = new Schema
   name: String
   email: String
+  activeBattle: String
   lastLogin: String
   lastLoginPoints: {type:Number, default:0}
   lastLoginIssueKeys: [String]

@@ -17,6 +17,13 @@ module.exports = (app, Users) ->
             delete req.session.redir
             res.redirect redir
 
+  app.get '/secure/user', (req, res) ->
+    Users.fromSession req.session.user, (err, user) ->
+      if err?
+        res.send 500, err
+      else
+        res.json user
+
   app.get '/user/logout', (req, res) ->
     req.session.user = null
     res.redirect '/'

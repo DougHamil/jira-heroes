@@ -17,7 +17,7 @@ describe 'DeckController', ->
       done()
 
   deckId = null
-  it 'should allow user to post a new deck', (done) ->
+  it 'should allow user to create a new deck', (done) ->
     util.post '/secure/deck', {hero:'hacker',name:'My New Deck'}, (err, res, body) ->
       res.should.have.status(200)
       deckId = JSON.parse(body)
@@ -30,7 +30,6 @@ describe 'DeckController', ->
       should.not.exist(err)
       decks = JSON.parse(body)
       should.exist(decks)
-      decks.should.have.length(2)
       decks[0].name.should.eql('My New Deck')
       decks[1].name.should.eql('My Other New Deck')
       done()
