@@ -1,18 +1,14 @@
-server = require '../server'
 should = require 'should'
-mongoose = require 'mongoose'
 request = require 'request'
 util = require '../util'
-BattleController = require('../../lib/controllers/battle')(server.app, util.Users)
 Battles = require '../../lib/models/battle'
 
 describe 'BattleController', ->
 
   user = null
   it 'should create a new battle', (done) ->
-    util.post '/secure/deck', {hero:'hacker', name:'deck'}, (err, res, body) ->
-      res.should.have.status(200)
-      deckId = JSON.parse(body)
+    util.createDeck (err, deckId) ->
+      should.not.exist(err)
       util.post '/secure/battle/host', {deck:deckId}, (err, res, body) ->
         should.not.exist(err)
         res.should.have.status(200)
@@ -26,6 +22,7 @@ describe 'BattleController', ->
           done()
 
   battleId = null
+  deckId = null
   it 'should return all battles', (done) ->
     util.get '/battle', (err, res, body) ->
       should.not.exist(err)
@@ -43,9 +40,49 @@ describe 'BattleController', ->
       battle.should.have.property('_id')
       done()
 
+  it 'should allow a user to join an existing battle', (done) ->
+    util.loginAs 'battletest', 'pass', (err, res, user) ->
+      should.not.exist(err)
+      util.createDeck (err, _deckId) ->
+        should.not.exist(err)
+        deckId = _deckId
+        postdata =
+          deck: deckId
+        util.post "/secure/battle/#{battleId}/join", postdata, (err, res, body) ->
+          should.not.exist(err)
+          res.should.have.status(200)
+          battle = JSON.parse(body)
+          battle._id.should.eql(battleId)
+          done()
+
+  it 'should not allow a user currently in a battle to host a battle', (done) ->
+    util.post '/secure/battle/host', {deck:deckId}, (err, res, body) ->
+      should.not.exist(err)
+      res.should.have.status(400)
+      done()
+
+  it 'should not allow a user currently in a battle to join a battle', (done) ->
+    util.createDeck (err, deckId) ->
+      should.not.exist(err)
+      util.post "/secure/battle/#{battleId}/join", {deck:deckId}, (err, res, body) ->
+        should.not.exist(err)
+        res.should.have.status(400)
+        done()
+
+  it 'should not allow more than 2 people to join a battle', (done) ->
+    util.loginAs 'battletest2', 'pass', (err, res, user) ->
+      should.not.exist(err)
+      util.createDeck (err, deckId) ->
+        should.not.exist(err)
+        postdata =
+          deck:deckId
+        util.post "/secure/battle/#{battleId}/join", postdata, (err, res, body) ->
+          should.not.exist(err)
+          res.should.have.status(400)
+          done()
+
   # Setup server
   before (done) ->
-    mongoose.connect 'mongodb://localhost/jira_heroes_test'
     util.login (err, res, body) ->
       util.get '/secure/user', (err, res, body) ->
         user = JSON.parse(body)
@@ -54,5 +91,4 @@ describe 'BattleController', ->
   after (done) ->
     util.Users.model.remove {}, ->
       Battles.model.remove {}, ->
-        mongoose.disconnect()
         done()

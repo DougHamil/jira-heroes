@@ -3,15 +3,19 @@ async = require 'async'
 Cards = require '../lib/models/card'
 Heroes = require '../lib/models/hero'
 
+USERNAMES = []
+PASSWORDS = []
+
 exports.loadData = (cb) ->
   async.series [Cards.load, Heroes.load], (err) ->
     cb err
 
+# Shim for auto-authenticate
 exports.Jira =
   getUser: (u, p, cb)->
-    if u is 'testusername' and p is 'testpassword'
+    if u in USERNAMES and p in PASSWORDS
       user =
-        name: 'testusername'
+        name: u
         emailAddress:'test@test.com'
       cb null, user
     else
@@ -51,8 +55,19 @@ exports.getOpts = (path) ->
     jar:true
   return opts
 
-exports.login = (cb)->
+exports.createDeck = (cb) ->
+  exports.post '/secure/deck', {hero:'hacker', name:'deck'}, (err, res, body) ->
+    cb err, JSON.parse(body)
+
+exports.loginAs = (username, pass, cb) ->
+  USERNAMES.push username
+  PASSWORDS.push pass
   postdata =
-    username:'testusername'
-    password:'testpassword'
-  exports.post '/user/login', postdata, cb
+    username:username
+    password:pass
+  exports.post '/user/login', postdata, (err, res, body) ->
+    exports.get '/secure/user', (err, res2, body) ->
+      cb err, res, JSON.parse(body)
+
+exports.login = (cb)->
+  exports.loginAs 'testusername', 'testpassword', cb

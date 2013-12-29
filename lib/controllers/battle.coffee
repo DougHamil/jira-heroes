@@ -37,7 +37,7 @@ module.exports = (app, Users) ->
           else
             userJoinBattle battle, user, deckId, res
 
-  # Create battle
+  # Host battle
   app.post '/secure/battle/host', (req, res) ->
     deckId = req.body.deck
     Users.fromSession req.session.user, (err, user) ->

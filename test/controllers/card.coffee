@@ -1,6 +1,5 @@
 server = require '../server'
 should = require 'should'
-mongoose = require 'mongoose'
 util = require '../util'
 
 describe 'CardController', ->
@@ -55,10 +54,5 @@ describe 'CardController', ->
 
   # Database
   before (done) ->
-    mongoose.connect 'mongodb://localhost/jira_heroes_test'
-    require('../../lib/models/card').load (err) ->
-      util.login (err, res, body)->
-        done()
-  after (done) ->
-    mongoose.disconnect()
-    done()
+    util.login (err, res, body)->
+      done()

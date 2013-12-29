@@ -1,13 +1,16 @@
 async = require 'async'
-CardModel = require '../models/card'
+Cards = require '../../lib/models/card'
 
+###
+# Simple cache for cards
+###
 class CardCache
   @cards: {}
   @loadCard: (cardId, cb) ->
     if @cards[cardId]?
       cb null, @cards[cardId]
     else
-      CardModel.findOne {_id:cardId}, (err, card) =>
+      Cards.get cardId, (err, card) =>
         if err?
           cb err
         else

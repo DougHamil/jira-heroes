@@ -31,6 +31,9 @@ _load = (cb) ->
 _get = (id, cb) ->
   _model.findOne {_id:id}, cb
 
+_getAll = (cb) ->
+  _model.find {}, cb
+
 _fromName = (name, cb) ->
   _model.findOne {name:name}, cb
 
@@ -39,4 +42,5 @@ module.exports =
   model:_model
   fromName: _fromName
   get:_get
+  getAll:_getAll
   load:_load

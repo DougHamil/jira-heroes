@@ -12,16 +12,8 @@ server.app.get '/secure/user', (req, res) ->
   res.json req.session.user
 
 describe 'UserController', ->
-  before (done) ->
-    mongoose.connect 'mongodb://localhost/jira_heroes_test'
-    done()
-
-  after (done) ->
-    mongoose.disconnect()
-    done()
-
   it 'should provide login endpoint', (done) ->
-    util.login (err, res, body) ->
+    util.login (err, res, user) ->
       res.statusCode.should.eql(302)
       res.headers.location.should.eql('/')
       done()

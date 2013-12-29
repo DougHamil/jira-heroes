@@ -1,38 +1,35 @@
-UserController = require '../controllers/user'
-ModelHelper    = require '../models/helper'
-UserModel      = require '../models/user'
-User           = require './user'
 SessionSockets = require 'session.socket.io'
+Users          = require '../../lib/models/user'
 Errors         = require './errors'
-ConnectionManager = require './connectionmanager'
-BattleManager = require './battlemanager'
+UserManager    = require './usermanager'
 
 exports.init = (server, sessionStore, cookieParser) ->
   io = require('socket.io').listen(server)
   sessionio = new SessionSockets(io, sessionStore, cookieParser)
-  #
-  # List of active connections
-  connectionsByUserId = {}
+
+  # List of connected users and their managers
+  userManagers = {}
 
   sessionio.on 'connection', (err, socket, session) ->
     # Make sure connecting user is logged in
-    if err? or not UserController.loggedIn(session)
+    if err? or not session.user?
       console.log "A user attempted to connect to game server without being logged in"
       socket.disconnect()
       return
 
     socket.on 'disconnect', ->
       console.log "User #{session.user._id} disconnected from game server"
+      if userManagers[session.user._id]
+        delete userManagers[session.user._id]
 
     console.info "User #{session.user._id} connected to game server"
-    # Pull the user from the database, the session's user object to deep-populate it
-    UserModel.findOne {_id:session.user._id}, (err, userModel) ->
+
+    Users.fromSession session.user, (err, user) ->
       if err?
-        console.log "Unable to find logged-in user"
+        console.log "Error getting user: #{session.user}"
         socket.disconnect()
-        return
-      user = new User(userModel)
-      connectionsByUserId[user.id] = new ConnectionManager battleManager, socket, user
-      socket.emit 'connected'
+      else
+        userManagers[user._id] = new UserManager user, socket
+        socket.emit 'connected'
 
 

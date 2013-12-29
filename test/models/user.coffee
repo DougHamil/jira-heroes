@@ -1,17 +1,7 @@
 should = require 'should'
-mongoose = require 'mongoose'
 Users = require('../util').Users
 
 describe "Users", ->
-
-  before (done)->
-    mongoose.connect 'mongodb://localhost/jira_heroes_test'
-    done()
-
-  after (done)->
-    mongoose.disconnect()
-    done()
-
   afterEach (done) ->
     Users.model.remove {}, ->
       done()
