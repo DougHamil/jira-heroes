@@ -14,17 +14,18 @@ _schema = new Schema
 _model = mongoose.model('HeroClass', _schema)
 
 _load = (cb) ->
+  process.stdout.write 'Loading heroes...'
   appDir = path.join(process.cwd(), 'data/heroes')
   files = fs.readdirSync appDir
   loadCard = (file, cb) ->
     if file.indexOf('.swp') != -1
       cb null
     else
-      console.log "Building hero #{file}..."
       data = JSON.parse(fs.readFileSync(path.join(appDir, file), 'utf8'))
       _model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err)->
         cb err
   async.each files, loadCard, (err) ->
+    console.log 'Done!'
     cb err
 
 _get = (id, cb) ->

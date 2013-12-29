@@ -7,6 +7,7 @@ _schema = new Schema
   lastLogin: String
   lastLoginPoints: {type:Number, default:0}
   lastLoginIssueKeys: [String]
+  library: [{type:String}] # All available cards
   decks: [{type:String}]
   points: {type:Number, default:0}
 _schema.methods.hasDeck = (deckId) ->
