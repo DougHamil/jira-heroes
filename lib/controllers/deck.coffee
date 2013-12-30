@@ -25,14 +25,16 @@ module.exports = (app, Users) ->
 
   # Create a new deck
   app.post '/secure/deck', (req, res) ->
-    hero = req.body.hero
+    heroId = req.body.hero
     name = req.body.name
     # TODO: Validate name
-    if not hero? or not name?
+    if not heroId? or not name?
       res.send 400, "Expected 'hero' and 'name'"
     else
-      Heroes.fromName hero, (err, heroClass) ->
-        if err? or not heroClass?
+      Heroes.get heroId, (err, hero) ->
+        if err?
+          res.send 500, err
+        else if not hero?
           res.send 400, "Bad hero class #{hero}"
         else
           Decks.create (err, deck) ->
@@ -40,7 +42,7 @@ module.exports = (app, Users) ->
               res.send 500, err
             else
               deck.user = req.session.user._id
-              deck.hero.class = hero
+              deck.hero.class = heroId
               deck.name = name
               deck.cards = []
               deck.save (err) ->

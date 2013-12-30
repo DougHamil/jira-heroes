@@ -1,4 +1,3 @@
-Heroes = require '../models/hero'
 Decks = require '../models/deck'
 Battles = require '../models/battle'
 async = require 'async'
@@ -15,11 +14,19 @@ module.exports = (app, Users) ->
     else
       battle.users.push user._id
       user.activeBattle = battle._id
-      async.series [battle.save.bind(battle), user.save.bind(user)], (err) ->
+      Decks.get deckId, (err, deck) ->
         if err?
           res.send 500, err
         else
-          res.json battle
+          battle.addPlayer user._id, deck, (err, player) ->
+            if err?
+              res.send 500, err
+            else
+              async.series [battle.save.bind(battle), user.save.bind(user)], (err) ->
+                if err?
+                  res.send 500, err
+                else
+                  res.json battle.getPublicData()
 
   # Join battle
   app.post '/secure/battle/:id/join', (req, res) ->
@@ -61,6 +68,7 @@ module.exports = (app, Users) ->
         if err?
           res.send 500, err
         else
+          battles = battles.map (b) -> b.getPublicData()
           res.json battles
 
   # Get active battle
@@ -76,7 +84,7 @@ module.exports = (app, Users) ->
             if err?
               res.send 500, err
             else
-              res.json battle
+              res.json battle.getPublicData()
 
   # Get all active battles
   app.get '/battle', (req, res) ->
@@ -84,6 +92,7 @@ module.exports = (app, Users) ->
       if err?
         res.send 500, err
       else
+        battles = battles.map (b) -> b.getPublicData()
         res.json battles
 
   # Get specific battle
@@ -93,6 +102,6 @@ module.exports = (app, Users) ->
       if err?
         res.send 500, err
       else if battle?
-        res.json battle
+        res.json battle.getPublicData()
       else
         res.send 400, "Bad battle id #{id}"

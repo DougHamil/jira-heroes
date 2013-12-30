@@ -4,7 +4,8 @@ Schema = mongoose.Schema
 _schema = new Schema
   user: {type:String, default:null}
   name: {type:String, default:"Deck"}
-  hero: {type:Schema.Types.Mixed}
+  hero:
+    class: {type:String}
   cards: [{type:String}]
 
 _model = mongoose.model 'Deck', _schema

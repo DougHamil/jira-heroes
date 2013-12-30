@@ -6,7 +6,7 @@ Cards = require '../../lib/models/card'
 ###
 class CardCache
   @cards: {}
-  @loadCard: (cardId, cb) ->
+  @getCard: (cardId, cb) ->
     if @cards[cardId]?
       cb null, @cards[cardId]
     else
@@ -17,7 +17,10 @@ class CardCache
           @cards[card._id] = card
           cb null, card
 
-  @load: (cardIds, cb) ->
-    async.map cardIds, CardCache.loadCard, cb
+  @get: (cardIds, cb) ->
+    if typeof cardIds is 'string'
+      @getCard cardIds, cb
+    else
+      async.map cardIds, CardCache.loadCard, cb
 
 module.exports = CardCache

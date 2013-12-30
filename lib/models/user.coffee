@@ -11,6 +11,7 @@ _schema = new Schema
   library: [{type:String}] # All available cards
   decks: [{type:String}]
   points: {type:Number, default:0}
+
 _schema.methods.hasDeck = (deckId) ->
   return deckId in @decks
 

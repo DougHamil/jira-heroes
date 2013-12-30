@@ -6,6 +6,8 @@ Heroes = require '../lib/models/hero'
 USERNAMES = []
 PASSWORDS = []
 
+exports.jar = request.jar()
+
 exports.loadData = (cb) ->
   async.series [Cards.load, Heroes.load], (err) ->
     cb err
@@ -43,7 +45,7 @@ exports.postOpts= (path, form) ->
     form:form
     followRedirect:false
     followAllRedirects:false
-    jar:true
+    jar:exports.jar
   return opts
 
 exports.getOpts = (path) ->
@@ -52,12 +54,21 @@ exports.getOpts = (path) ->
     method:'GET'
     followRedirect:false
     followAllRedirects:false
-    jar:true
+    jar:exports.jar
   return opts
 
 exports.createDeck = (cb) ->
-  exports.post '/secure/deck', {hero:'hacker', name:'deck'}, (err, res, body) ->
-    cb err, JSON.parse(body)
+  exports.get '/hero', (err, res, body) ->
+    hero = JSON.parse(body)[0]
+    exports.post '/secure/deck', {hero:hero._id, name:'deck'}, (err, res, body) ->
+      deck = JSON.parse(body)
+      exports.post '/card/query', {query:JSON.stringify({cost:0})}, (err, res, body) ->
+        cards = JSON.parse(body)[0..30]
+        cards = cards.map (card) -> card._id
+        while cards.length < 30
+          cards.push cards[0]
+        exports.post '/secure/deck/'+deck+'/cards', {cards:cards}, (err, res, body) ->
+          cb err, deck
 
 exports.loginAs = (username, pass, cb) ->
   USERNAMES.push username
@@ -71,3 +82,19 @@ exports.loginAs = (username, pass, cb) ->
 
 exports.login = (cb)->
   exports.loginAs 'testusername', 'testpassword', cb
+
+# Patch in cookies from request into socket IO client
+# https://gist.github.com/jfromaniello/4087861
+originalRequest = require('xmlhttprequest').XMLHttpRequest
+require('../node_modules/socket.io-client/node_modules/xmlhttprequest').XMLHttpRequest = ->
+  originalRequest.apply @, arguments
+  @setDisableHeaderCheck true
+  stdOpen = @open
+  @open = ->
+    stdOpen.apply @, arguments
+    header = exports.jar.store.idx.localhost['/']['connect.sid']
+    @setRequestHeader 'cookie', header
+  return
+
+io = require 'socket.io-client'
+exports.io = io

@@ -1,31 +1,22 @@
-clone = require 'clone'
 Errors = require './errors'
-
-PHASE =
-  INITIAL: 'INITIAL'
+CardCache = require '../../lib/models/cardcache'
 
 class Battle
-  constructor: (@model, @players) ->
+  constructor: (@model) ->
+    @players = {}
     @sockets = {}
-    if not @model._id?
-      # TODO: Initial battle configuration
-      @initialize()
-    else
-      # Restore from persisted model
+    for player in @model.players
+      cardsById = {}
+      for card in player.deck.cards
+        cardsById[card._id] = card
+      player.cards = cardsById
+      @players[player.userId] = player
 
-  initialize: ->
-    @model.players = {}
-    @model.phase = PHASE.INITIAL
-
-  onPlayerJoined: (user, hero, cards) ->
-    player =
-      user:user._id
-      hero:hero
-      deck:cards
-      hand: []
-    @model.players[player.user] = player
-
-  onPlayerConnected: (user, socket) ->
+  onConnect: (user, socket) ->
     @sockets[user._id] = socket
+
+  getData: (user) ->
+    out =
+      you: @players[user._id]
 
 module.exports = Battle

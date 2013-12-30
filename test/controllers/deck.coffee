@@ -17,12 +17,15 @@ describe 'DeckController', ->
 
   deckId = null
   it 'should allow user to create a new deck', (done) ->
-    util.post '/secure/deck', {hero:'hacker',name:'My New Deck'}, (err, res, body) ->
-      res.should.have.status(200)
-      deckId = JSON.parse(body)
-      util.post '/secure/deck', {hero:'hacker',name:'My Other New Deck'}, (err, res, body) ->
+    util.get '/hero', (err, res, body) ->
+      should.not.exist(err)
+      heroes = JSON.parse(body)
+      util.post '/secure/deck', {hero:heroes[0]._id, name:'My New Deck'}, (err, res, body) ->
         res.should.have.status(200)
-        done()
+        deckId = JSON.parse(body)
+        util.post '/secure/deck', {hero:heroes[0]._id, name:'My Other New Deck'}, (err, res, body) ->
+          res.should.have.status(200)
+          done()
 
   it 'should return any decks added', (done) ->
     util.get '/secure/deck', (err, res, body) ->

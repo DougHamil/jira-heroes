@@ -8,10 +8,12 @@ path = require 'path'
 _schema = new Schema
   name:{type:String}
   displayName:{type:String}
+  health: Number
+  damage: Number
   media:
     icon: {type:String}
 
-_model = mongoose.model('HeroClass', _schema)
+_model = mongoose.model('Hero', _schema)
 
 _load = (cb) ->
   process.stdout.write 'Loading heroes...'

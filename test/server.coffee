@@ -8,5 +8,6 @@ require('../lib/controllers/battle')(server.app, util.Users)
 require('../lib/controllers/card')(server.app, util.Users)
 require('../lib/controllers/deck')(server.app, util.Users)
 require('../lib/controllers/hero')(server.app, util.Users)
-server.app.listen(util.port)
+expressServer = server.app.listen(util.port)
+require('../src/game/server')(expressServer, server.sessionStore, server.cookieParser, util.Users)
 module.exports = server

@@ -32,6 +32,5 @@ db.once 'open', ->
     DeckController(server.app, Users)
     CardController(server.app, Users)
     ViewsController(server.app)
-    server.app.listen(3001)
-    #gameServer.init server.app.listen(3001), server.sessionStore, server.cookieParser
+    gameServer.init server.app.listen(3001), server.sessionStore, server.cookieParser, Users
     console.log 'Listening on port 3001'
