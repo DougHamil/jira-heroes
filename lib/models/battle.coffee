@@ -10,6 +10,7 @@ newCardInstance = (cardId, cb) ->
       cb err
     else
       out =
+        position: 'deck'
         class:cardId
         health:card.health
         damage:card.damage
@@ -53,6 +54,7 @@ _cardSchema = new mongoose.Schema
   damage: Number
   status: String
   effects: [String]
+  position: String
 
 # Represents a user in a battle, contains their energy, their deck (with hero and cards)
 _playerSchema = new mongoose.Schema
@@ -70,7 +72,9 @@ _schema = new mongoose.Schema
   users: [{type:String}]
   players: [_playerSchema]
   state:
-    phase: String
+    phase: {type:String, default:'initial'}
+    activePlayer: String
+    playersReady: [String]
 
 # Get the data that the public endpoint can provide
 _schema.methods.getPublicData = ->

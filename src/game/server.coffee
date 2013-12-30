@@ -18,7 +18,6 @@ module.exports = (expressServer, sessionStore, cookieParser, Users) ->
       return
 
     socket.on 'disconnect', ->
-      console.log "User #{session.user._id} disconnected from game server"
       if userManagers[session.user._id]
         delete userManagers[session.user._id]
 

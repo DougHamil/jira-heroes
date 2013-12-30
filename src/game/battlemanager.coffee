@@ -3,6 +3,8 @@ Errors = require './errors'
 Battle = require './battle'
 Battles = require '../../lib/models/battle'
 
+MAX_PLAYERS = 2
+
 ###
 BattleManager maintains a cache of all active battles and allows easy
 look-up of existing battles and creation of new battles
@@ -19,6 +21,8 @@ class BattleManager
           cb err
         else if not model?
           cb Errors.INVALID_BATTLE
+        else if model.players.length < MAX_PLAYERS
+          cb Errors.BATTLE_NOT_READY
         else
           battle = new Battle model
           @battles[model._id] = battle

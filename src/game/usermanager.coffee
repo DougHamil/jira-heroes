@@ -8,12 +8,12 @@ to the proper Battle instance
 class UserManager
   constructor: (@user, @socket) ->
     @socket.on 'join', (battleId, cb) =>
-      @onConnect(battleId, cb)
+      @onJoin(battleId, cb)
 
   ###
-  # Called when a user wants to connect to a battle
+  # Called when a user wants to join a battle
   ###
-  onConnect: (battleId, cb) ->
+  onJoin: (battleId, cb) ->
     if @battle?
       # User is already in a battle
       cb Errors.ALREADY_IN_BATTLE
@@ -21,10 +21,11 @@ class UserManager
       # The user is not joined in this battle
       cb Errors.INVALID_BATTLE
     else
-      BattleManager.get battleId, (err, @battle) =>
+      BattleManager.get battleId, (err, battle) =>
         if err?
           cb err
         else
+          @battle = battle
           @battle.onConnect @user, @socket
           cb null, @battle.getData(@user)
 

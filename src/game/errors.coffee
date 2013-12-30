@@ -16,6 +16,7 @@ errors =
   HERO_ALREADY_IN_BATTLE: 'Hero is already in the battle, cannot re-enter'
   HERO_NOT_IN_BATTLE: 'Hero is not currently in the battle'
   HERO_NOT_IN_CAMPAIGN: 'Hero is not joined to the campaign'
+  BATTLE_NOT_READY: 'The battle is not ready to play'
   BATTLE_FULL: 'The battle already has max heroes'
   BATTLE_ALREADY_STARTED: 'The battle has already started'
   HERO_ALREADY_ON_CAMPAIGN: 'The hero is already on a campaign'
