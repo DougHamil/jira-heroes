@@ -2,6 +2,7 @@ util = require './util'
 config =
   sessionSecret: 'JIRA_HEROES_TEST'
 
+global.isTest = true
 server = require('../src/server')(config)
 require('../lib/controllers/user')(server.app, util.Users)
 require('../lib/controllers/battle')(server.app, util.Users)

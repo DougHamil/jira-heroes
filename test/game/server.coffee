@@ -100,3 +100,11 @@ describe 'GameServer', ->
     should.exist(card)
     done()
 
+  it 'should allow the first player to play a card', (done) ->
+    activeSocket = sockets[activeUser]
+    activeSocket.emit 'test', 'energy', 1000, ->
+      activeSocket.emit 'play-card', drawnCards[activeUser][0]._id, (err)->
+        should.not.exist(err)
+        done()
+
+

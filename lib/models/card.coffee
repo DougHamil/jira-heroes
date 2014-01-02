@@ -6,6 +6,7 @@ path = require 'path'
 _schema = new mongoose.Schema
   name:{type:String}
   cost: {type:Number}
+  energy: {type:Number}
   displayName:{type:String}
   health:{type:Number}
   damage:{type:Number}
