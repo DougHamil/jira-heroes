@@ -1,4 +1,5 @@
 CardCache = require '../../lib/models/cardcache'
+Errors = require './errors'
 
 class CardHandler
   @playCard: (card, cardClass) ->
@@ -14,4 +15,10 @@ class CardHandler
     for card in fieldCards
       card.status = card.status.filter (t) -> t isnt 'sleeping'
 
+  @useCardOnCard: (player, card, target) ->
+    # Sleeping cards may not attack
+    if 'sleeping' in card.status
+      return [Errors.INVALID_ACTION]
+    else
+      return [null, {}]
 module.exports = CardHandler

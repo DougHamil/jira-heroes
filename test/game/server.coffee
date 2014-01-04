@@ -1,5 +1,6 @@
 should = require 'should'
 util = require '../util'
+GameTestHarness = require './harness'
 io = util.io
 
 describe 'GameServer', ->
@@ -11,6 +12,7 @@ describe 'GameServer', ->
       done()
 
   userA = null
+  userB = null
   it 'should allow a logged-in user to connect', (done) ->
     util.login (err, res, user) ->
       userA = user._id
@@ -20,22 +22,20 @@ describe 'GameServer', ->
         done()
 
   battleId = null
-  socketA = null
   sockets = {}
   it 'should not allow a user to join a battle that is not ready', (done) ->
     util.createDeck (err, deckId) ->
       should.not.exist(err)
       util.post '/secure/battle/host', {deck:deckId}, (err, res, body) ->
         battleId = JSON.parse(body)._id
-        socketA = io.connect("http://localhost:#{util.port}", {'force new connection':true})
-        socketA.on 'connected', ->
-          socketA.emit 'join', battleId, (err) ->
+        socket = io.connect("http://localhost:#{util.port}", {'force new connection':true})
+        socket.on 'connected', ->
+          socket.emit 'join', battleId, (err) ->
             should.exist(err)
             done()
-        sockets[userA] = socketA
+        sockets[userA] = socket
 
-  socketB = null
-  userB = null
+  harness = null
   it 'should allow a user to join a battle that is ready', (done) ->
     util.loginAs 'gametest', 'pass', (err, res, user) ->
       userB = user._id
@@ -52,44 +52,52 @@ describe 'GameServer', ->
               should.exist(data)
               done()
           sockets[userB] = socketB
+          harness = new GameTestHarness sockets
+          userA = userB
+          userB = harness.getOtherUser userA
 
   it 'should allow a player to ready-up', (done) ->
-    socketB.emit 'ready', (err) ->
+    socket = harness.getSocketForUser userA
+    socket.emit 'ready', (err) ->
       should.not.exist(err)
       done()
 
   it 'should not allow a player to ready more than once', (done) ->
-    socketB.emit 'ready', (err) ->
+    socket = harness.getSocketForUser userA
+    socket.emit 'ready', (err) ->
       should.exist(err)
       done()
 
-  activeUser = null
   drawnCards = {}
   it 'should emit phase event when all players are ready', (done) ->
-    util.login (err)->
+    harness.expectActive 'your-turn', (data) ->
+      data = data[harness.activeUser]
+      fieldCards = data[0]
+      #should.exist(fieldCards)
+    harness.expectInactive 'opponent-turn', (data) ->
+      for user in harness.getInactiveUsers()
+        userData = data[user]
+        if userData?
+          should.exist(userData[0])
+          should.exist(userData[1])
+    harness.expectAll 'phase', (data) ->
+      for user, datum of data
+        oldPhase = datum[0]
+        newPhase = datum[1]
+        oldPhase.should.eql('initial')
+        newPhase.should.eql('game')
+      done()
+    harness.expectAll 'draw-card', (data) ->
+      for user, datum of data
+        cards = datum[0]
+        should.exist(cards)
+    userB = harness.getOtherUser userA
+    socket = harness.getSocketForUser userB
+    socket.emit 'join', battleId, (err) ->
       should.not.exist(err)
-      socketA.emit 'join', battleId, (err) ->
+      socket.emit 'ready', (err) ->
+        console.log 'hereo'
         should.not.exist(err)
-        checkins = 0
-        onPhase = (oldPhase, newPhase) ->
-          oldPhase.should.eql('initial')
-          newPhase.should.eql('game')
-          checkins++
-          if checkins  == 2
-            done()
-        drawCards = (userId) ->
-          (card) ->
-            drawnCards[userId] = card
-        for _, socket of sockets
-          socket.on 'phase', onPhase
-          socket.on 'opponent-turn', (active, fieldCards) ->
-            activeUser = active
-            should.exist(fieldCards)
-          socket.on 'your-turn', (fieldCards) ->
-            should.exist(fieldCards)
-          socket.on 'draw-cards', drawCards(_)
-        socketA.emit 'ready', (err) ->
-          should.not.exist(err)
 
   activeSocket = null
   it 'should emit the first player\'s turn when all players are ready', (done) ->
@@ -126,3 +134,4 @@ describe 'GameServer', ->
     activeSocket.emit 'end-turn', (err) ->
       should.not.exist(err)
       done()
+      FlowTest.run sockets, activeUser

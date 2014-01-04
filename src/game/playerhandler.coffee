@@ -16,8 +16,45 @@ class PlayerHandler extends EventEmitter
       @socket.on 'ready', @onReady()
       @socket.on 'play-card', @onPlayCard()
       @socket.on 'end-turn', @onEndTurn()
+      @socket.on 'use-card', @onUseCard()
       @socket.on 'test', @onTest()
 
+  onUseCard: ->
+    (source, target, cb) =>
+      if @model.state.phase == 'game' and @isActive()
+        card = @getCard(source)
+        if card?
+          # Make sure card is either in the player's hand or field
+          if card.position is 'hand' or card.position is 'field'
+            # Card use targeting a card
+            if target.card?
+              targetCard = @battle.getCard(target.card)
+              # Can only target cards on the field
+              if targetCard? and targetCard.position is 'field'
+                [err, action] = CardHandler.useCardOnCard @, card, targetCard
+                cb err, action
+                if not err?
+                  @emit 'use-card-on-card', card, targetCard, action
+              else
+                cb Errors.INVALID_TARGET
+            # Card use targeting a hero
+            else if target.hero?
+              hero = @battle.getHero(target.hero)
+              if hero?
+                [err, action] = CardHandler.useCardOnHero @, card, hero
+                cb err, action
+                if not err?
+                  @emit 'use-card-on-hero', card, hero, action
+              else
+                cb Errors.INVALID_TARGET
+            else
+              cb Errors.INVALID_ACTION
+          else
+            cb Errors.INVALID_ACTION
+        else
+          cb Errors.INVALID_CARD
+      else
+        cb Errors.INVALID_ACTION
   onEndTurn: ->
     (cb) =>
       if @model.state.phase == 'game' and @isActive()

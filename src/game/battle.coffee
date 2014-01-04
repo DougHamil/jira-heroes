@@ -20,9 +20,11 @@ class Battle
       @registerPlayer(player.userId, @players[player.userId])
 
   registerPlayer: (userId, handler) ->
-    handler.on 'ready', @onReady(userId)
-    handler.on 'play-card', @onPlayCard(userId)
-    handler.on 'end-turn', @onEndTurn(userId)
+    handler.on 'ready', @onReady(userId)                      # Player is in battle and wishes to start
+    handler.on 'play-card', @onPlayCard(userId)               # Deploy card from hand to field
+    handler.on 'end-turn', @onEndTurn(userId)                 # Turn over
+    handler.on 'use-card-on-card', @onUseCardOnCard(userId)   # Player used a card, targeting another card
+    handler.on 'use-card-on-hero', @onUseCardOnHero(userId)   # Player used a card, targeting a hero
 
   ###
   # EVENTS
@@ -37,6 +39,16 @@ class Battle
     =>
       if @model.state.playersReady.length is @model.players.length
         @startGame()
+
+  # Called when a player used a card, targeting a hero
+  onUseCardOnHero: (userId) ->
+    (card, targetHero, action) ->
+      @emitAllButActive 'opponent-use-card-on-hero', userId, card, targetHero, action
+
+  # Called when a player used a card, targeting another card
+  onUseCardOnCard: (userId) ->
+    (card, targetCard, action) ->
+      @emitAllButActive 'opponent-use-card-on-card', userId, card, targetCard._id, action
 
   # Called when the player has played a card
   onPlayCard: (userId) ->
@@ -114,6 +126,20 @@ class Battle
 
   getNonActivePlayers: ->
     return @model.users.filter (u) => u isnt @model.state.activePlayer
+
+  getHero: (heroId) ->
+    for _, p of @players
+      hero = p.getHero()
+      if hero._id is heroId
+        return hero
+    return null
+
+  getCard: (cardId) ->
+    for _, p of @players
+      card = p.getCard(cardId)
+      if card?
+        return card
+    return null
 
   getFieldCards: ->
     fieldCards = []
