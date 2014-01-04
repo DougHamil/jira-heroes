@@ -4,18 +4,21 @@ CardCache = require './cardcache'
 HeroCache = require './herocache'
 
 # Transform a card model into a card instance
-newCardInstance = (cardId, cb) ->
-  CardCache.get cardId, (err, card) ->
-    if err?
-      cb err
-    else
-      out =
-        position: 'deck'
-        class:cardId
-        health:card.health
-        damage:card.damage
-        status: []
-      cb null, out
+newCardInstance = (userId) ->
+  (cardId, cb) ->
+    CardCache.get cardId, (err, card) ->
+      if err?
+        cb err
+      else
+        out =
+          userId: userId
+          position: 'deck'
+          class:cardId
+          health:card.health
+          maxHealth:card.health
+          damage:card.damage
+          status: []
+        cb null, out
 
 # Transform a hero model into a hero instance
 newHeroInstance = (hero, cb) ->
@@ -35,7 +38,7 @@ newPlayerInstance = (userId, deck, cb) ->
     if err?
       cb err
     else
-      async.map deck.cards, newCardInstance, (err, cards) ->
+      async.map deck.cards, newCardInstance(userId), (err, cards) ->
         if err?
           cb err
         else
@@ -50,7 +53,9 @@ newPlayerInstance = (userId, deck, cb) ->
 # Represents a single card instance in a battle (health, damage, active effects)
 _cardSchema = new mongoose.Schema
   class: String
+  userId: String
   health: Number
+  maxHealth: Number
   damage: Number
   status: [String]
   effects: [String]

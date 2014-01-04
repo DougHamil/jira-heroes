@@ -1,6 +1,7 @@
 should = require 'should'
 util = require '../util'
 GameTestHarness = require './harness'
+GameFlowTest = require './flow'
 io = util.io
 
 describe 'GameServer', ->
@@ -68,7 +69,6 @@ describe 'GameServer', ->
       should.exist(err)
       done()
 
-  drawnCards = {}
   it 'should emit phase event when all players are ready', (done) ->
     harness.expectActive 'your-turn', (data) ->
       data = data[harness.activeUser]
@@ -96,42 +96,12 @@ describe 'GameServer', ->
     socket.emit 'join', battleId, (err) ->
       should.not.exist(err)
       socket.emit 'ready', (err) ->
-        console.log 'hereo'
         should.not.exist(err)
-
-  activeSocket = null
-  it 'should emit the first player\'s turn when all players are ready', (done) ->
-    should.exist(activeUser)
-    activeSocket = sockets[activeUser]
-    should.exist(activeSocket)
-    done()
 
   it 'should draw the first player\'s cards', (done) ->
-    card = drawnCards[activeUser]
-    should.exist(card)
-    card.should.have.length(4)
+    cards = harness.drawnCards[harness.activeUser]
+    should.exist(cards)
+    cards.should.have.length(4)
     done()
+    GameFlowTest.run harness
 
-  it 'should allow the first player to play a card', (done) ->
-    activeSocket = sockets[activeUser]
-    activeSocket.emit 'test', 'energy', 1000, ->
-      activeSocket.emit 'play-card', drawnCards[activeUser][0]._id, (err, card)->
-        should.not.exist(err)
-        should.exist(card)
-        done()
-
-  getInactiveSocket = ->
-    (socket for user, socket of sockets when user isnt activeUser)[0]
-
-  it 'should not allow the inactive player to end the turn', (done) ->
-    inactiveSocket = getInactiveSocket()
-    inactiveSocket.emit 'end-turn', (err) ->
-      should.exist(err)
-      done()
-
-  it 'should allow the active player to end the turn', (done) ->
-    activeSocket = sockets[activeUser]
-    activeSocket.emit 'end-turn', (err) ->
-      should.not.exist(err)
-      done()
-      FlowTest.run sockets, activeUser

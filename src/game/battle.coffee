@@ -90,7 +90,7 @@ class Battle
 
   nextTurn: (firstTurn)->
     # Pick the next player and set to active
-    if firstTurn? and not firstTurn
+    if not firstTurn? or not firstTurn
       @assignNextActivePlayer()
     # Update the cards on the field
     fieldCards = @getFieldCards()
@@ -98,7 +98,7 @@ class Battle
     @emitActive 'your-turn', fieldCards
     @emitAllButActive 'opponent-turn', @model.state.activePlayer, fieldCards
     # Draw card
-    if firstTurn? and not firstTurn
+    if not firstTurn? or not firstTurn
       @drawCards(@model.state.activePlayer, CARDS_DRAWN_PER_TURN)
 
   assignNextActivePlayer: ->
@@ -126,6 +126,14 @@ class Battle
 
   getNonActivePlayers: ->
     return @model.users.filter (u) => u isnt @model.state.activePlayer
+
+  getPlayer: (playerId) ->
+    return @players[playerId]
+
+  getOtherPlayers: (playerId) ->
+    if typeof playerId isnt 'string'
+      playerId = playerId._id
+    return (p for id, p of @players when id isnt playerId)
 
   getHero: (heroId) ->
     for _, p of @players

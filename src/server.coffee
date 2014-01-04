@@ -1,6 +1,9 @@
 express        = require 'express'
 path = require 'path'
 login = require '../lib/middleware/login'
+require 'colors'
+console.flag = ->
+  console.log "<<<<<<<<<<<<<< FLAG >>>>>>>>>>>>>>>".yellow
 
 module.exports = (config) ->
   # Init web server

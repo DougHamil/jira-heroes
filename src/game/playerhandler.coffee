@@ -31,7 +31,7 @@ class PlayerHandler extends EventEmitter
               targetCard = @battle.getCard(target.card)
               # Can only target cards on the field
               if targetCard? and targetCard.position is 'field'
-                [err, action] = CardHandler.useCardOnCard @, card, targetCard
+                [err, action] = CardHandler.useCardOnCard @battle, @, card, targetCard
                 cb err, action
                 if not err?
                   @emit 'use-card-on-card', card, targetCard, action
@@ -55,6 +55,7 @@ class PlayerHandler extends EventEmitter
           cb Errors.INVALID_CARD
       else
         cb Errors.INVALID_ACTION
+
   onEndTurn: ->
     (cb) =>
       if @model.state.phase == 'game' and @isActive()
@@ -64,23 +65,19 @@ class PlayerHandler extends EventEmitter
         cb Errors.INVALID_ACTION
 
   onPlayCard: ->
-    (cardId, cb) =>
+    (cardId, target, cb) =>
       card = @getCard(cardId)
       if @model.state.phase == 'game' and card? and @isActive() and card.position is 'hand'
         CardCache.get card.class, (err, cardClass) =>
           if err?
             cb err
           else
-            # Make sure there is enough energy to play this card
-            if @player.energy >= cardClass.energy
-              @player.energy -= cardClass.energy
-              card.position = 'field'
-              # Let the card handler update the card's status
-              CardHandler.playCard card, cardClass
-              @emit 'play-card', card
-              cb null, card
+            [err, actions] = CardHandler.playCard @battle, @, card, cardClass, target
+            if err?
+              cb err
             else
-              cb Errors.NOT_ENOUGH_ENERGY
+              @emit 'play-card', card, actions
+              cb null, card, actions
       else
         cb Errors.INVALID_ACTION
 
@@ -126,6 +123,9 @@ class PlayerHandler extends EventEmitter
 
   getDeckCards: ->
     return @player.deck.cards.filter (c) -> c.position is 'deck'
+
+  getTauntCardsOnField: ->
+    return @getFieldCards().filter (c) -> 'taunt' in c.status
 
   getCard: (cardId) ->
     card = @player.deck.cards.filter (c) ->

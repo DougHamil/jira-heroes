@@ -22,6 +22,9 @@ errors =
   HERO_ALREADY_ON_CAMPAIGN: 'The hero is already on a campaign'
   HERO_ALREADY_JOINED: 'The user has already joined a campaign'
   INVALID_MOVE: 'Hero cannot move there'
+  CARD_SLEEPING: 'Card is sleeping, cannot be used until next turn'
+  MUST_ATTACK_TAUNT: 'Must attack a taunt card'
+  CARD_CANNOT_ATTACK: 'Card cannot attack'
 
 errorObjs = {}
 for id, message of errors

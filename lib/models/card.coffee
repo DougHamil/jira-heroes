@@ -3,6 +3,10 @@ async = require 'async'
 fs = require 'fs'
 path = require 'path'
 
+_abilitySchema = new mongoose.Schema
+  type:String
+  data: mongoose.Schema.Types.Mixed
+
 _schema = new mongoose.Schema
   name:{type:String}
   cost: {type:Number}
@@ -11,6 +15,7 @@ _schema = new mongoose.Schema
   health:{type:Number}
   damage:{type:Number}
   traits:[{type:String}]
+  abilities: [_abilitySchema]
   flags:[{type:String}]
   media:
     icon: {type:String}

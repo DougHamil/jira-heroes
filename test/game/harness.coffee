@@ -9,7 +9,7 @@ class GameTestHarness extends EventEmitter
     @drawnCards = {}
     for userId, socket of @sockets
       socket.on 'your-turn', @onYourTurn(userId)
-      socket.on 'draw-card', @onDrawCard(userId)
+      socket.on 'draw-cards', @onDrawCard(userId)
 
   _listen: (user, event, cb) ->
     callback = (data...) =>
@@ -18,8 +18,8 @@ class GameTestHarness extends EventEmitter
         if (user in expect.users and not expect.done[user]?) or (user is @activeUser and 'active' in expect.users) or (user isnt @activeUser and 'inactive' in expect.users)
           expect.done[user] = data
           expect.doneCount++
-          if expect.doneCount is expect.users.length
-            console.log "[EVENT - #{event}] (#{user}): #{JSON.stringify(expect.done)}"
+          if (expect.doneCount is expect.users.length) or ('inactive' in expect.users and expect.doneCount is @users.length - 1)
+            #console.log "[EVENT - #{event}] (#{user}): #{JSON.stringify(expect.done)}"
             delete @expects[event]
             cb callback
             expect.callback expect.done
@@ -81,6 +81,9 @@ class GameTestHarness extends EventEmitter
   getInactiveUsers: ->
     return @users.filter (u) => u isnt @activeUser
 
+  getActiveUser: ->
+    return @activeUser
+
   getRandomUser: ->
     return @users[Math.floor(@users.length * Math.random())]
 
@@ -90,14 +93,34 @@ class GameTestHarness extends EventEmitter
   getSocketForUser: (userId) ->
     return @sockets[userId]
 
+  getActiveSocket: ->
+    return @getSocketForUser(@getActiveUser())
+
   onYourTurn: (userId) ->
     =>
       @activeUser = userId
+
+  updateCards: (cards) ->
+    for card in cards
+      for user in @users
+        @updateCard user, card
+
+  updateCard: (userId, card) ->
+    if card?
+      cards = @drawnCards[userId].filter (c) -> c._id isnt card._id
+      cards.push card
+      @drawnCards[userId] = cards
+
+  getDrawnCards: (userId) ->
+    return @drawnCards[userId]
 
   onDrawCard: (userId) ->
     (cards) =>
       if not @drawnCards[userId]
         @drawnCards[userId] = []
       @drawnCards[userId] = @drawnCards[userId].concat cards
+
+  getFieldCards: (userId) ->
+    return @drawnCards[userId].filter (c) -> c.position is 'field'
 
 module.exports = GameTestHarness
