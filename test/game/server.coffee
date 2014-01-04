@@ -77,14 +77,17 @@ describe 'GameServer', ->
           checkins++
           if checkins  == 2
             done()
-        turn = (userId) ->
+        drawCards = (userId) ->
           (card) ->
             drawnCards[userId] = card
         for _, socket of sockets
           socket.on 'phase', onPhase
-          socket.on 'opponent-turn', (active) ->
+          socket.on 'opponent-turn', (active, fieldCards) ->
             activeUser = active
-          socket.on 'your-turn', turn(_)
+            should.exist(fieldCards)
+          socket.on 'your-turn', (fieldCards) ->
+            should.exist(fieldCards)
+          socket.on 'draw-cards', drawCards(_)
         socketA.emit 'ready', (err) ->
           should.not.exist(err)
 
@@ -95,16 +98,31 @@ describe 'GameServer', ->
     should.exist(activeSocket)
     done()
 
-  it 'should draw the first player\'s card', (done) ->
+  it 'should draw the first player\'s cards', (done) ->
     card = drawnCards[activeUser]
     should.exist(card)
+    card.should.have.length(4)
     done()
 
   it 'should allow the first player to play a card', (done) ->
     activeSocket = sockets[activeUser]
     activeSocket.emit 'test', 'energy', 1000, ->
-      activeSocket.emit 'play-card', drawnCards[activeUser][0]._id, (err)->
+      activeSocket.emit 'play-card', drawnCards[activeUser][0]._id, (err, card)->
         should.not.exist(err)
+        should.exist(card)
         done()
 
+  getInactiveSocket = ->
+    (socket for user, socket of sockets when user isnt activeUser)[0]
 
+  it 'should not allow the inactive player to end the turn', (done) ->
+    inactiveSocket = getInactiveSocket()
+    inactiveSocket.emit 'end-turn', (err) ->
+      should.exist(err)
+      done()
+
+  it 'should allow the active player to end the turn', (done) ->
+    activeSocket = sockets[activeUser]
+    activeSocket.emit 'end-turn', (err) ->
+      should.not.exist(err)
+      done()

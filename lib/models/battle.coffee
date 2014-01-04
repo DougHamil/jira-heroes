@@ -14,7 +14,7 @@ newCardInstance = (cardId, cb) ->
         class:cardId
         health:card.health
         damage:card.damage
-        status: null
+        status: []
       cb null, out
 
 # Transform a hero model into a hero instance
@@ -52,7 +52,7 @@ _cardSchema = new mongoose.Schema
   class: String
   health: Number
   damage: Number
-  status: String
+  status: [String]
   effects: [String]
   position: String
 

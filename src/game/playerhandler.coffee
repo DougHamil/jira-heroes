@@ -1,5 +1,6 @@
 {EventEmitter} = require 'events'
 CardCache = require '../../lib/models/cardcache'
+CardHandler = require './cardhandler'
 Errors = require './errors'
 
 ###
@@ -14,7 +15,16 @@ class PlayerHandler extends EventEmitter
   connect: (@socket) ->
       @socket.on 'ready', @onReady()
       @socket.on 'play-card', @onPlayCard()
+      @socket.on 'end-turn', @onEndTurn()
       @socket.on 'test', @onTest()
+
+  onEndTurn: ->
+    (cb) =>
+      if @model.state.phase == 'game' and @isActive()
+        @emit 'end-turn'
+        cb null
+      else
+        cb Errors.INVALID_ACTION
 
   onPlayCard: ->
     (cardId, cb) =>
@@ -28,6 +38,8 @@ class PlayerHandler extends EventEmitter
             if @player.energy >= cardClass.energy
               @player.energy -= cardClass.energy
               card.position = 'field'
+              # Let the card handler update the card's status
+              CardHandler.playCard card, cardClass
               @emit 'play-card', card
               cb null, card
             else

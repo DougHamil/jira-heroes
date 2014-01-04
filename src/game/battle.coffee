@@ -1,7 +1,9 @@
 Errors = require './errors'
 CardCache = require '../../lib/models/cardcache'
 PlayerHandler = require './playerhandler'
+CardHandler = require './cardhandler'
 
+CARDS_DRAWN_PER_TURN = 1 # Number of cards to draw each turn
 INITIAL_CARD_COUNT = 3 # Second turn player gets 3 cards to start
 
 class Battle
@@ -20,6 +22,7 @@ class Battle
   registerPlayer: (userId, handler) ->
     handler.on 'ready', @onReady(userId)
     handler.on 'play-card', @onPlayCard(userId)
+    handler.on 'end-turn', @onEndTurn(userId)
 
   ###
   # EVENTS
@@ -38,7 +41,11 @@ class Battle
   # Called when the player has played a card
   onPlayCard: (userId) ->
     (card) =>
-      @emitAllButActive 'card-played', userId, card
+      @emitAllButActive 'opponent-play-card', userId, card
+
+  # Called when the player has completed his turn
+  onEndTurn: (userId) ->
+    () =>
       @nextTurn()
 
   emitActive: (action, data...) ->
@@ -63,17 +70,24 @@ class Battle
     oldPhase = @model.state.phase
     @model.state.phase = 'game'
     @emitAll 'phase', oldPhase, @model.state.phase
-    @nextTurn()
-
-  nextTurn: ->
-    # Pick the next player and set to active
     @assignNextActivePlayer()
-    drawnCard = @drawCard(@model.state.activePlayer)
-    @emitActive 'your-turn', drawnCard
-    @emitAllButActive 'opponent-turn', @model.state.activePlayer
-    # Tell opponent that the player drew a card
-    if drawnCard?
-      @emitAllButActive 'opponent-draw-card'
+    @drawCards(@model.state.activePlayer, INITIAL_CARD_COUNT)
+    for p in @getNonActivePlayers()
+      @drawCards(p, INITIAL_CARD_COUNT - 1)
+    @nextTurn(true)
+
+  nextTurn: (firstTurn)->
+    # Pick the next player and set to active
+    if firstTurn? and not firstTurn
+      @assignNextActivePlayer()
+    # Update the cards on the field
+    fieldCards = @getFieldCards()
+    CardHandler.updateFieldCardsOnTurn fieldCards
+    @emitActive 'your-turn', fieldCards
+    @emitAllButActive 'opponent-turn', @model.state.activePlayer, fieldCards
+    # Draw card
+    if firstTurn? and not firstTurn
+      @drawCards(@model.state.activePlayer, CARDS_DRAWN_PER_TURN)
 
   assignNextActivePlayer: ->
     if @model.state.activePlayer?
@@ -81,8 +95,11 @@ class Battle
     else
       @model.state.activePlayer = @getRandomPlayer().userId
 
-  drawCard: (userId) ->
-    @players[userId].drawCards(1)
+  drawCards: (userId, count) ->
+    cards = @players[userId].drawCards(count)
+    @emitAllBut userId, 'opponent-draw-cards', userId, cards.map (c) -> c._id
+    @emit userId, 'draw-cards', cards
+    return cards
 
   getNextPlayer: (userId)->
     idx = @model.users.indexOf(userId)
@@ -94,6 +111,15 @@ class Battle
 
   getRandomPlayer: ->
     return @model.players[Math.floor(Math.random() * @model.players.length)]
+
+  getNonActivePlayers: ->
+    return @model.users.filter (u) => u isnt @model.state.activePlayer
+
+  getFieldCards: ->
+    fieldCards = []
+    for _, p of @players
+      fieldCards = fieldCards.concat p.getFieldCards()
+    return fieldCards
 
   sanitizeOpponentData: (player) ->
     out =
@@ -109,6 +135,9 @@ class Battle
   getData: (user) ->
     player = @players[user._id]
     out =
+      battle:
+        state:
+          phase:@model.state.phase
       you:
         hero: player.getHero()
         field: player.getFieldCards()
