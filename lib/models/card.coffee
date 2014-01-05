@@ -2,6 +2,7 @@ mongoose = require 'mongoose'
 async = require 'async'
 fs = require 'fs'
 path = require 'path'
+readdirp = require 'readdirp'
 
 _abilitySchema = new mongoose.Schema
   type:String
@@ -30,17 +31,23 @@ _model = mongoose.model 'Card', _schema
 _load = (cb) ->
   process.stdout.write 'Loading cards...'
   dir = path.join process.cwd(), 'data/cards'
-  files = fs.readdirSync dir
+
   loadFile = (file, cb) ->
     if file.indexOf('.swp') != -1
       cb null
     else
-      data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'))
+      data = JSON.parse(fs.readFileSync(file, 'utf8'))
       _model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->
         cb err
-  async.each files, loadFile, (err) ->
-    console.log 'Done!'
-    cb err
+
+  files = []
+  filestream = readdirp {root: dir, fileFilter: '*.json'}
+  filestream.on 'data', (entry) ->
+    files.push entry.fullPath
+  filestream.on 'end', ->
+    async.each files, loadFile, (err) ->
+      console.log 'Done!'
+      cb err
 
 _get = (id, cb) ->
   if typeof id is 'string'

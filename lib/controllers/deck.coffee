@@ -11,17 +11,26 @@ module.exports = (app, Users) ->
     else if not cards?
       res.send 400, "Expected 'cards'"
     else
-      # TODO: Validate cards (number of cards, availability to player)
-      Decks.get id, (err, deck) ->
+      Users.fromSession req.session.user, (err, user) ->
         if err?
           res.send 500, err
         else
-          deck.cards = cards
-          deck.save (err) ->
-            if err?
-              res.send 500, err
-            else
-              res.send 200, id
+          if not user.ownsCards(cards)
+            res.send 400, "User does not own the cards"
+          else if cards.length > Decks.MAX_DECK_SIZE
+            res.send 400, "Too many cards, maximum number of cards is #{Decks.MAX_DECK_SIZE}"
+          else
+            # TODO: Validate cards (number of cards, availability to player)
+            Decks.get id, (err, deck) ->
+              if err?
+                res.send 500, err
+              else
+                deck.cards = cards
+                deck.save (err) ->
+                  if err?
+                    res.send 500, err
+                  else
+                    res.send 200, id
 
   # Create a new deck
   app.post '/secure/deck', (req, res) ->

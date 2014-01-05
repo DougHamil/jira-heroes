@@ -15,6 +15,12 @@ _schema = new Schema
 _schema.methods.hasDeck = (deckId) ->
   return deckId in @decks
 
+_schema.methods.ownsCards = (cardIds) ->
+  for cardId in cardIds
+    if cardId not in @library
+      return false
+  return true
+
 User = (jira)->
   _model = mongoose.model('User', _schema)
 

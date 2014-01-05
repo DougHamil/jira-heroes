@@ -3,13 +3,15 @@ define ['./gfx/herobutton',
         './gfx/campaignbutton',
         './gfx/textfield',
         './gfx/glyphtext',
+        './gfx/card',
         'engine',
-        './gfx/styles'], (HeroButton, TextButton, CampaignButton, TextField, GlyphText, engine, styles) ->
+        './gfx/styles'], (HeroButton, TextButton, CampaignButton, TextField, GlyphText, Card, engine, styles) ->
   GUI =
     HeroButton: HeroButton
     TextButton: TextButton
     CampaignButton: CampaignButton
     GlyphText:GlyphText
+    Card:Card
     TextField: TextField
     STYLES: styles
 

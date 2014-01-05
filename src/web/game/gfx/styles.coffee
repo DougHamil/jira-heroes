@@ -21,10 +21,10 @@ define [], ->
       stroke: '#000000'
       fill:'#FFFFFF'
       strokeThickness:2
-      font:'24 silly'
+      font:'24px silly'
     CARD_DESCRIPTION:
       stroke: '#000000'
       fill:'#FFFFFF'
       strokeThickness:2
-      font:'16 silly'
+      font:'16px silly'
   return styles

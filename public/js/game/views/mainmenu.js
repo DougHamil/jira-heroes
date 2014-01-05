@@ -14,7 +14,6 @@
         MainMenu.__super__.constructor.apply(this, arguments);
         this.myStage = stage;
         this.menuText = new PIXI.Text('JIRA Heroes', GUI.STYLES.HEADING);
-        this.pointsText = new GUI.GlyphText('0 <coin>');
         this.hostBtn = new GUI.TextButton('Host Battle');
         this.joinBtn = new GUI.TextButton('Join Battle');
         this.decksBtn = new GUI.TextButton('Decks');
@@ -35,11 +34,6 @@
           x: (engine.WIDTH / 2) - this.libraryBtn.width / 2,
           y: this.decksBtn.position.y + 2 * this.libraryBtn.height
         };
-        console.log(this.pointsText.width);
-        this.pointsText.position = {
-          x: engine.WIDTH - this.pointsText.width - 20,
-          y: engine.HEIGHT - this.pointsText.height - 20
-        };
         this.libraryBtn.onClick(function() {
           return _this.manager.activateView('Library');
         });
@@ -48,15 +42,42 @@
         this.addChild(this.joinBtn);
         this.addChild(this.decksBtn);
         this.addChild(this.libraryBtn);
-        this.addChild(this.pointsText);
       }
 
       MainMenu.prototype.deactivate = function() {
-        return this.myStage.removeChild(this);
+        this.myStage.removeChild(this);
+        if (JH.pointsText != null) {
+          this.removeChild(JH.pointsText);
+        }
+        if (JH.nameText != null) {
+          return this.removeChild(JH.nameText);
+        }
       };
 
       MainMenu.prototype.activate = function() {
-        return this.myStage.addChild(this);
+        var activate,
+          _this = this;
+        activate = function(user) {
+          JH.user = user;
+          _this.myStage.addChild(_this);
+          JH.nameText = new PIXI.Text("" + user.name, GUI.STYLES.TEXT);
+          JH.nameText.position = {
+            x: engine.WIDTH - JH.nameText.width,
+            y: 0
+          };
+          JH.pointsText = new GUI.GlyphText("" + user.points + " <coin>");
+          JH.pointsText.position = {
+            x: engine.WIDTH - JH.pointsText.width - 20,
+            y: engine.HEIGHT - JH.pointsText.height - 20
+          };
+          _this.addChild(JH.pointsText);
+          return _this.addChild(JH.nameText);
+        };
+        if (JH.user == null) {
+          return JH.GetUser(activate);
+        } else {
+          return activate(JH.user);
+        }
       };
 
       return MainMenu;

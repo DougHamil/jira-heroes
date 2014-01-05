@@ -1,0 +1,11 @@
+{
+	"name":"testcard7",
+	"displayName":"Test Card 7",
+	"cost":10,
+	"energy":2,
+	"health":2,
+	"damage":1,
+	"media": {
+		"image": "test/test2.png"
+	}
+}

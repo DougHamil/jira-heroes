@@ -1,15 +1,13 @@
 define ['./views/mainmenu',
-        './views/createhero',
         './views/campaign',
         './views/campaignmenu',
         './views/library',
-        'engine'], (MainMenu, CreateHeroMenu, Campaign, CampaignMenu, Library) ->
+        'engine'], (MainMenu, Campaign, CampaignMenu, Library) ->
   class MenuManager
     constructor: (@stage) ->
       @views =
         'MainMenu': new MainMenu @, @stage
         'Library': new Library @, @stage
-        'CreateHeroMenu': new CreateHeroMenu @, @stage
         'Campaign': new Campaign @, @stage
         'CampaignMenu': new CampaignMenu @, @stage
 

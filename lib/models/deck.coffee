@@ -20,6 +20,7 @@ _create = (cb) ->
     cb err, deck
 
 module.exports =
+  MAX_DECK_SIZE: 30
   schema:_schema
   model:_model
   get:_get

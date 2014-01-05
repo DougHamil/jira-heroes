@@ -4,7 +4,14 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], function($, JH, GUI, engine) {
-    var Library;
+    var CARDS_PER_ROW, CARD_PADDING, Library, PAGE_POS, ROWS_PER_PAGE;
+    PAGE_POS = {
+      x: 50,
+      y: 100
+    };
+    CARD_PADDING = 50;
+    CARDS_PER_ROW = 4;
+    ROWS_PER_PAGE = 2;
     return Library = (function(_super) {
       __extends(Library, _super);
 
@@ -14,7 +21,23 @@
         this.myStage = myStage;
         Library.__super__.constructor.apply(this, arguments);
         this.heading = new PIXI.Text('Library', GUI.STYLES.HEADING);
+        this.nextBtn = new GUI.TextButton('Next Page');
+        this.prevBtn = new GUI.TextButton('Last Page');
         this.backBtn = new GUI.TextButton('Back');
+        this.nextBtn.position = {
+          x: engine.WIDTH - this.nextBtn.width - 20,
+          y: engine.HEIGHT - 200
+        };
+        this.nextBtn.onClick(function() {
+          return _this.nextPage();
+        });
+        this.prevBtn.onClick(function() {
+          return _this.prevPage();
+        });
+        this.prevBtn.position = {
+          x: 20,
+          y: engine.HEIGHT - 200
+        };
         this.backBtn.position = {
           x: 20,
           y: engine.HEIGHT - this.backBtn.height - 20
@@ -24,15 +47,100 @@
         });
         this.addChild(this.heading);
         this.addChild(this.backBtn);
+        this.addChild(this.nextBtn);
+        this.addChild(this.prevBtn);
       }
 
       Library.prototype.deactivate = function() {
-        return this.myStage.removeChild(this);
+        this.myStage.removeChild(this);
+        if (JH.pointsText != null) {
+          this.removeChild(JH.pointsText);
+        }
+        if (JH.nameText != null) {
+          this.removeChild(JH.nameText);
+        }
+        return this.removeChild(this.pages[this.pageIndex]);
+      };
+
+      Library.prototype.nextPage = function() {
+        return this.setPageIndex(this.pageIndex + 1);
+      };
+
+      Library.prototype.prevPage = function() {
+        return this.setPageIndex(this.pageIndex - 1);
+      };
+
+      Library.prototype.setPageIndex = function(index) {
+        if (index >= this.pages.length || index < 0 || index === this.pageIndex) {
+
+        } else {
+          if (this.pageIndex === 0) {
+            this.addChild(this.prevBtn);
+          }
+          if (this.pageIndex === (this.pages.length - 1)) {
+            this.addChild(this.nextBtn);
+          }
+          if (index === (this.pages.length - 1)) {
+            this.removeChild(this.nextBtn);
+          } else if (index === 0) {
+            this.removeChild(this.prevBtn);
+          }
+          if (this.pageIndex != null) {
+            this.removeChild(this.pages[this.pageIndex]);
+          }
+          this.pageIndex = index;
+          return this.addChild(this.pages[this.pageIndex]);
+        }
       };
 
       Library.prototype.activate = function(hero) {
+        var activate,
+          _this = this;
         this.hero = hero;
-        return this.myStage.addChild(this);
+        activate = function(cards) {
+          var card, cardIndex, cardSprite, pageContainer, xpos, ypos, _i, _len;
+          JH.cards = cards;
+          _this.pages = [];
+          pageContainer = new PIXI.DisplayObjectContainer;
+          cardIndex = 0;
+          for (_i = 0, _len = cards.length; _i < _len; _i++) {
+            card = cards[_i];
+            cardSprite = GUI.Card.FromClass(card);
+            pageContainer.addChild(cardSprite);
+            cardSprite.onHoverStart(function(card) {
+              card.scale.x += 0.1;
+              return card.scale.y += 0.1;
+            });
+            cardSprite.onHoverEnd(function(card) {
+              card.scale.x -= 0.1;
+              return card.scale.y -= 0.1;
+            });
+            xpos = CARD_PADDING + ((cardIndex % CARDS_PER_ROW) * (CARD_PADDING + cardSprite.width));
+            ypos = Math.floor(cardIndex / CARDS_PER_ROW) * (CARD_PADDING + cardSprite.height);
+            cardSprite.position.x = xpos;
+            cardSprite.position.y = ypos;
+            cardIndex++;
+            if (cardIndex === (CARDS_PER_ROW * ROWS_PER_PAGE)) {
+              pageContainer.position = PAGE_POS;
+              cardIndex = 0;
+              _this.pages.push(pageContainer);
+              pageContainer = new PIXI.DisplayObjectContainer;
+              pageContainer.position = PAGE_POS;
+            }
+          }
+          if (cardIndex !== 0) {
+            _this.pages.push(pageContainer);
+          }
+          _this.setPageIndex(0);
+          _this.addChild(JH.pointsText);
+          _this.addChild(JH.nameText);
+          return _this.myStage.addChild(_this);
+        };
+        if (JH.cards == null) {
+          return JH.GetAllCards(activate);
+        } else {
+          return activate(JH.cards);
+        }
       };
 
       return Library;

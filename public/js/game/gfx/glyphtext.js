@@ -25,15 +25,22 @@
             glyph = chunk.replace(/[<>]/g, '');
             texture = PIXI.Texture.fromImage(GLYPHS[glyph]);
             sprite = new PIXI.Sprite(texture);
+            sprite.isGlyph = true;
           } else {
             chunk += ' ';
+            if (sprites.length > 0 && sprites[sprites.length - 1].isGlyph) {
+              chunk = ' ' + chunk;
+            }
             sprite = new PIXI.Text(chunk, STYLE);
+            sprite.isGlyph = false;
           }
           if (sprites.length > 0) {
             lastSprite = sprites[sprites.length - 1];
             sprite.height = lastSprite.height;
             this.height = sprite.height;
-            sprite.width = sprite.height;
+            if (sprite.isGlyph) {
+              sprite.width = sprite.height;
+            }
             sprite.position = {
               x: lastSprite.position.x + lastSprite.width,
               y: 0

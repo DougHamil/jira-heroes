@@ -2,7 +2,7 @@
 (function() {
   var __slice = [].slice;
 
-  define(['./views/mainmenu', './views/createhero', './views/campaign', './views/campaignmenu', './views/library', 'engine'], function(MainMenu, CreateHeroMenu, Campaign, CampaignMenu, Library) {
+  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library) {
     var MenuManager;
     return MenuManager = (function() {
       function MenuManager(stage) {
@@ -10,7 +10,6 @@
         this.views = {
           'MainMenu': new MainMenu(this, this.stage),
           'Library': new Library(this, this.stage),
-          'CreateHeroMenu': new CreateHeroMenu(this, this.stage),
           'Campaign': new Campaign(this, this.stage),
           'CampaignMenu': new CampaignMenu(this, this.stage)
         };

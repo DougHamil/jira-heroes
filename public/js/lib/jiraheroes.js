@@ -5,65 +5,85 @@
     return JiraHeroesApi = (function() {
       function JiraHeroesApi() {}
 
-      JiraHeroesApi.CreateHero = function(name, clazz, cb) {
-        return $.post('/secure/hero/create', {
+      JiraHeroesApi.GetAllCards = function(cb) {
+        return $.get('/card', cb);
+      };
+
+      JiraHeroesApi.GetCard = function(cardId, cb) {
+        return $.get("/card/" + cardId, cb);
+      };
+
+      JiraHeroesApi.GetAllDecks = function(cb) {
+        return $.get('/secure/deck', cb);
+      };
+
+      JiraHeroesApi.GetDeck = function(deckId, cb) {
+        return $.get("/secure/deck/" + deckId, cb);
+      };
+
+      JiraHeroesApi.CreateNewDeck = function(name, heroId, cb) {
+        return $.post("/secure/deck", {
           name: name,
-          "class": clazz
+          hero: heroId
         }, cb);
       };
 
-      JiraHeroesApi.CreateCampaign = function(name, clazz, cb) {
-        return $.post('/secure/campaign/create', {
-          name: name,
-          "class": clazz
+      JiraHeroesApi.SetDeckCards = function(deckId, cardIds, cb) {
+        return $.post("/secure/deck/" + deckId + "/cards", {
+          cards: cardIds
         }, cb);
       };
 
-      JiraHeroesApi.JoinCampaign = function(heroId, campaignId, cb) {
-        return $.post('/secure/campaign/join', {
-          hero: heroId,
-          campaign: campaignId
+      JiraHeroesApi.GetAllBattles = function(cb) {
+        return $.get('/battle', cb);
+      };
+
+      JiraHeroesApi.GetBattle = function(battleId, cb) {
+        return $.get("/battle/" + battleId, cb);
+      };
+
+      JiraHeroesApi.GetActiveBattle = function(cb) {
+        return $.get('/secure/battle/active', cb);
+      };
+
+      JiraHeroesApi.QueryBattles = function(query, cb) {
+        return $.post('/battle/query', {
+          query: query
         }, cb);
       };
 
-      JiraHeroesApi.GetOpenCampaigns = function(cb) {
-        return $.ajax({
-          url: '/secure/campaign'
-        }).done(function(data) {
-          return cb(data);
-        });
+      JiraHeroesApi.HostBattle = function(deckId, cb) {
+        return $.post('/secure/battle/host', {
+          deck: deckId
+        }, cb);
       };
 
-      JiraHeroesApi.GetCampaignMetaData = function(cb) {
-        return $.ajax({
-          url: '/secure/metadata/campaign'
-        }).done(function(data) {
-          return cb(data);
-        });
+      JiraHeroesApi.JoinBattle = function(battleId, deckId, cb) {
+        return $.post("/secure/battle/" + battleId + "/join", {
+          deck: deckId
+        }, cb);
       };
 
-      JiraHeroesApi.GetCampaign = function(id, cb) {
-        return $.ajax({
-          url: '/secure/campaign/' + id
-        }).done(function(data) {
-          return cb(data);
-        });
+      JiraHeroesApi.GetUser = function(cb) {
+        return $.get('/secure/user', cb);
+      };
+
+      JiraHeroesApi.GetUserLibrary = function(cb) {
+        return $.get('/secure/user/library', cb);
+      };
+
+      JiraHeroesApi.AddCardToUserLibrary = function(cardId, cb) {
+        return $.post('/secure/user/library', {
+          card: cardId
+        }, cb);
       };
 
       JiraHeroesApi.GetHeroes = function(cb) {
-        return $.ajax({
-          url: '/secure/hero'
-        }).done(function(data) {
-          return cb(data);
-        });
+        return $.get('/hero', cb);
       };
 
-      JiraHeroesApi.GetHeroMetaData = function(cb) {
-        return $.ajax({
-          url: '/secure/metadata/hero'
-        }).done(function(data) {
-          return cb(data);
-        });
+      JiraHeroesApi.GetHero = function(heroId, cb) {
+        return $.get("/hero/" + heroId, cb);
       };
 
       return JiraHeroesApi;
