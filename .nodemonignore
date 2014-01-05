@@ -1,5 +1,6 @@
 /public/*
 /media/*
+/src/web/*
 /.git/*
 *.swp
 *~

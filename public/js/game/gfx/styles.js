@@ -16,6 +16,24 @@
         fill: '#FFFFFF',
         strokeThickness: 2,
         font: '20px silly'
+      },
+      CARD_TITLE: {
+        stroke: '#000000',
+        fill: '#FFFFFF',
+        strokeThickness: 2,
+        font: '20px silly'
+      },
+      CARD_STAT: {
+        stroke: '#000000',
+        fill: '#FFFFFF',
+        strokeThickness: 2,
+        font: '24 silly'
+      },
+      CARD_DESCRIPTION: {
+        stroke: '#000000',
+        fill: '#FFFFFF',
+        strokeThickness: 2,
+        font: '16 silly'
       }
     };
     return styles;

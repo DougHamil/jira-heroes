@@ -2,6 +2,11 @@
 (function() {
   require.config({
     baseUrl: 'js/game',
+    shim: {
+      tween: {
+        exports: 'TWEEN'
+      }
+    },
     paths: {
       jquery: '../lib/jquery',
       pixi: '../lib/pixi',
@@ -18,7 +23,7 @@
       var viewManager;
       engine.stage.setInteractive(true);
       viewManager = new ViewManager(engine.stage);
-      return viewManager.activateView('HeroMenu');
+      return viewManager.activateView('MainMenu');
     });
   });
 

@@ -1,5 +1,8 @@
 require.config
   baseUrl: 'js/game'
+  shim:
+    tween:
+      exports: 'TWEEN'
   paths:
     jquery: '../lib/jquery'
     pixi: '../lib/pixi'
@@ -13,4 +16,4 @@ define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engin
   $(document).ready ->
     engine.stage.setInteractive(true)
     viewManager = new ViewManager engine.stage
-    viewManager.activateView 'HeroMenu'
+    viewManager.activateView 'MainMenu'

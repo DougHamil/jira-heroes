@@ -5,6 +5,7 @@ path = require 'path'
 
 _abilitySchema = new mongoose.Schema
   type:String
+  text:String
   data: mongoose.Schema.Types.Mixed
 
 _schema = new mongoose.Schema
@@ -18,7 +19,7 @@ _schema = new mongoose.Schema
   abilities: [_abilitySchema]
   flags:[{type:String}]
   media:
-    icon: {type:String}
+    image: {type:String}
     audio:
       attack:{type:String}
       hurt:{type:String}
