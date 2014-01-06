@@ -27,6 +27,26 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @.addChild @nextBtn
       @.addChild @prevBtn
 
+
+    nextPage: -> @setPageIndex (@pageIndex + 1)
+    prevPage: -> @setPageIndex (@pageIndex - 1)
+    setPageIndex: (index) ->
+      if @pageIndex? and index >= @pages.length or index < 0 or index is @pageIndex
+        return
+      else
+        if @pageIndex is 0
+          @prevBtn.visible = true
+        if @pageIndex is (@pages.length - 1)
+          @nextBtn.visible = true
+        if index is (@pages.length - 1)
+          @nextBtn.visible = false
+        else if index is 0
+          @prevBtn.visible = false
+        if @pageIndex?
+          @.removeChild @pages[@pageIndex]
+        @pageIndex = index
+        @.addChild @pages[@pageIndex]
+
     deactivate: ->
       @myStage.removeChild @
       if JH.pointsText?
@@ -34,25 +54,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       if JH.nameText?
         @.removeChild JH.nameText
       @.removeChild @pages[@pageIndex]
-
-    nextPage: -> @setPageIndex (@pageIndex + 1)
-    prevPage: -> @setPageIndex (@pageIndex - 1)
-    setPageIndex: (index) ->
-      if index >= @pages.length or index < 0 or index is @pageIndex
-        return
-      else
-        if @pageIndex is 0
-          @.addChild @prevBtn
-        if @pageIndex is (@pages.length - 1)
-          @.addChild @nextBtn
-        if index is (@pages.length - 1)
-          @.removeChild @nextBtn
-        else if index is 0
-          @.removeChild @prevBtn
-        if @pageIndex?
-          @.removeChild @pages[@pageIndex]
-        @pageIndex = index
-        @.addChild @pages[@pageIndex]
+      @pageIndex = null
 
     activate: (@hero) ->
       activate = (cards) =>
@@ -98,7 +100,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @.addChild JH.pointsText
         @.addChild JH.nameText
         @myStage.addChild @
-      # TODO: Get first page of card data
+
       if not JH.cards?
         JH.GetAllCards activate
       else

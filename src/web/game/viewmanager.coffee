@@ -2,7 +2,8 @@ define ['./views/mainmenu',
         './views/campaign',
         './views/campaignmenu',
         './views/library',
-        'jiraheroes', 'engine'], (MainMenu, Campaign, CampaignMenu, Library, JH) ->
+        './views/decks',
+        'jiraheroes', 'engine'], (MainMenu, Campaign, CampaignMenu, Library, Decks, JH) ->
   class MenuManager
     constructor: (@stage) ->
       @views =
@@ -10,6 +11,7 @@ define ['./views/mainmenu',
         'Library': new Library @, @stage
         'Campaign': new Campaign @, @stage
         'CampaignMenu': new CampaignMenu @, @stage
+        'Decks': new Decks @, @stage
 
     activateView: (view, args...) ->
       if @activeView?

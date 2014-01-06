@@ -3,24 +3,22 @@ TODO
 
 Server-side
 -----------
-- Add enemy classes
 - Add battle logic
-- Add campaign logic
-	- Movement between nodes
-	- Entering battles
-	- Adding abilities
 
 Client-side
 -----------
-- Campaign view
-	- Connect to socket server
-	- Show map
-	- Allow moving on map
-- Hero ability view
-- Hero shop view
-- Battle view
-- Campaign failure summary view
-- Campaign success summary view
+- Decks view
+	- Deck editor
+
+Tools
+-----------
+- Card editor
+	- create new card
+	- edit existing card
+		- upload image
+		- suggest stat changes
+- Card voter
+	- Allow users to vote on card changes, auto merge changes after voting closes
 
 Media
 -----------
@@ -30,23 +28,14 @@ Media
 	- Frame
 	- Font
 - Create Hacker Class
-	- Draw sprite components
-	- Animate
+	- Image
 	- Audio
-	- Add skins
 - Create Engineer Class
-	- Draw sprite components
-	- Animate
+	- Image
 	- Audio
-	- Add skins
-- Create Tester Class
-	- Draw sprite components
-	- Animate
+- Create Analyst Class
 	- Audio
-	- Add skins
+	- Image
 - Create Abilities
 	- Art
 	- Audio
-	- Animations
-- Create items
-	- ?

@@ -37,6 +37,9 @@
         this.libraryBtn.onClick(function() {
           return _this.manager.activateView('Library');
         });
+        this.decksBtn.onClick(function() {
+          return _this.manager.activateView('Decks');
+        });
         this.addChild(this.menuText);
         this.addChild(this.hostBtn);
         this.addChild(this.joinBtn);

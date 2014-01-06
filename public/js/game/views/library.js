@@ -52,17 +52,6 @@
         this.addChild(this.prevBtn);
       }
 
-      Library.prototype.deactivate = function() {
-        this.myStage.removeChild(this);
-        if (JH.pointsText != null) {
-          this.removeChild(JH.pointsText);
-        }
-        if (JH.nameText != null) {
-          this.removeChild(JH.nameText);
-        }
-        return this.removeChild(this.pages[this.pageIndex]);
-      };
-
       Library.prototype.nextPage = function() {
         return this.setPageIndex(this.pageIndex + 1);
       };
@@ -72,19 +61,19 @@
       };
 
       Library.prototype.setPageIndex = function(index) {
-        if (index >= this.pages.length || index < 0 || index === this.pageIndex) {
+        if ((this.pageIndex != null) && index >= this.pages.length || index < 0 || index === this.pageIndex) {
 
         } else {
           if (this.pageIndex === 0) {
-            this.addChild(this.prevBtn);
+            this.prevBtn.visible = true;
           }
           if (this.pageIndex === (this.pages.length - 1)) {
-            this.addChild(this.nextBtn);
+            this.nextBtn.visible = true;
           }
           if (index === (this.pages.length - 1)) {
-            this.removeChild(this.nextBtn);
+            this.nextBtn.visible = false;
           } else if (index === 0) {
-            this.removeChild(this.prevBtn);
+            this.prevBtn.visible = false;
           }
           if (this.pageIndex != null) {
             this.removeChild(this.pages[this.pageIndex]);
@@ -92,6 +81,18 @@
           this.pageIndex = index;
           return this.addChild(this.pages[this.pageIndex]);
         }
+      };
+
+      Library.prototype.deactivate = function() {
+        this.myStage.removeChild(this);
+        if (JH.pointsText != null) {
+          this.removeChild(JH.pointsText);
+        }
+        if (JH.nameText != null) {
+          this.removeChild(JH.nameText);
+        }
+        this.removeChild(this.pages[this.pageIndex]);
+        return this.pageIndex = null;
       };
 
       Library.prototype.activate = function(hero) {
