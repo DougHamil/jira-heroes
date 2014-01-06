@@ -64,6 +64,9 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
     onHoverEnd: (cb) ->
       @.mouseout = =>
         cb @
+    onClick: (cb) ->
+      @.click = =>
+        cb @
 
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer

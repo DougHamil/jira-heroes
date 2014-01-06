@@ -2,7 +2,7 @@
 (function() {
   var __slice = [].slice;
 
-  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library) {
+  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', 'jiraheroes', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library, JH) {
     var MenuManager;
     return MenuManager = (function() {
       function MenuManager(stage) {

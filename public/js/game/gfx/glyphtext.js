@@ -13,13 +13,24 @@
       __extends(GlyphText, _super);
 
       function GlyphText(text) {
-        var chunk, glyph, lastSprite, sprite, sprites, textChunks, texture, _i, _j, _len, _len1;
         GlyphText.__super__.constructor.call(this);
+        this.setText(text);
+      }
+
+      GlyphText.prototype.setText = function(text) {
+        var chunk, glyph, lastSprite, sprite, textChunks, texture, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _results;
+        if (this.sprites != null) {
+          _ref = this.sprites;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            sprite = _ref[_i];
+            this.removeChild(sprite);
+          }
+        }
         textChunks = text.split(' ');
-        sprites = [];
+        this.sprites = [];
         this.width = 0;
-        for (_i = 0, _len = textChunks.length; _i < _len; _i++) {
-          chunk = textChunks[_i];
+        for (_j = 0, _len1 = textChunks.length; _j < _len1; _j++) {
+          chunk = textChunks[_j];
           sprite = null;
           if (/^<\w+>$/.test(chunk)) {
             glyph = chunk.replace(/[<>]/g, '');
@@ -28,14 +39,14 @@
             sprite.isGlyph = true;
           } else {
             chunk += ' ';
-            if (sprites.length > 0 && sprites[sprites.length - 1].isGlyph) {
+            if (this.sprites.length > 0 && this.sprites[this.sprites.length - 1].isGlyph) {
               chunk = ' ' + chunk;
             }
             sprite = new PIXI.Text(chunk, STYLE);
             sprite.isGlyph = false;
           }
-          if (sprites.length > 0) {
-            lastSprite = sprites[sprites.length - 1];
+          if (this.sprites.length > 0) {
+            lastSprite = this.sprites[this.sprites.length - 1];
             sprite.height = lastSprite.height;
             this.height = sprite.height;
             if (sprite.isGlyph) {
@@ -46,14 +57,17 @@
               y: 0
             };
           }
-          sprites.push(sprite);
+          this.sprites.push(sprite);
         }
-        for (_j = 0, _len1 = sprites.length; _j < _len1; _j++) {
-          sprite = sprites[_j];
+        _ref1 = this.sprites;
+        _results = [];
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          sprite = _ref1[_k];
           this.width += sprite.width;
-          this.addChild(sprite);
+          _results.push(this.addChild(sprite));
         }
-      }
+        return _results;
+      };
 
       return GlyphText;
 

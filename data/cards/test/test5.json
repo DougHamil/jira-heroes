@@ -1,7 +1,7 @@
 {
 	"name":"testcard5",
 	"displayName":"Test Card 5",
-	"cost":10,
+	"cost":0,
 	"energy":2,
 	"health":2,
 	"damage":1,

@@ -115,6 +115,13 @@
         };
       };
 
+      Card.prototype.onClick = function(cb) {
+        var _this = this;
+        return this.click = function() {
+          return cb(_this);
+        };
+      };
+
       Card.prototype.buildAbilityText = function(cardClass) {
         var ability, chunk, chunks, count, parent, prop, string, text, _i, _j, _len, _len1, _ref;
         parent = new PIXI.DisplayObjectContainer;

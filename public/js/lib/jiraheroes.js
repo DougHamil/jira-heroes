@@ -72,10 +72,12 @@
         return $.get('/secure/user/library', cb);
       };
 
-      JiraHeroesApi.AddCardToUserLibrary = function(cardId, cb) {
-        return $.post('/secure/user/library', {
+      JiraHeroesApi.AddCardToUserLibrary = function(cardId, success, fail) {
+        var req;
+        req = $.post('/secure/user/library', {
           card: cardId
-        }, cb);
+        }, success);
+        return req.fail(fail);
       };
 
       JiraHeroesApi.GetHeroes = function(cb) {

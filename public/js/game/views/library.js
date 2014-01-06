@@ -4,7 +4,8 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], function($, JH, GUI, engine) {
-    var CARDS_PER_ROW, CARD_PADDING, Library, PAGE_POS, ROWS_PER_PAGE;
+    var CARDS_PER_ROW, CARD_PADDING, COST_SPRITE_PADDING, Library, PAGE_POS, ROWS_PER_PAGE;
+    COST_SPRITE_PADDING = 10;
     PAGE_POS = {
       x: 50,
       y: 100
@@ -98,8 +99,11 @@
           _this = this;
         this.hero = hero;
         activate = function(cards) {
-          var card, cardIndex, cardSprite, pageContainer, xpos, ypos, _i, _len;
+          var buyCard, card, cardIndex, cardSprite, pageContainer, xpos, ypos, _i, _len;
+          _this.updateLibrary(JH.user.library);
           JH.cards = cards;
+          _this.cardsById = {};
+          _this.cardSprites = {};
           _this.pages = [];
           pageContainer = new PIXI.DisplayObjectContainer;
           cardIndex = 0;
@@ -119,6 +123,16 @@
             ypos = Math.floor(cardIndex / CARDS_PER_ROW) * (CARD_PADDING + cardSprite.height);
             cardSprite.position.x = xpos;
             cardSprite.position.y = ypos;
+            if (_this.library[card._id] == null) {
+              buyCard = function(cardId) {
+                return function() {
+                  return JH.AddCardToUserLibrary(cardId, _this.onCardBought(cardId), _this.onCardBuyFail(cardId));
+                };
+              };
+              cardSprite.onClick(buyCard(card._id));
+            }
+            _this.cardsById[card._id] = card;
+            _this.cardSprites[card._id] = cardSprite;
             cardIndex++;
             if (cardIndex === (CARDS_PER_ROW * ROWS_PER_PAGE)) {
               pageContainer.position = PAGE_POS;
@@ -131,6 +145,7 @@
           if (cardIndex !== 0) {
             _this.pages.push(pageContainer);
           }
+          _this.addCostSprites(JH.user, _this.library, _this.cardSprites, _this.cardsById);
           _this.setPageIndex(0);
           _this.addChild(JH.pointsText);
           _this.addChild(JH.nameText);
@@ -141,6 +156,95 @@
         } else {
           return activate(JH.cards);
         }
+      };
+
+      Library.prototype.updateLibrary = function(userLibrary) {
+        var cardId, _i, _len, _results;
+        this.library = {};
+        _results = [];
+        for (_i = 0, _len = userLibrary.length; _i < _len; _i++) {
+          cardId = userLibrary[_i];
+          _results.push(this.library[cardId] = true);
+        }
+        return _results;
+      };
+
+      Library.prototype.onCardBuyFail = function(cardId) {
+        var _this = this;
+        return function() {
+          console.log(arguments);
+          return console.log("Card buying failed for card " + cardId);
+        };
+      };
+
+      Library.prototype.onCardBought = function(cardId) {
+        var _this = this;
+        return function() {
+          return JH.GetUser(function(user) {
+            JH.user = user;
+            _this.updateLibrary(user.library);
+            _this.addCostSprites();
+            JH.pointsText.setText("" + user.points + " <coin>");
+            return _this.cardSprites[cardId].onClick(function() {});
+          });
+        };
+      };
+
+      Library.prototype.updateCostSprite = function(cardId) {
+        var card, cardSprite, costSprite;
+        card = this.cardsById[cardId];
+        cardSprite = this.cardSprites[cardId];
+        costSprite = this.createCostSprite(cardSprite, card.cost, JH.user.points >= card.cost, this.library[cardId] != null);
+        costSprite.position = {
+          x: cardSprite.width / 2,
+          y: cardSprite.height / 2
+        };
+        if (cardSprite.costSprite != null) {
+          cardSprite.removeChild(cardSprite.costSprite);
+        }
+        cardSprite.costSprite = costSprite;
+        return cardSprite.addChild(costSprite);
+      };
+
+      Library.prototype.addCostSprites = function() {
+        var card, cardId, _ref, _results;
+        _ref = this.cardsById;
+        _results = [];
+        for (cardId in _ref) {
+          card = _ref[cardId];
+          _results.push(this.updateCostSprite(cardId));
+        }
+        return _results;
+      };
+
+      Library.prototype.createCostSprite = function(cardSprite, cost, canAfford, isOwned) {
+        var bg, bgcolor, container, text;
+        container = new PIXI.DisplayObjectContainer;
+        bgcolor = canAfford || isOwned ? 0x00BB00 : 0xBB0000;
+        text = null;
+        if (isOwned) {
+          text = new PIXI.Text("Purchased", GUI.STYLES.TEXT);
+        } else {
+          text = new GUI.GlyphText("" + cost + " <coin>");
+          text.position = {
+            x: -text.width / 2,
+            y: -text.height / 2
+          };
+        }
+        bg = new PIXI.Graphics();
+        bg.beginFill(bgcolor);
+        bg.width = cardSprite.width;
+        bg.height = text.height + COST_SPRITE_PADDING;
+        bg.drawRect(-bg.width / 2, -bg.height / 2, bg.width, bg.height);
+        text.anchor = {
+          x: 0.5,
+          y: 0.5
+        };
+        container.addChild(bg);
+        container.addChild(text);
+        container.width = bg.width;
+        container.height = bg.height;
+        return container;
       };
 
       return Library;

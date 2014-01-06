@@ -37,8 +37,9 @@ define ['jquery'], ($) ->
       $.get '/secure/user', cb
     @GetUserLibrary: (cb) ->
       $.get '/secure/user/library', cb
-    @AddCardToUserLibrary: (cardId, cb) ->
-      $.post '/secure/user/library', {card:cardId}, cb
+    @AddCardToUserLibrary: (cardId, success, fail) ->
+      req = $.post '/secure/user/library', {card:cardId}, success
+      req.fail fail
 
     # - Hero
     @GetHeroes: (cb) ->

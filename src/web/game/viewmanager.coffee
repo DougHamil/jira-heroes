@@ -2,7 +2,7 @@ define ['./views/mainmenu',
         './views/campaign',
         './views/campaignmenu',
         './views/library',
-        'engine'], (MainMenu, Campaign, CampaignMenu, Library) ->
+        'jiraheroes', 'engine'], (MainMenu, Campaign, CampaignMenu, Library, JH) ->
   class MenuManager
     constructor: (@stage) ->
       @views =
@@ -18,6 +18,3 @@ define ['./views/mainmenu',
       console.log 'Activating '+view
       @views[view].activate(args...)
       @activeView = @views[view]
-
-
-
