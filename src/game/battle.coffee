@@ -2,6 +2,8 @@ Errors = require './errors'
 CardCache = require '../../lib/models/cardcache'
 PlayerHandler = require './playerhandler'
 CardHandler = require './cardhandler'
+Actions = require './actions'
+Events = require './events'
 
 CARDS_DRAWN_PER_TURN = 1 # Number of cards to draw each turn
 INITIAL_CARD_COUNT = 3 # Second turn player gets 3 cards to start
@@ -11,20 +13,22 @@ class Battle
     @players = {}
     @sockets = {}
     @field = {}
+    @cards = {}
+    @abilities = []
     for player in @model.players
       cardsById = {}
+      @players[player.userId] = new PlayerHandler(@, player)
       for card in player.deck.cards
         cardsById[card._id] = card
+        @cards[card._id] = new CardHandler(@, @players[player.userId], card)
       player.cards = cardsById
-      @players[player.userId] = new PlayerHandler(@, player)
       @registerPlayer(player.userId, @players[player.userId])
 
   registerPlayer: (userId, handler) ->
-    handler.on 'ready', @onReady(userId)                      # Player is in battle and wishes to start
-    handler.on 'play-card', @onPlayCard(userId)               # Deploy card from hand to field
-    handler.on 'end-turn', @onEndTurn(userId)                 # Turn over
-    handler.on 'use-card-on-card', @onUseCardOnCard(userId)   # Player used a card, targeting another card
-    handler.on 'use-card-on-hero', @onUseCardOnHero(userId)   # Player used a card, targeting a hero
+    handler.on Events.READY, @onReady(userId)                      # Player is in battle and wishes to start
+    handler.on Events.PLAY_CARD, @onPlayCard(userId)               # Deploy card from hand to field
+    handler.on Events.END_TURN, @onEndTurn(userId)                 # Turn over
+    handler.on Events.USE_CARD, @onUseCard(userId)                 # Player used a card, targeting something
 
   ###
   # EVENTS
@@ -40,25 +44,61 @@ class Battle
       if @model.state.playersReady.length is @model.players.length
         @startGame()
 
-  # Called when a player used a card, targeting a hero
-  onUseCardOnHero: (userId) ->
-    (card, targetHero, action) ->
-      @emitAllButActive 'opponent-use-card-on-hero', userId, card, targetHero, action
-
   # Called when a player used a card, targeting another card
-  onUseCardOnCard: (userId) ->
-    (card, targetCard, action) ->
-      @emitAllButActive 'opponent-use-card-on-card', userId, card, targetCard._id, action
+  onUseCard: (userId) ->
+    (card, target, actions) ->
+      @emitAllButActive 'opponent-'+Events.USE_CARD, userId, card, target._id, actions
 
   # Called when the player has played a card
   onPlayCard: (userId) ->
-    (card) =>
-      @emitAllButActive 'opponent-play-card', userId, card
+    (card, actions) =>
+      @emitAllButActive 'opponent-'+Events.PLAY_CARD, userId, card, actions
 
   # Called when the player has completed his turn
   onEndTurn: (userId) ->
-    () =>
+    (actions) =>
+      @emitAllButActive 'opponent-'+Events.END_TURN, userId, actions
       @nextTurn()
+
+  # Registers an ability as active and the ability will be passed all events
+  registerAbility: (ability) ->
+    @abilities.push ability
+
+  # Removes an ability from registry, this de-activates the ability.
+  unregisterAbility: (ability) ->
+    @abilities.splice(@abilities.indexOf(ability), 1)
+
+  _processActions: (count, payloads, actions) ->
+    if actions.length <= 0
+      return payloads
+    else
+      # Enact all of the actions
+      spawnedActions = []
+      for action in actions
+        [payload, generatedActions] = action.enact(@)
+        if payload?
+          if payload instanceof Array
+            payloads = payloads.concat(payload)
+          else
+            payloads.push payload
+        if generatedActions?
+          spawnedActions = spawnedActions.concat generatedActions
+      # Filter new actions through passive abilities
+      spawnedActions = @filterActions(spawnedActions)
+      # Recursively call until spawned actions are empty
+      return @_processActions count++, payloads, spawnedActions
+
+  processActions: (actions) ->
+    payloads = []
+    count = 0
+    return @_processActions(count, payloads, actions)
+
+  # Run a list of actions through all of the registered abilities.
+  # Each ability will filter the action list based on their behavior
+  filterActions: (actions) ->
+    for ability in @abilities
+      ability.handle @, actions
+    return actions
 
   emitActive: (action, data...) ->
     @emit @model.state.activePlayer, action, data...
@@ -92,11 +132,8 @@ class Battle
     # Pick the next player and set to active
     if not firstTurn? or not firstTurn
       @assignNextActivePlayer()
-    # Update the cards on the field
-    fieldCards = @getFieldCards()
-    CardHandler.updateFieldCardsOnTurn fieldCards
-    @emitActive 'your-turn', fieldCards
-    @emitAllButActive 'opponent-turn', @model.state.activePlayer, fieldCards
+    @emitActive 'your-turn'
+    @emitAllButActive 'opponent-turn', @model.state.activePlayer
     # Draw card
     if not firstTurn? or not firstTurn
       @drawCards(@model.state.activePlayer, CARDS_DRAWN_PER_TURN)
@@ -141,6 +178,9 @@ class Battle
       if hero._id is heroId
         return hero
     return null
+
+  getCardHandler: (cardId) ->
+    return @cards[cardId]
 
   getCard: (cardId) ->
     for _, p of @players

@@ -4,20 +4,26 @@ fs = require 'fs'
 path = require 'path'
 readdirp = require 'readdirp'
 
-_abilitySchema = new mongoose.Schema
+_abilitySchemaOpts =
   type:String
   text:String
   data: mongoose.Schema.Types.Mixed
+_abilitySchema = new mongoose.Schema _abilitySchemaOpts
 
 _schema = new mongoose.Schema
   name:{type:String}
+  type: {type:String, default:'minion'}
   cost: {type:Number}
+  type: {type:String}
   energy: {type:Number}
   displayName:{type:String}
   health:{type:Number}
   damage:{type:Number}
   traits:[{type:String}]
-  abilities: [_abilitySchema]
+  rushAbility: _abilitySchemaOpts             # A minions's rush ability (battlecry)
+  useAbility: _abilitySchemaOpts              # A minions's attack ability
+  playAbility: _abilitySchemaOpts             # A spell card's ability
+  passiveAbilities: [_abilitySchema]          # A card's passive abilities
   flags:[{type:String}]
   media:
     image: {type:String}

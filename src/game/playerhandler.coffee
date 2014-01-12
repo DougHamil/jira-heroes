@@ -1,7 +1,9 @@
 {EventEmitter} = require 'events'
+EndTurnAction = require './actions/endturn'
 CardCache = require '../../lib/models/cardcache'
 CardHandler = require './cardhandler'
 Errors = require './errors'
+Events = require './events'
 
 ###
 # Handles a player within a battle by responding and validating client socket events
@@ -13,38 +15,39 @@ class PlayerHandler extends EventEmitter
     @userId = @player.userId
 
   connect: (@socket) ->
-      @socket.on 'ready', @onReady()
-      @socket.on 'play-card', @onPlayCard()
-      @socket.on 'end-turn', @onEndTurn()
-      @socket.on 'use-card', @onUseCard()
-      @socket.on 'test', @onTest()
+      @socket.on Events.READY, @onReady()
+      @socket.on Events.PLAY_CARD, @onPlayCard()
+      @socket.on Events.END_TURN, @onEndTurn()
+      @socket.on Events.USE_CARD, @onUseCard()
+      @socket.on Events.TEST, @onTest()
 
   onUseCard: ->
     (source, target, cb) =>
       if @model.state.phase == 'game' and @isActive()
-        card = @getCard(source)
-        if card?
-          # Make sure card is either in the player's hand or field
-          if card.position is 'hand' or card.position is 'field'
+        cardHandler = @getCardHandler(source)
+        if cardHandler?
+          card = cardHandler.model
+          # Card must be on field to be used
+          if card.position is 'field'
             # Card use targeting a card
             if target.card?
               targetCard = @battle.getCard(target.card)
               # Can only target cards on the field
               if targetCard? and targetCard.position is 'field'
-                [err, action] = CardHandler.useCardOnCard @battle, @, card, targetCard
-                cb err, action
-                if not err?
-                  @emit 'use-card-on-card', card, targetCard, action
+                cardHandler.use targetCard, (err, actions) =>
+                  cb err, actions
+                  if not err?
+                    @emit Events.USE_CARD, card, targetCard, actions
               else
                 cb Errors.INVALID_TARGET
             # Card use targeting a hero
             else if target.hero?
               hero = @battle.getHero(target.hero)
               if hero?
-                [err, action] = CardHandler.useCardOnHero @, card, hero
-                cb err, action
-                if not err?
-                  @emit 'use-card-on-hero', card, hero, action
+                cardHandler.use hero, (err, actions) =>
+                  cb err, actions
+                  if not err?
+                    @emit Events.USE_CARD, card, hero, actions
               else
                 cb Errors.INVALID_TARGET
             else
@@ -59,25 +62,24 @@ class PlayerHandler extends EventEmitter
   onEndTurn: ->
     (cb) =>
       if @model.state.phase == 'game' and @isActive()
-        @emit 'end-turn'
-        cb null
+        actions = [new EndTurnAction(@player)]
+        actions = @battle.filterActions actions
+        payloads = @battle.processActions actions
+        @emit 'end-turn', payloads
+        cb null, payloads
       else
         cb Errors.INVALID_ACTION
 
   onPlayCard: ->
     (cardId, target, cb) =>
-      card = @getCard(cardId)
-      if @model.state.phase == 'game' and card? and @isActive() and card.position is 'hand'
-        CardCache.get card.class, (err, cardClass) =>
+      cardHandler = @getCardHandler(cardId)
+      if @model.state.phase == 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
+        cardHandler.play target, (err, actions) =>
           if err?
             cb err
           else
-            [err, actions] = CardHandler.playCard @battle, @, card, cardClass, target
-            if err?
-              cb err
-            else
-              @emit 'play-card', card, actions
-              cb null, card, actions
+            @emit Events.PLAY_CARD, cardHandler.model, actions
+            cb null, cardHandler.model, actions
       else
         cb Errors.INVALID_ACTION
 
@@ -86,12 +88,12 @@ class PlayerHandler extends EventEmitter
         if @model.state.phase == 'initial' and @player.userId not in @model.state.playersReady
           @model.state.playersReady.push @player.userId
           cb null
-          @emit 'ready'
+          @emit Events.READY
         else
           cb Errors.INVALID_ACTION
 
   ###
-  # Put player into "test mode" for easy integration testing
+  # Override properties for automated tests
   ###
   onTest: ->
     (prop, value, cb) =>
@@ -126,6 +128,9 @@ class PlayerHandler extends EventEmitter
 
   getTauntCardsOnField: ->
     return @getFieldCards().filter (c) -> 'taunt' in c.status
+
+  getCardHandler: (cardId) ->
+    return @battle.getCardHandler(cardId)
 
   getCard: (cardId) ->
     card = @player.deck.cards.filter (c) ->

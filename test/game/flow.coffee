@@ -47,9 +47,6 @@ exports.run = (harness) ->
       harness.expectActive 'your-turn', (data)->
         data = data[harness.getActiveUser()]
         should.exist(data)
-        fieldCards = data[0]
-        should.exist(fieldCards)
-        fieldCards.should.be.instanceOf(Array)
         done()
 
       harness.expectActive 'draw-cards', (data) ->
@@ -64,9 +61,7 @@ exports.run = (harness) ->
         data = data[harness.getInactiveUsers()[0]]
         should.exist(data)
         userTurn = data[0]
-        fieldCards = data[1]
         userTurn.should.eql harness.getActiveUser()
-        should.exist(fieldCards)
         done()
 
       activeSocket.emit 'end-turn', (err) ->
@@ -105,12 +100,11 @@ exports.run = (harness) ->
       socket = harness.getActiveSocket()
       harness.expectActive 'your-turn', (data) ->
         data = data[harness.getActiveUser()]
-        cards = data[0]
-        for card in cards
-          card.status.should.not.contain 'sleeping'
-        harness.updateCards cards
         done()
 
-      socket.emit 'end-turn', (err) ->
+      socket.emit 'end-turn', (err, actions) ->
         should.not.exist(err)
+        should.exist(actions)
+        actions[0].type.should.eql('card-status-remove')
+        actions[0].status.should.eql('sleeping')
 

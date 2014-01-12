@@ -79,7 +79,6 @@ describe 'GameServer', ->
         userData = data[user]
         if userData?
           should.exist(userData[0])
-          should.exist(userData[1])
     harness.expectAll 'phase', (data) ->
       for user, datum of data
         oldPhase = datum[0]

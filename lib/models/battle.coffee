@@ -11,6 +11,7 @@ newCardInstance = (userId) ->
         cb err
       else
         out =
+          usedRushAbility: false
           userId: userId
           position: 'deck'
           class:cardId
@@ -55,6 +56,7 @@ _cardSchema = new mongoose.Schema
   class: String
   userId: String
   health: Number
+  usedRushAbility: Boolean
   maxHealth: Number
   damage: Number
   status: [String]
