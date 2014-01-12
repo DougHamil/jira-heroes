@@ -3,8 +3,8 @@ DiscardCardAction = require './actions/discardcard'
 DamageAction = require './actions/damage'
 
 class Actions
-  @PlayCard: (cardModel) ->
-    return new PlayCardAction(cardModel)
+  @PlayCard: (cardModel, cardClass) ->
+    return new PlayCardAction(cardModel, cardClass)
   @DiscardCard: (cardModel) ->
     return new DiscardCardAction(cardModel)
   @Damage: (source, target, damage) ->

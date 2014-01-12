@@ -62,14 +62,6 @@ class CardHandler
     @model.used = false
     @model.usedRushAbility = false
 
-    # Spell cards have a playAbility property set
-    if not cardClass.playAbility?
-      @model.position = POSITION.FIELD
-      if TRAIT.RUSH not in cardClass.traits
-        @model.status.push STATUS.SLEEPING
-      if TRAIT.TAUNT in cardClass.traits
-        @model.status.push STATUS.TAUNT
-
     # Create passive ability objects
     @passiveAbilities = []
     for ability in cardClass.passiveAbilities
@@ -82,7 +74,7 @@ class CardHandler
       # Spell cards are always discarded
       actions.push Actions.DiscardCard @model
     else
-      actions.push Actions.PlayCard @model
+      actions.push Actions.PlayCard @model, cardClass
     actions = @battle.filterActions actions
     cb null, @battle.processActions(actions)
 

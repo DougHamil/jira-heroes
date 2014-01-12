@@ -73,7 +73,7 @@ exports.run = (harness) ->
       activeSocket = harness.getActiveSocket()
       cards = harness.getDrawnCards harness.getActiveUser()
       activeSocket.emit 'test', 'energy', 1000, ->
-        activeSocket.emit 'play-card', cards[0]._id, null, (err, card) ->
+        activeSocket.emit 'play-card', cards[0]._id, null, (err, card, actions) ->
           should.not.exist(err)
           should.exist(card)
           harness.updateCard harness.getActiveUser(), card
@@ -105,6 +105,7 @@ exports.run = (harness) ->
       socket.emit 'end-turn', (err, actions) ->
         should.not.exist(err)
         should.exist(actions)
-        actions[0].type.should.eql('card-status-remove')
-        actions[0].status.should.eql('sleeping')
+        statusAction = actions.filter((a) -> a.type is 'card-status-remove')[0]
+        statusAction.type.should.eql('card-status-remove')
+        statusAction.status.should.eql('sleeping')
 
