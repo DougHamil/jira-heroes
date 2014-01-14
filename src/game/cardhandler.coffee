@@ -28,7 +28,7 @@ class CardHandler
     @cardClass = null
     # Spell cards have a "playAbility" property and do not have an attack ability
     if not @model.playAbility?
-      @attackAbility = Abilities.attack @battle, @
+      @attackAbility = Abilities.Attack @model
     else
       @attackAbility = null
 
@@ -75,7 +75,6 @@ class CardHandler
       actions.push Actions.DiscardCard @model
     else
       actions.push Actions.PlayCard @model, cardClass
-    actions = @battle.filterActions actions
     cb null, @battle.processActions(actions)
 
   useRush: (target, cb) ->

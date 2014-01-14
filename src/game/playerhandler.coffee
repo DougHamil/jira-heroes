@@ -63,7 +63,6 @@ class PlayerHandler extends EventEmitter
     (cb) =>
       if @model.state.phase == 'game' and @isActive()
         actions = [new EndTurnAction(@player)]
-        actions = @battle.filterActions actions
         payloads = @battle.processActions actions
         @emit 'end-turn', payloads
         cb null, payloads

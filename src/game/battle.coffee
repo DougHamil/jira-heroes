@@ -1,4 +1,5 @@
 Errors = require './errors'
+ActionProcessor = require './actionprocessor'
 CardCache = require '../../lib/models/cardcache'
 PlayerHandler = require './playerhandler'
 CardHandler = require './cardhandler'
@@ -68,37 +69,8 @@ class Battle
   unregisterAbility: (ability) ->
     @abilities.splice(@abilities.indexOf(ability), 1)
 
-  _processActions: (count, payloads, actions) ->
-    if actions.length <= 0
-      return payloads
-    else
-      # Enact all of the actions
-      spawnedActions = []
-      for action in actions
-        [payload, generatedActions] = action.enact(@)
-        if payload?
-          if payload instanceof Array
-            payloads = payloads.concat(payload)
-          else
-            payloads.push payload
-        if generatedActions?
-          spawnedActions = spawnedActions.concat generatedActions
-      # Filter new actions through passive abilities
-      spawnedActions = @filterActions(spawnedActions)
-      # Recursively call until spawned actions are empty
-      return @_processActions count++, payloads, spawnedActions
-
   processActions: (actions) ->
-    payloads = []
-    count = 0
-    return @_processActions(count, payloads, actions)
-
-  # Run a list of actions through all of the registered abilities.
-  # Each ability will filter the action list based on their behavior
-  filterActions: (actions) ->
-    for ability in @abilities
-      ability.handle @, actions
-    return actions
+    return ActionProcessor.process(@, actions, @abilities)
 
   emitActive: (action, data...) ->
     @emit @model.state.activePlayer, action, data...
@@ -165,6 +137,14 @@ class Battle
     return @model.users.filter (u) => u isnt @model.state.activePlayer
 
   getPlayer: (playerId) ->
+    return @getPlayerHandler(playerId).player
+
+  getPlayerHandler: (playerId) ->
+    if typeof playerId is 'object'
+      if playerId.userId?
+        playerId = playerId.userId
+      else
+        playerId = ''
     return @players[playerId]
 
   getOtherPlayers: (playerId) ->
@@ -173,6 +153,8 @@ class Battle
     return (p for id, p of @players when id isnt playerId)
 
   getHero: (heroId) ->
+    if typeof heroId is 'object' and heroId.userId?
+      return @getPlayerHandler(heroId.userId).getHero()
     for _, p of @players
       hero = p.getHero()
       if hero._id is heroId
@@ -189,11 +171,21 @@ class Battle
         return card
     return null
 
-  getFieldCards: ->
-    fieldCards = []
-    for _, p of @players
-      fieldCards = fieldCards.concat p.getFieldCards()
-    return fieldCards
+  getFieldCards: (player) ->
+    if player?
+      if typeof player is 'object'
+        if player instanceof PlayerHandler
+          return player.getFieldCards()
+        else if player.userId?
+          return @getPlayerHandler(player.userId).getFieldCards()
+      else
+        return @getPlayerHandler(player).getFieldCards()
+    else
+      fieldCards = []
+      for _, p of @players
+        fieldCards = fieldCards.concat p.getFieldCards()
+      return fieldCards
+    return null
 
   sanitizeOpponentData: (player) ->
     out =

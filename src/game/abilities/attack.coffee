@@ -1,10 +1,10 @@
 DamageAction = require '../actions/damage'
 
 class AttackAbility
-  constructor: (@battle, @cardHandler) ->
+  constructor: (@source) ->
 
-  cast: (target) ->
+  cast: (battle, target) ->
     # Simply return a damage action with the target and the card's damage
-    return [new DamageAction(@cardHandler.model, target, @cardHandler.model.damage)]
+    return [new DamageAction(@source, target, @source.damage)]
 
 module.exports = AttackAbility
