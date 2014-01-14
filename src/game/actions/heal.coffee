@@ -8,8 +8,8 @@ module.exports = class HealAction
     @target.health += totalHealed
     PAYLOAD =
       type: 'heal'
-      source: @source
-      target: @target
+      source: @source._id
+      target: @target._id
       amount: totalHealed
     return [PAYLOAD]
 

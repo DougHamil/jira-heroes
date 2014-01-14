@@ -116,6 +116,8 @@ _query = (query, cb) ->
   _model.find query, cb
 
 module.exports =
+  cardSchema:_cardSchema
+  playerSchema:_playerSchema
   schema:_schema
   model:_model
   create:_create
