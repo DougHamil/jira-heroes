@@ -3,12 +3,18 @@ TODO
 
 Server-side
 -----------
-- Add battle logic
+- Add basic abilities
+- Add basic actions
 
 Client-side
 -----------
 - Decks view
 	- Deck editor
+- Join Battle View
+	- List battles
+	- Allow player to join a battle
+- Host battle view
+	- Pick a deck and wait for player to join battle
 
 Tools
 -----------

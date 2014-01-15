@@ -15,7 +15,7 @@
     };
     lastTime = new Date();
     animate = function() {
-      var callback, deltaTime, time, _i, _len, _ref;
+      var callback, _i, _len, _ref;
       requestAnimFrame(animate);
       _ref = engine.updateCallbacks;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -23,10 +23,7 @@
         callback();
       }
       engine.renderer.render(engine.stage);
-      time = new Date();
-      deltaTime = time - lastTime;
-      lastTime = time;
-      return TWEEN.tick(deltaTime * engine.timeMultiplier, engine.paused);
+      return TWEEN.update();
     };
     requestAnimFrame(animate);
     return engine;

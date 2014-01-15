@@ -1,6 +1,11 @@
 define ['jquery'], ($) ->
 
   class JiraHeroesApi
+    # - Static
+    @LoadStaticData: (cb) ->
+      @GetHeroes (heroes) =>
+        @heroes = heroes
+        cb()
 
     # - Card
     @GetAllCards: (cb) ->

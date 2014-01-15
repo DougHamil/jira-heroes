@@ -5,6 +5,14 @@
     return JiraHeroesApi = (function() {
       function JiraHeroesApi() {}
 
+      JiraHeroesApi.LoadStaticData = function(cb) {
+        var _this = this;
+        return this.GetHeroes(function(heroes) {
+          _this.heroes = heroes;
+          return cb();
+        });
+      };
+
       JiraHeroesApi.GetAllCards = function(cb) {
         return $.get('/card', cb);
       };

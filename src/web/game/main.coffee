@@ -14,6 +14,7 @@ require.config
 
 define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engine, GUI, ViewManager) ->
   $(document).ready ->
-    engine.stage.setInteractive(true)
-    viewManager = new ViewManager engine.stage
-    viewManager.activateView 'MainMenu'
+    JH.LoadStaticData ->
+      engine.stage.setInteractive(true)
+      viewManager = new ViewManager engine.stage
+      viewManager.activateView 'MainMenu'

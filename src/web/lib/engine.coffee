@@ -17,10 +17,7 @@ define ['jquery', 'tween', 'pixi'], ($) ->
     for callback in engine.updateCallbacks
       callback()
     engine.renderer.render engine.stage
-    time = new Date()
-    deltaTime = time - lastTime
-    lastTime = time
-    TWEEN.tick deltaTime * engine.timeMultiplier, engine.paused
+    TWEEN.update()
 
   requestAnimFrame animate
 

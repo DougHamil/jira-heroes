@@ -20,10 +20,12 @@
 
   define(['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], function($, JH, engine, GUI, ViewManager) {
     return $(document).ready(function() {
-      var viewManager;
-      engine.stage.setInteractive(true);
-      viewManager = new ViewManager(engine.stage);
-      return viewManager.activateView('MainMenu');
+      return JH.LoadStaticData(function() {
+        var viewManager;
+        engine.stage.setInteractive(true);
+        viewManager = new ViewManager(engine.stage);
+        return viewManager.activateView('MainMenu');
+      });
     });
   });
 

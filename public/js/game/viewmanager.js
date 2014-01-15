@@ -2,7 +2,7 @@
 (function() {
   var __slice = [].slice;
 
-  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', './views/decks', 'jiraheroes', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library, Decks, JH) {
+  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', './views/decks', './views/createdeck', 'jiraheroes', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library, Decks, CreateDeck, JH) {
     var MenuManager;
     return MenuManager = (function() {
       function MenuManager(stage) {
@@ -12,7 +12,8 @@
           'Library': new Library(this, this.stage),
           'Campaign': new Campaign(this, this.stage),
           'CampaignMenu': new CampaignMenu(this, this.stage),
-          'Decks': new Decks(this, this.stage)
+          'Decks': new Decks(this, this.stage),
+          'CreateDeck': new CreateDeck(this, this.stage)
         };
       }
 
