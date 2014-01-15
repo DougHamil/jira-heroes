@@ -8,8 +8,23 @@
       JiraHeroesApi.LoadStaticData = function(cb) {
         var _this = this;
         return this.GetHeroes(function(heroes) {
-          _this.heroes = heroes;
-          return cb();
+          var hero, _i, _len;
+          _this.heroes = {};
+          for (_i = 0, _len = heroes.length; _i < _len; _i++) {
+            hero = heroes[_i];
+            _this.heroes[hero._id] = hero;
+          }
+          console.log("Loaded " + heroes.length + " heroes");
+          return _this.GetAllCards(function(cards) {
+            var card, _j, _len1;
+            _this.cards = {};
+            for (_j = 0, _len1 = cards.length; _j < _len1; _j++) {
+              card = cards[_j];
+              _this.cards[card._id] = card;
+            }
+            console.log("Loaded " + cards.length + " cards");
+            return cb();
+          });
         });
       };
 

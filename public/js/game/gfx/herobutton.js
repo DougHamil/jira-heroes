@@ -55,7 +55,7 @@
         };
         this.cont = new PIXI.DisplayObjectContainer();
         this.cont.interactive = true;
-        this.cont.hitArea = new PIXI.Rectangle(0, 0, 200, 300);
+        this.cont.hitArea = new PIXI.Rectangle(0, 0, this.bg.width, this.bg.height);
         this.cont.addChild(this.highlight);
         this.cont.addChild(this.bg);
         if (this.icon) {

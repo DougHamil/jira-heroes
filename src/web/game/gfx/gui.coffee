@@ -4,8 +4,21 @@ define ['./gfx/herobutton',
         './gfx/textfield',
         './gfx/glyphtext',
         './gfx/card',
+        './gfx/deckbutton',
+        './gfx/deckcardlist',
+        './gfx/cardpicker',
         'engine',
-        './gfx/styles'], (HeroButton, TextButton, CampaignButton, TextField, GlyphText, Card, engine, styles) ->
+        './gfx/styles'], (
+        HeroButton,
+        TextButton,
+        CampaignButton,
+        TextField,
+        GlyphText,
+        Card,
+        DeckButton,
+        DeckCardList,
+        CardPicker,
+        engine, styles) ->
   GUI =
     HeroButton: HeroButton
     TextButton: TextButton
@@ -13,6 +26,9 @@ define ['./gfx/herobutton',
     GlyphText:GlyphText
     Card:Card
     TextField: TextField
+    DeckButton: DeckButton
+    DeckCardList: DeckCardList
+    CardPicker:CardPicker
     STYLES: styles
 
   return GUI

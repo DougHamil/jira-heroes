@@ -4,8 +4,16 @@ define ['jquery'], ($) ->
     # - Static
     @LoadStaticData: (cb) ->
       @GetHeroes (heroes) =>
-        @heroes = heroes
-        cb()
+        @heroes = {}
+        for hero in heroes
+          @heroes[hero._id] = hero
+        console.log "Loaded #{heroes.length} heroes"
+        @GetAllCards (cards) =>
+          @cards = {}
+          for card in cards
+            @cards[card._id] = card
+          console.log "Loaded #{cards.length} cards"
+          cb()
 
     # - Card
     @GetAllCards: (cb) ->

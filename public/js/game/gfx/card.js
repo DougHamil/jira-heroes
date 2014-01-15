@@ -126,7 +126,7 @@
         var ability, chunk, chunks, count, parent, prop, string, text, _i, _j, _len, _len1, _ref;
         parent = new PIXI.DisplayObjectContainer;
         count = 0;
-        _ref = cardClass.abilities;
+        _ref = cardClass.passiveAbilities;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           ability = _ref[_i];
           chunks = ability.text.split(' ');

@@ -4,7 +4,16 @@ define ['./views/mainmenu',
         './views/library',
         './views/decks',
         './views/createdeck',
-        'jiraheroes', 'engine'], (MainMenu, Campaign, CampaignMenu, Library, Decks, CreateDeck, JH) ->
+        './views/editdeck',
+        'jiraheroes', 'engine'], (
+            MainMenu,
+            Campaign,
+            CampaignMenu,
+            Library,
+            Decks,
+            CreateDeck,
+            EditDeck,
+            JH) ->
   class MenuManager
     constructor: (@stage) ->
       @views =
@@ -14,11 +23,10 @@ define ['./views/mainmenu',
         'CampaignMenu': new CampaignMenu @, @stage
         'Decks': new Decks @, @stage
         'CreateDeck': new CreateDeck @, @stage
+        'EditDeck': new EditDeck @, @stage
 
     activateView: (view, args...) ->
       if @activeView?
-        console.log 'Deactivating '+@activeView
         @activeView.deactivate()
-      console.log 'Activating '+view
       @views[view].activate(args...)
       @activeView = @views[view]

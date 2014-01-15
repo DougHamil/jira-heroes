@@ -4,7 +4,8 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], function($, JH, GUI, engine) {
-    var Decks;
+    var DECK_BUTTON_PADDING, Decks;
+    DECK_BUTTON_PADDING = 10;
     return Decks = (function(_super) {
       __extends(Decks, _super);
 
@@ -13,7 +14,7 @@
         this.manager = manager;
         this.myStage = myStage;
         Decks.__super__.constructor.apply(this, arguments);
-        this.heading = new PIXI.Text('Decks', GUI.STYLES.HEADING);
+        this.heading = new PIXI.Text('Your Decks', GUI.STYLES.HEADING);
         this.backBtn = new GUI.TextButton('Back');
         this.createDeckBtn = new GUI.TextButton('Create Deck');
         this.backBtn.position = {
@@ -39,7 +40,26 @@
         var activate,
           _this = this;
         activate = function(decks) {
-          console.log(decks);
+          var deck, deckBtn, editDeck, y, _i, _len;
+          _this.deckButtons = [];
+          y = 50;
+          for (_i = 0, _len = decks.length; _i < _len; _i++) {
+            deck = decks[_i];
+            editDeck = function(deck) {
+              return function() {
+                return _this.manager.activateView('EditDeck', deck);
+              };
+            };
+            deckBtn = new GUI.DeckButton(deck, JH.heroes[deck.hero["class"]]);
+            _this.addChild(deckBtn);
+            deckBtn.position = {
+              x: 0,
+              y: y
+            };
+            deckBtn.onClick(editDeck(deck));
+            y += deckBtn.height + DECK_BUTTON_PADDING;
+            _this.deckButtons.push(deckBtn);
+          }
           return _this.myStage.addChild(_this);
         };
         return JH.GetAllDecks(function(decks) {
@@ -48,7 +68,15 @@
       };
 
       Decks.prototype.deactivate = function() {
-        return this.myStage.removeChild(this);
+        var btn, _i, _len, _ref, _results;
+        this.myStage.removeChild(this);
+        _ref = this.deckButtons;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          btn = _ref[_i];
+          _results.push(this.removeChild(btn));
+        }
+        return _results;
       };
 
       return Decks;

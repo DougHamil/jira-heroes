@@ -27,7 +27,7 @@ define ['gfx/styles', 'util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine)
       @to = {x:0, y:10}
       @cont = new PIXI.DisplayObjectContainer()
       @cont.interactive = true
-      @cont.hitArea = new PIXI.Rectangle 0, 0, 200, 300
+      @cont.hitArea = new PIXI.Rectangle 0, 0, @bg.width, @bg.height
       @cont.addChild @highlight
       @cont.addChild @bg
       if @icon

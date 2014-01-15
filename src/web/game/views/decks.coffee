@@ -1,9 +1,10 @@
 define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) ->
+  DECK_BUTTON_PADDING = 10
 
   class Decks extends PIXI.DisplayObjectContainer
     constructor: (@manager, @myStage) ->
       super
-      @heading = new PIXI.Text 'Decks', GUI.STYLES.HEADING
+      @heading = new PIXI.Text 'Your Decks', GUI.STYLES.HEADING
       @backBtn = new GUI.TextButton 'Back'
       @createDeckBtn = new GUI.TextButton 'Create Deck'
 
@@ -18,7 +19,16 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
 
     activate: ->
       activate = (decks) =>
-        console.log decks
+        @deckButtons = []
+        y = 50
+        for deck in decks
+          editDeck = (deck) => => @manager.activateView 'EditDeck', deck
+          deckBtn = new GUI.DeckButton deck, JH.heroes[deck.hero.class]
+          @.addChild deckBtn
+          deckBtn.position = {x:0, y:y}
+          deckBtn.onClick editDeck(deck)
+          y += deckBtn.height + DECK_BUTTON_PADDING
+          @deckButtons.push deckBtn
         @myStage.addChild @
 
       JH.GetAllDecks (decks) =>
@@ -26,3 +36,5 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
 
     deactivate: ->
       @myStage.removeChild @
+      for btn in @deckButtons
+        @.removeChild btn

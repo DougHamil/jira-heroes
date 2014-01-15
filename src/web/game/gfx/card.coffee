@@ -71,7 +71,7 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer
       count = 0
-      for ability in cardClass.abilities
+      for ability in cardClass.passiveAbilities
         chunks = ability.text.split ' '
         string = ""
         for chunk in chunks

@@ -8,7 +8,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @createBtn = new GUI.TextButton 'Create'
       @heroButtons = []
       x = 100
-      for hero in JH.heroes
+      for heroId, hero of JH.heroes
         btn = new GUI.HeroButton hero
         btn.hero = hero
         @heroButtons.push btn
@@ -35,7 +35,13 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @selectedHero = heroBtn.hero
       console.log @selectedHero
     createDeck: ->
-      @createBtn.disable()
+      # TODO: Make a much prettier naming dialog
+      deckName = window.prompt "Enter a name for your new deck:", "My New Deck"
+      if deckName?
+        @createBtn.disable()
+        JH.CreateNewDeck deckName, @selectedHero._id, =>
+          console.log "HERE"
+          @manager.activateView 'Decks'
 
     activate: ->
       @setSelectedHero @heroButtons[0]

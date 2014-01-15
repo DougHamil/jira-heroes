@@ -2,7 +2,7 @@
 (function() {
   var __slice = [].slice;
 
-  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', './views/decks', './views/createdeck', 'jiraheroes', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library, Decks, CreateDeck, JH) {
+  define(['./views/mainmenu', './views/campaign', './views/campaignmenu', './views/library', './views/decks', './views/createdeck', './views/editdeck', 'jiraheroes', 'engine'], function(MainMenu, Campaign, CampaignMenu, Library, Decks, CreateDeck, EditDeck, JH) {
     var MenuManager;
     return MenuManager = (function() {
       function MenuManager(stage) {
@@ -13,7 +13,8 @@
           'Campaign': new Campaign(this, this.stage),
           'CampaignMenu': new CampaignMenu(this, this.stage),
           'Decks': new Decks(this, this.stage),
-          'CreateDeck': new CreateDeck(this, this.stage)
+          'CreateDeck': new CreateDeck(this, this.stage),
+          'EditDeck': new EditDeck(this, this.stage)
         };
       }
 
@@ -21,10 +22,8 @@
         var args, view, _ref;
         view = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         if (this.activeView != null) {
-          console.log('Deactivating ' + this.activeView);
           this.activeView.deactivate();
         }
-        console.log('Activating ' + view);
         (_ref = this.views[view]).activate.apply(_ref, args);
         return this.activeView = this.views[view];
       };

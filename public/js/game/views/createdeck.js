@@ -9,7 +9,7 @@
       __extends(CreateDeck, _super);
 
       function CreateDeck(manager, myStage) {
-        var btn, hero, heroBtn, x, _i, _j, _len, _len1, _ref, _ref1,
+        var btn, hero, heroBtn, heroId, x, _i, _len, _ref, _ref1,
           _this = this;
         this.manager = manager;
         this.myStage = myStage;
@@ -20,8 +20,8 @@
         this.heroButtons = [];
         x = 100;
         _ref = JH.heroes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          hero = _ref[_i];
+        for (heroId in _ref) {
+          hero = _ref[heroId];
           btn = new GUI.HeroButton(hero);
           btn.hero = hero;
           this.heroButtons.push(btn);
@@ -52,8 +52,8 @@
         this.addChild(this.backBtn);
         this.addChild(this.createBtn);
         _ref1 = this.heroButtons;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          heroBtn = _ref1[_j];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          heroBtn = _ref1[_i];
           this.addChild(heroBtn);
         }
       }
@@ -71,7 +71,16 @@
       };
 
       CreateDeck.prototype.createDeck = function() {
-        return this.createBtn.disable();
+        var deckName,
+          _this = this;
+        deckName = window.prompt("Enter a name for your new deck:", "My New Deck");
+        if (deckName != null) {
+          this.createBtn.disable();
+          return JH.CreateNewDeck(deckName, this.selectedHero._id, function() {
+            console.log("HERE");
+            return _this.manager.activateView('Decks');
+          });
+        }
       };
 
       CreateDeck.prototype.activate = function() {
