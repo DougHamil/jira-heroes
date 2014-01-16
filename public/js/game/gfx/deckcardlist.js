@@ -33,7 +33,8 @@
       }
 
       DeckCardList.prototype.update = function() {
-        var card, cardId, entry, _i, _len, _ref, _ref1;
+        var card, cardId, entry, entryClickHandler, _i, _len, _ref, _ref1,
+          _this = this;
         if (this.entries != null) {
           _ref = this.entries;
           for (cardId in _ref) {
@@ -43,6 +44,13 @@
         }
         this.entries = {};
         this.cardCounts = {};
+        entryClickHandler = function(cardId) {
+          return function() {
+            if (_this.entryClickHandler != null) {
+              return _this.entryClickHandler(cardId);
+            }
+          };
+        };
         _ref1 = this.deck.cards;
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           card = _ref1[_i];
@@ -55,10 +63,15 @@
             this.entries[card].setCount(this.cardCounts[card]);
           } else {
             this.entries[card] = new DeckCardListEntry(ENTRY_WIDTH, ENTRY_HEIGHT, this.cardClasses[card]);
+            this.entries[card].onClick(entryClickHandler(card));
             this.addChild(this.entries[card]);
           }
         }
         return this.positionEntries();
+      };
+
+      DeckCardList.prototype.onCardEntryClicked = function(entryClickHandler) {
+        this.entryClickHandler = entryClickHandler;
       };
 
       DeckCardList.prototype.positionEntries = function() {

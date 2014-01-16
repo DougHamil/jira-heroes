@@ -17,24 +17,20 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @.addChild @backBtn
       @.addChild @createDeckBtn
 
+    onDeckPicked: (deckId) ->
+      @manager.activateView 'EditDeck', (@decks.filter((d) -> d._id is deckId))[0]
+
     activate: ->
-      activate = (decks) =>
-        @deckButtons = []
-        y = 50
-        for deck in decks
-          editDeck = (deck) => => @manager.activateView 'EditDeck', deck
-          deckBtn = new GUI.DeckButton deck, JH.heroes[deck.hero.class]
-          @.addChild deckBtn
-          deckBtn.position = {x:0, y:y}
-          deckBtn.onClick editDeck(deck)
-          y += deckBtn.height + DECK_BUTTON_PADDING
-          @deckButtons.push deckBtn
+      activate = (@decks) =>
+        @deckPicker = new GUI.DeckPicker decks, JH.heroes
+        @deckPicker.onDeckPicked (deckId) => @onDeckPicked(deckId)
+        @deckPicker.position = {x:0, y:50}
+        @.addChild @deckPicker
         @myStage.addChild @
 
       JH.GetAllDecks (decks) =>
         activate(decks)
 
     deactivate: ->
+      @.removeChild @deckPicker
       @myStage.removeChild @
-      for btn in @deckButtons
-        @.removeChild btn

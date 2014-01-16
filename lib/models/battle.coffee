@@ -102,7 +102,9 @@ _schema.methods.addPlayer = (userId, deck, cb) ->
 _model = mongoose.model 'Battle', _schema
 
 _get = (id, cb) ->
-  _model.findOne {_id:id}, cb
+  if not id instanceof Array
+    id = [id]
+  _model.findOne {_id: {$in:id}}, cb
 
 _getAll = (cb) ->
   _model.find {}, cb

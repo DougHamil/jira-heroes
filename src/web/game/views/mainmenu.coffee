@@ -14,10 +14,9 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
       @libraryBtn.position = {x:(engine.WIDTH/2) - @libraryBtn.width/2, y:@decksBtn.position.y + 2 * @libraryBtn.height}
 
-      @libraryBtn.onClick =>
-        @manager.activateView 'Library'
-      @decksBtn.onClick =>
-        @manager.activateView 'Decks'
+      @libraryBtn.onClick => @manager.activateView 'Library'
+      @decksBtn.onClick => @manager.activateView 'Decks'
+      @hostBtn.onClick => @manager.activateView 'HostBattle'
 
       @.addChild @menuText
       @.addChild @hostBtn

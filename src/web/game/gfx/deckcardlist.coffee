@@ -27,6 +27,7 @@ define ['gfx/styles', 'gfx/deckcardlistentry', 'util', 'engine', 'pixi', 'tween'
           @.removeChild entry
       @entries = {}
       @cardCounts = {}
+      entryClickHandler = (cardId) => => @entryClickHandler(cardId) if @entryClickHandler?
       for card in @deck.cards
         if not @cardCounts[card]?
           @cardCounts[card] = 1
@@ -36,9 +37,11 @@ define ['gfx/styles', 'gfx/deckcardlistentry', 'util', 'engine', 'pixi', 'tween'
           @entries[card].setCount(@cardCounts[card])
         else
           @entries[card] = new DeckCardListEntry ENTRY_WIDTH, ENTRY_HEIGHT, @cardClasses[card]
+          @entries[card].onClick entryClickHandler(card)
           @.addChild @entries[card]
       @positionEntries()
 
+    onCardEntryClicked: (@entryClickHandler) ->
     positionEntries: ->
       # 1 entry per card class
       orderedEntries = []

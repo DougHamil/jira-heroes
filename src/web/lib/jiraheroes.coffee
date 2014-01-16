@@ -36,7 +36,7 @@ define ['jquery'], ($) ->
       $.get '/battle', cb
     @GetBattle: (battleId, cb) ->
       $.get "/battle/#{battleId}", cb
-    @GetActiveBattle: (cb) ->
+    @GetActiveBattles: (cb) ->
       $.get '/secure/battle/active', cb
     @QueryBattles: (query, cb) ->
       $.post '/battle/query', {query:query}, cb

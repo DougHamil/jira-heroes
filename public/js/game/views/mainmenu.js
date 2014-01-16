@@ -40,6 +40,9 @@
         this.decksBtn.onClick(function() {
           return _this.manager.activateView('Decks');
         });
+        this.hostBtn.onClick(function() {
+          return _this.manager.activateView('HostBattle');
+        });
         this.addChild(this.menuText);
         this.addChild(this.hostBtn);
         this.addChild(this.joinBtn);

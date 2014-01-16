@@ -9,13 +9,15 @@
       __extends(DeckCardListEntry, _super);
 
       function DeckCardListEntry(width, height, card) {
+        this.width = width;
+        this.height = height;
         DeckCardListEntry.__super__.constructor.apply(this, arguments);
         this.countTxt = new PIXI.Text('1', STYLES.TEXT);
         this.energyTxt = new PIXI.Text(card.energy, STYLES.TEXT);
         this.nameTxt = new PIXI.Text(card.displayName, STYLES.TEXT);
         this.bg = new PIXI.Graphics();
-        this.bg.width = width;
-        this.bg.height = height;
+        this.bg.width = this.width;
+        this.bg.height = this.height;
         this.bg.beginFill(STYLES.BUTTON_COLOR);
         this.bg.drawRect(0, 0, this.bg.width, this.bg.height);
         this.nameTxt.position = {
@@ -27,7 +29,16 @@
         this.addChild(this.energyTxt);
         this.addChild(this.nameTxt);
         this.setCount(1);
+        this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
+        this.interactive = true;
       }
+
+      DeckCardListEntry.prototype.onClick = function(cb) {
+        var _this = this;
+        return this.click = function() {
+          return cb(_this);
+        };
+      };
 
       DeckCardListEntry.prototype.setCount = function(count) {
         this.countTxt.setText(count.toString());

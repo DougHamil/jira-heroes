@@ -3,14 +3,13 @@
   var __slice = [].slice;
 
   define(['util', 'engine'], function(Util, engine) {
-    var GameManager;
-    return GameManager = (function() {
-      function GameManager(hero, campaign) {
+    var BattleManager;
+    return BattleManager = (function() {
+      function BattleManager(user, battle) {
         var _this = this;
-        this.hero = hero;
-        this.campaign = campaign;
+        this.user = user;
+        this.battle = battle;
         this.events = {};
-        this.unhandledEvents = {};
         this.socket = io.connect();
         this.socket.on('connected', function() {
           return _this.onConnected();
@@ -20,40 +19,28 @@
         });
       }
 
-      GameManager.prototype.moveTo = function(node, cb) {
-        return this.socket.emit('move', node, cb);
+      BattleManager.prototype.onConnected = function() {
+        console.log("Connected to game server.");
+        return this.emit('connected');
       };
 
-      GameManager.prototype.onDisconnected = function() {
-        console.log('Disconnected from game server.');
-        return this.emit('disconnect');
+      BattleManager.prototype.onDisconnected = function() {
+        console.log("Disconnected from game server.");
+        return this.emit('disconnected');
       };
 
-      GameManager.prototype.onConnected = function() {
-        var _this = this;
-        console.log("Joining campaign...");
-        return this.socket.emit('join', this.hero._id, this.campaign._id, function(err, data) {
-          if (err != null) {
-            return _this.socket.disconnect();
-          } else {
-            console.log("Emitting event");
-            return _this.emit('joined', data);
-          }
-        });
-      };
-
-      GameManager.prototype.disconnect = function() {
+      BattleManager.prototype.disconnect = function() {
         return this.socket.disconnect();
       };
 
-      GameManager.prototype.on = function(event, cb) {
+      BattleManager.prototype.on = function(event, cb) {
         if (this.events[event] == null) {
           this.events[event] = [];
         }
         return this.events[event].push(cb);
       };
 
-      GameManager.prototype.emit = function() {
+      BattleManager.prototype.emit = function() {
         var args, cb, event, _i, _len, _ref, _results;
         event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         if (this.events[event] != null) {
@@ -67,7 +54,7 @@
         }
       };
 
-      return GameManager;
+      return BattleManager;
 
     })();
   });

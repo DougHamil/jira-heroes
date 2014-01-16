@@ -9,11 +9,11 @@ module.exports = (app, Users) ->
       res.send 400, 'Battle full'
     else if deckId not in user.decks
       res.send 400, "Invalid deck #{deckId}"
-    else if user._id in battle.users or user.activeBattle?
+    else if user._id in battle.users
       res.send 400, 'Already in battle'
     else
       battle.users.push user._id
-      user.activeBattle = battle._id
+      user.activeBattles.push battle._id
       Decks.get deckId, (err, deck) ->
         if err?
           res.send 500, err
@@ -71,20 +71,21 @@ module.exports = (app, Users) ->
           battles = battles.map (b) -> b.getPublicData()
           res.json battles
 
-  # Get active battle
+  # Get active battles
   app.get '/secure/battle/active', (req, res) ->
     Users.fromSession req.session.user, (err, user) ->
       if err?
         res.send 500, err
       else
-        if not user.activeBattle?
+        if not user.activeBattles?
           res.json null
         else
-          Battles.get user.activeBattle, (err, battle) ->
+          Battles.get user.activeBattles, (err, battles) ->
             if err?
               res.send 500, err
             else
-              res.json battle.getPublicData()
+              battles = battles.map (b) -> b.getPublicData()
+              res.json battles
 
   # Get all active battles
   app.get '/battle', (req, res) ->
@@ -102,6 +103,8 @@ module.exports = (app, Users) ->
       if err?
         res.send 500, err
       else if battle?
+        if battle instanceof Array
+          battle = battle[0]
         res.json battle.getPublicData()
       else
         res.send 400, "Bad battle id #{id}"

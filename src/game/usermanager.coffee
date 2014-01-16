@@ -17,7 +17,7 @@ class UserManager
     if @battle?
       # User is already in a battle
       cb Errors.ALREADY_IN_BATTLE
-    else if battleId isnt @user.activeBattle
+    else if battleId not in @user.activeBattles
       # The user is not joined in this battle
       cb Errors.INVALID_BATTLE
     else

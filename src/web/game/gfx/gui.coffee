@@ -4,7 +4,7 @@ define ['./gfx/herobutton',
         './gfx/textfield',
         './gfx/glyphtext',
         './gfx/card',
-        './gfx/deckbutton',
+        './gfx/deckpicker',
         './gfx/deckcardlist',
         './gfx/cardpicker',
         'engine',
@@ -15,7 +15,7 @@ define ['./gfx/herobutton',
         TextField,
         GlyphText,
         Card,
-        DeckButton,
+        DeckPicker,
         DeckCardList,
         CardPicker,
         engine, styles) ->
@@ -26,7 +26,7 @@ define ['./gfx/herobutton',
     GlyphText:GlyphText
     Card:Card
     TextField: TextField
-    DeckButton: DeckButton
+    DeckPicker: DeckPicker
     DeckCardList: DeckCardList
     CardPicker:CardPicker
     STYLES: styles

@@ -65,7 +65,7 @@
         return $.get("/battle/" + battleId, cb);
       };
 
-      JiraHeroesApi.GetActiveBattle = function(cb) {
+      JiraHeroesApi.GetActiveBattles = function(cb) {
         return $.get('/secure/battle/active', cb);
       };
 

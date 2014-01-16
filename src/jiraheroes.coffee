@@ -4,6 +4,7 @@ Server = require './server'
 GameServer = require './game/server'
 mongoose       = require 'mongoose'
 UserController = require '../lib/controllers/user'
+BattleController = require '../lib/controllers/battle'
 DeckController = require '../lib/controllers/deck'
 CardController = require '../lib/controllers/card'
 HeroController = require '../lib/controllers/hero'
@@ -34,6 +35,7 @@ db.once 'open', ->
     DeckController(server.app, Users)
     CardController(server.app, Users)
     HeroController(server.app, Users)
+    BattleController(server.app, Users)
     ViewsController(server.app)
     GameServer server.app.listen(3001), server.sessionStore, server.cookieParser, Users
     console.log 'Listening on port 3001'
