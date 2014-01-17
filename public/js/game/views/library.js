@@ -79,7 +79,9 @@
             this.removeChild(this.pages[this.pageIndex]);
           }
           this.pageIndex = index;
-          return this.addChild(this.pages[this.pageIndex]);
+          if (this.pages[this.pageIndex] != null) {
+            return this.addChild(this.pages[this.pageIndex]);
+          }
         }
       };
 
@@ -91,7 +93,9 @@
         if (JH.nameText != null) {
           this.removeChild(JH.nameText);
         }
-        this.removeChild(this.pages[this.pageIndex]);
+        if (this.pages[this.pageIndex] != null) {
+          this.removeChild(this.pages[this.pageIndex]);
+        }
         return this.pageIndex = null;
       };
 
@@ -100,7 +104,7 @@
           _this = this;
         this.hero = hero;
         activate = function(cards) {
-          var buyCard, card, cardIndex, cardSprite, pageContainer, xpos, ypos, _i, _len;
+          var buyCard, card, cardId, cardIndex, cardSprite, pageContainer, xpos, ypos;
           _this.updateLibrary(JH.user.library);
           JH.cards = cards;
           _this.cardsById = {};
@@ -108,8 +112,8 @@
           _this.pages = [];
           pageContainer = new PIXI.DisplayObjectContainer;
           cardIndex = 0;
-          for (_i = 0, _len = cards.length; _i < _len; _i++) {
-            card = cards[_i];
+          for (cardId in cards) {
+            card = cards[cardId];
             cardSprite = GUI.Card.FromClass(card);
             pageContainer.addChild(cardSprite);
             cardSprite.onHoverStart(function(card) {

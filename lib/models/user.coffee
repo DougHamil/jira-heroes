@@ -12,6 +12,10 @@ _schema = new Schema
   decks: [{type:String}]
   points: {type:Number, default:0}
 
+_schema.methods.getPublicData = ->
+  out =
+    _id:@_id
+    name: @name
 _schema.methods.hasDeck = (deckId) ->
   return deckId in @decks
 
@@ -59,7 +63,10 @@ User = (jira)->
           cb err, user
 
   _get = (id, cb) ->
-    _model.findOne {_id:id}, cb
+    if id instanceof Array
+      _model.find {_id:{$in:id}}, cb
+    else
+      _model.findOne {_id:id}, cb
 
   _fromSession = (sessionUser, cb) ->
     _get sessionUser._id, cb

@@ -57,6 +57,10 @@
         }, cb);
       };
 
+      JiraHeroesApi.GetOpenBattles = function(cb) {
+        return $.get('/battle/open', cb);
+      };
+
       JiraHeroesApi.GetAllBattles = function(cb) {
         return $.get('/battle', cb);
       };
@@ -84,6 +88,12 @@
       JiraHeroesApi.JoinBattle = function(battleId, deckId, cb) {
         return $.post("/secure/battle/" + battleId + "/join", {
           deck: deckId
+        }, cb);
+      };
+
+      JiraHeroesApi.GetUsers = function(userIds, cb) {
+        return $.post('/user/find', {
+          users: JSON.stringify(userIds)
         }, cb);
       };
 

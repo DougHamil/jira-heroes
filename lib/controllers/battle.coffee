@@ -96,6 +96,15 @@ module.exports = (app, Users) ->
         battles = battles.map (b) -> b.getPublicData()
         res.json battles
 
+  # Get all open battles
+  app.get '/battle/open', (req, res) ->
+    Battles.query {'users.1':{$exists:false}}, (err, battles) ->
+      if err?
+        res.send 500, err
+      else
+        battles = battles.map (b) -> b.getPublicData()
+        res.json battles
+
   # Get specific battle
   app.get '/battle/:id', (req, res) ->
     id = req.params.id

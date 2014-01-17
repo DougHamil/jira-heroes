@@ -32,6 +32,8 @@ define ['jquery'], ($) ->
       $.post "/secure/deck/#{deckId}/cards", {cards:cardIds}, cb
 
     # - Battle
+    @GetOpenBattles: (cb) ->
+      $.get '/battle/open', cb
     @GetAllBattles: (cb) ->
       $.get '/battle', cb
     @GetBattle: (battleId, cb) ->
@@ -46,6 +48,8 @@ define ['jquery'], ($) ->
       $.post "/secure/battle/#{battleId}/join", {deck:deckId}, cb
 
     # - User
+    @GetUsers: (userIds, cb) ->
+      $.post '/user/find', {users:JSON.stringify(userIds)}, cb
     @GetUser: (cb) ->
       $.get '/secure/user', cb
     @GetUserLibrary: (cb) ->

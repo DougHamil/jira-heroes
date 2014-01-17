@@ -4,6 +4,7 @@ define ['./views/mainmenu',
         './views/createdeck',
         './views/editdeck',
         './views/hostbattle',
+        './views/joinbattle',
         './views/battle',
         'jiraheroes', 'engine'], (
             MainMenu,
@@ -12,6 +13,7 @@ define ['./views/mainmenu',
             CreateDeck,
             EditDeck,
             HostBattle,
+            JoinBattle,
             Battle,
             JH) ->
   class MenuManager
@@ -23,6 +25,7 @@ define ['./views/mainmenu',
         'CreateDeck': new CreateDeck @, @stage
         'EditDeck': new EditDeck @, @stage
         'HostBattle': new HostBattle @, @stage
+        'JoinBattle': new JoinBattle @, @stage
         'Battle': new Battle @, @stage
 
     activateView: (view, args...) ->

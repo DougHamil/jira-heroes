@@ -45,7 +45,8 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         if @pageIndex?
           @.removeChild @pages[@pageIndex]
         @pageIndex = index
-        @.addChild @pages[@pageIndex]
+        if @pages[@pageIndex]?
+          @.addChild @pages[@pageIndex]
 
     deactivate: ->
       @myStage.removeChild @
@@ -53,7 +54,8 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @.removeChild JH.pointsText
       if JH.nameText?
         @.removeChild JH.nameText
-      @.removeChild @pages[@pageIndex]
+      if @pages[@pageIndex]?
+        @.removeChild @pages[@pageIndex]
       @pageIndex = null
 
     activate: (@hero) ->
@@ -65,7 +67,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @pages = []
         pageContainer = new PIXI.DisplayObjectContainer
         cardIndex = 0
-        for card in cards
+        for cardId, card of cards
           cardSprite = GUI.Card.FromClass card
           pageContainer.addChild cardSprite
           cardSprite.onHoverStart (card) =>

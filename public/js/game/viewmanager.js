@@ -2,7 +2,7 @@
 (function() {
   var __slice = [].slice;
 
-  define(['./views/mainmenu', './views/library', './views/decks', './views/createdeck', './views/editdeck', './views/hostbattle', './views/battle', 'jiraheroes', 'engine'], function(MainMenu, Library, Decks, CreateDeck, EditDeck, HostBattle, Battle, JH) {
+  define(['./views/mainmenu', './views/library', './views/decks', './views/createdeck', './views/editdeck', './views/hostbattle', './views/joinbattle', './views/battle', 'jiraheroes', 'engine'], function(MainMenu, Library, Decks, CreateDeck, EditDeck, HostBattle, JoinBattle, Battle, JH) {
     var MenuManager;
     return MenuManager = (function() {
       function MenuManager(stage) {
@@ -14,6 +14,7 @@
           'CreateDeck': new CreateDeck(this, this.stage),
           'EditDeck': new EditDeck(this, this.stage),
           'HostBattle': new HostBattle(this, this.stage),
+          'JoinBattle': new JoinBattle(this, this.stage),
           'Battle': new Battle(this, this.stage)
         };
       }

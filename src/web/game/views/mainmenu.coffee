@@ -17,6 +17,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @libraryBtn.onClick => @manager.activateView 'Library'
       @decksBtn.onClick => @manager.activateView 'Decks'
       @hostBtn.onClick => @manager.activateView 'HostBattle'
+      @joinBtn.onClick => @manager.activateView 'JoinBattle'
 
       @.addChild @menuText
       @.addChild @hostBtn

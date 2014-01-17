@@ -7,6 +7,7 @@ define ['./gfx/herobutton',
         './gfx/deckpicker',
         './gfx/deckcardlist',
         './gfx/cardpicker',
+        './gfx/battlepicker',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -18,6 +19,7 @@ define ['./gfx/herobutton',
         DeckPicker,
         DeckCardList,
         CardPicker,
+        BattlePicker,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -29,6 +31,7 @@ define ['./gfx/herobutton',
     DeckPicker: DeckPicker
     DeckCardList: DeckCardList
     CardPicker:CardPicker
+    BattlePicker:BattlePicker
     STYLES: styles
 
   return GUI

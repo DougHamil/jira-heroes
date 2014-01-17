@@ -17,6 +17,27 @@ module.exports = (app, Users) ->
             delete req.session.redir
             res.redirect redir
 
+  app.post '/user/find', (req, res) ->
+    userIds = req.body.users
+    if userIds?
+      err = null
+      try
+        userIds = JSON.parse(req.body.users)
+      catch ex
+        err = ex
+      if err? or not userIds instanceof Array
+        res.send 400, "Expected 'users'"
+      else
+        Users.get userIds, (err, users) ->
+          if err?
+            res.send 500, err
+          else
+            users = users.map (u) -> u.getPublicData()
+            res.json users
+    else
+      res.send 400, "Expected 'users'"
+
+
   app.get '/secure/user', (req, res) ->
     Users.fromSession req.session.user, (err, user) ->
       if err?

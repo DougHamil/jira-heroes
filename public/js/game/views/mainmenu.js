@@ -43,6 +43,9 @@
         this.hostBtn.onClick(function() {
           return _this.manager.activateView('HostBattle');
         });
+        this.joinBtn.onClick(function() {
+          return _this.manager.activateView('JoinBattle');
+        });
         this.addChild(this.menuText);
         this.addChild(this.hostBtn);
         this.addChild(this.joinBtn);
