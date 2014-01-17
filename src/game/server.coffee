@@ -19,6 +19,7 @@ module.exports = (expressServer, sessionStore, cookieParser, Users) ->
 
     socket.on 'disconnect', ->
       if userManagers[session.user._id]
+        userManagers[session.user._id].onDisconnected()
         delete userManagers[session.user._id]
 
     Users.fromSession session.user, (err, user) ->

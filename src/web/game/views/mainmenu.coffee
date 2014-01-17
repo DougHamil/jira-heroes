@@ -25,15 +25,22 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @.addChild @decksBtn
       @.addChild @libraryBtn
 
+    onActiveBattlePicked: (battleId) ->
+      JH.GetBattle battleId, (battle) =>
+        @manager.activateView 'Battle', battle
+
     deactivate: ->
       @myStage.removeChild @
       if JH.pointsText?
         @.removeChild JH.pointsText
       if JH.nameText?
         @.removeChild JH.nameText
+      if @activeBattlePicker?
+        @.removeChild @activeBattlePicker
+        @activeBattlePicker = null
 
     activate: ->
-      activate = (user) =>
+      activate = (battles, user, usersById) =>
         JH.user = user
         @myStage.addChild @
         JH.nameText = new PIXI.Text "#{user.name}", GUI.STYLES.TEXT
@@ -42,7 +49,16 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
         JH.pointsText.position = {x: engine.WIDTH - JH.pointsText.width - 20, y: engine.HEIGHT - JH.pointsText.height - 20}
         @.addChild JH.pointsText
         @.addChild JH.nameText
-      if not JH.user?
-        JH.GetUser activate
-      else
-        activate(JH.user)
+        if battles? and battles.length > 0
+          @activeBattlePicker = new GUI.BattlePicker battles, usersById
+          @activeBattlePicker.onBattlePicked (battleId) => @onActiveBattlePicked(battleId)
+          @activeBattlePicker.position = {x:0, y:100}
+          @.addChild @activeBattlePicker
+      JH.GetUser (user) =>
+        JH.GetActiveBattles (battles) =>
+          userIds = battles.map (b) -> b.users[0]
+          JH.GetUsers userIds, (users) =>
+            usersById = {}
+            for user in users
+              usersById[user._id] = user
+            activate battles, user, usersById

@@ -16,15 +16,42 @@
         this.manager = manager;
         this.myStage = myStage;
         Battle.__super__.constructor.apply(this, arguments);
+        this.statusText = new PIXI.Text('Hosting battle...', GUI.STYLES.TEXT);
+        this.setStatusText('Connecting to battle...');
+        this.addChild(this.statusText);
       }
+
+      Battle.prototype.setStatusText = function(text) {
+        return this.statusText.setText(text);
+      };
+
+      Battle.prototype.onBattleStatus = function(status) {
+        if ((status != null) && status.id === 'BATTLE_NOT_READY') {
+          return this.setStatusText('Waiting for opponent to join...');
+        }
+      };
 
       Battle.prototype.activate = function(battle) {
         var _this = this;
         this.battle = battle;
         this.myStage.addChild(this);
-        this.battleManager = new BattleManager(this.battle);
-        return this.battleManager.on('connected', function() {
-          return console.log("IM CONNECTED");
+        this.battleManager = new BattleManager(JH.user, this.battle);
+        this.battleManager.on('connected', function() {});
+        this.battleManager.on('battle-ready', function() {
+          _this.setStatusText('Battle is ready!');
+          return _this.battleManager.join();
+        });
+        this.battleManager.on('battle-status', function(status) {
+          return _this.onBattleStatus(status);
+        });
+        this.battleManager.on('player-connected', function(userId) {
+          return _this.setStatusText('Joined battle ' + _this.battleManager.model.battle.connectedPlayers.length + ' players connected.');
+        });
+        this.battleManager.on('player-disconnected', function(userId) {
+          return _this.setStatusText('Joined battle ' + _this.battleManager.model.battle.connectedPlayers.length + ' players connected.');
+        });
+        return this.battleManager.on('joined', function(battle) {
+          return _this.setStatusText('Joined battle ' + battle.battle.connectedPlayers.length + ' players connected.');
         });
       };
 

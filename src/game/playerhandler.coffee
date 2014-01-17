@@ -14,6 +14,7 @@ class PlayerHandler extends EventEmitter
     @model = @battle.model
     @userId = @player.userId
 
+  disconnect: ->
   connect: (@socket) ->
       @socket.on Events.READY, @onReady()
       @socket.on Events.PLAY_CARD, @onPlayCard()

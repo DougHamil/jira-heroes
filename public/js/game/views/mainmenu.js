@@ -53,20 +53,31 @@
         this.addChild(this.libraryBtn);
       }
 
+      MainMenu.prototype.onActiveBattlePicked = function(battleId) {
+        var _this = this;
+        return JH.GetBattle(battleId, function(battle) {
+          return _this.manager.activateView('Battle', battle);
+        });
+      };
+
       MainMenu.prototype.deactivate = function() {
         this.myStage.removeChild(this);
         if (JH.pointsText != null) {
           this.removeChild(JH.pointsText);
         }
         if (JH.nameText != null) {
-          return this.removeChild(JH.nameText);
+          this.removeChild(JH.nameText);
+        }
+        if (this.activeBattlePicker != null) {
+          this.removeChild(this.activeBattlePicker);
+          return this.activeBattlePicker = null;
         }
       };
 
       MainMenu.prototype.activate = function() {
         var activate,
           _this = this;
-        activate = function(user) {
+        activate = function(battles, user, usersById) {
           JH.user = user;
           _this.myStage.addChild(_this);
           JH.nameText = new PIXI.Text("" + user.name, GUI.STYLES.TEXT);
@@ -80,13 +91,36 @@
             y: engine.HEIGHT - JH.pointsText.height - 20
           };
           _this.addChild(JH.pointsText);
-          return _this.addChild(JH.nameText);
+          _this.addChild(JH.nameText);
+          if ((battles != null) && battles.length > 0) {
+            _this.activeBattlePicker = new GUI.BattlePicker(battles, usersById);
+            _this.activeBattlePicker.onBattlePicked(function(battleId) {
+              return _this.onActiveBattlePicked(battleId);
+            });
+            _this.activeBattlePicker.position = {
+              x: 0,
+              y: 100
+            };
+            return _this.addChild(_this.activeBattlePicker);
+          }
         };
-        if (JH.user == null) {
-          return JH.GetUser(activate);
-        } else {
-          return activate(JH.user);
-        }
+        return JH.GetUser(function(user) {
+          return JH.GetActiveBattles(function(battles) {
+            var userIds;
+            userIds = battles.map(function(b) {
+              return b.users[0];
+            });
+            return JH.GetUsers(userIds, function(users) {
+              var usersById, _i, _len;
+              usersById = {};
+              for (_i = 0, _len = users.length; _i < _len; _i++) {
+                user = users[_i];
+                usersById[user._id] = user;
+              }
+              return activate(battles, user, usersById);
+            });
+          });
+        });
       };
 
       return MainMenu;

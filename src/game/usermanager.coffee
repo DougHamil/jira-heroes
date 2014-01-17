@@ -7,9 +7,19 @@ to the proper Battle instance
 ###
 class UserManager
   constructor: (@user, @socket) ->
-    @socket.on 'join', (battleId, cb) =>
-      @onJoin(battleId, cb)
+    @socket.on 'join', (battleId, cb) => @onJoin(battleId, cb)
+    @socket.on 'battle-status', (battleId, cb) => @onBattleStatus battleId, cb
 
+  onBattleStatus: (battleId, cb) ->
+    BattleManager.get battleId, (err, battle) =>
+      cb err
+
+  ###
+  # Called when the socket was disconnected
+  ###
+  onDisconnected: ->
+    if @battle?
+      @battle.onDisconnect @user
   ###
   # Called when a user wants to join a battle
   ###

@@ -34,10 +34,17 @@ class Battle
   ###
   # EVENTS
   ###
+  # Called when a user disconnects from this battle
+  onDisconnect: (user) ->
+    @players[user._id.toString()].disconnect()
+    delete @sockets[user._id]
+    @emitAll 'player-disconnected', user._id
+
   # Called when a user connects to this battle
   onConnect: (user, socket) ->
     @players[user._id.toString()].connect socket
     @sockets[user._id] = socket
+    @emitAllBut user._id.toString(), 'player-connected', user._id
 
   # Called when the player is ready to start the battle
   onReady: (userId) ->
@@ -202,6 +209,7 @@ class Battle
     player = @players[user._id]
     out =
       battle:
+        connectedPlayers: (playerId for playerId, socket of @sockets)
         state:
           phase:@model.state.phase
       you:

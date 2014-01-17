@@ -3,12 +3,15 @@
   var __slice = [].slice;
 
   define(['util', 'engine'], function(Util, engine) {
-    var BattleManager;
+    var BattleManager, POLL_DELAY;
+    POLL_DELAY = 3000;
     return BattleManager = (function() {
       function BattleManager(user, battle) {
-        var _this = this;
+        var pollStatus,
+          _this = this;
         this.user = user;
         this.battle = battle;
+        this.battleReady = false;
         this.events = {};
         this.socket = io.connect();
         this.socket.on('connected', function() {
@@ -17,16 +20,66 @@
         this.socket.on('disconnect', function() {
           return _this.onDisconnected();
         });
+        this.socket.on('player-connected', function(userId) {
+          return _this.onPlayerConnected(userId);
+        });
+        this.socket.on('player-disconnected', function(userId) {
+          return _this.onPlayerDisconnected(userId);
+        });
+        pollStatus = function() {
+          return _this.pollBattleStatus();
+        };
+        this.pollTimeout = setTimeout(pollStatus, POLL_DELAY);
+        this.pollBattleStatus();
       }
 
+      BattleManager.prototype.pollBattleStatus = function() {
+        var _this = this;
+        return this.socket.emit('battle-status', this.battle._id, function(status) {
+          var pollStatus;
+          if ((status == null) && !_this.battleReady) {
+            _this.battleReady = true;
+            _this.emit('battle-ready');
+            return clearTimeout(_this.pollTimeout);
+          } else {
+            _this.emit('battle-status', status);
+            pollStatus = function() {
+              return _this.pollBattleStatus();
+            };
+            return _this.pollTimeout = setTimeout(pollStatus, POLL_DELAY);
+          }
+        });
+      };
+
+      BattleManager.prototype.join = function() {
+        var _this = this;
+        return this.socket.emit('join', this.battle._id, function(err, battle) {
+          if (err == null) {
+            console.log(battle);
+            _this.model = battle;
+            return _this.emit('joined', battle);
+          }
+        });
+      };
+
       BattleManager.prototype.onConnected = function() {
-        console.log("Connected to game server.");
         return this.emit('connected');
       };
 
       BattleManager.prototype.onDisconnected = function() {
-        console.log("Disconnected from game server.");
         return this.emit('disconnected');
+      };
+
+      BattleManager.prototype.onPlayerConnected = function(userId) {
+        this.model.battle.connectedPlayers.push(userId);
+        return this.emit('player-connected', userId);
+      };
+
+      BattleManager.prototype.onPlayerDisconnected = function(userId) {
+        this.model.battle.connectedPlayers = this.model.battle.connectedPlayers.filter(function(u) {
+          return u !== userId;
+        });
+        return this.emit('player-disconnected', userId);
       };
 
       BattleManager.prototype.disconnect = function() {
