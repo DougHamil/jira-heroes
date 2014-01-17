@@ -13,8 +13,6 @@
 
       function BattleButton(battle, users) {
         BattleButton.__super__.constructor.apply(this, arguments);
-        console.log(users);
-        console.log(battle);
         if (battle.users.length > 0) {
           this.name = new PIXI.Text(users[battle.users[0]].name, STYLES.TEXT);
         } else {

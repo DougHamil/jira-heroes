@@ -11,7 +11,6 @@ define ['jquery', 'tween', 'pixi'], ($) ->
     timeMultiplier:1
     paused:false
 
-  lastTime = new Date()
   animate = ->
     requestAnimFrame animate
     for callback in engine.updateCallbacks

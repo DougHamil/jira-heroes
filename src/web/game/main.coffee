@@ -11,6 +11,7 @@ require.config
     tween: '../lib/tween'
     util: '../lib/util'
     gui: './gfx/gui'
+    eventemitter: '../lib/eventemitter'
 
 define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engine, GUI, ViewManager) ->
   $(document).ready ->

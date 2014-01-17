@@ -122,6 +122,20 @@
         };
       };
 
+      Card.prototype.onMouseDown = function(cb) {
+        var _this = this;
+        return this.mousedown = function() {
+          return cb(_this);
+        };
+      };
+
+      Card.prototype.onMouseUp = function(cb) {
+        var _this = this;
+        return this.mouseup = function() {
+          return cb(_this);
+        };
+      };
+
       Card.prototype.buildAbilityText = function(cardClass) {
         var ability, chunk, chunks, count, parent, prop, string, text, _i, _j, _len, _len1, _ref;
         parent = new PIXI.DisplayObjectContainer;

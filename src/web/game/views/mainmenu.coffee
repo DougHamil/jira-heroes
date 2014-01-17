@@ -59,6 +59,6 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
           userIds = battles.map (b) -> b.users[0]
           JH.GetUsers userIds, (users) =>
             usersById = {}
-            for user in users
-              usersById[user._id] = user
+            for userObj in users
+              usersById[userObj._id] = userObj
             activate battles, user, usersById

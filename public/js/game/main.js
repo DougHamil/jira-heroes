@@ -14,7 +14,8 @@
       engine: '../lib/engine',
       tween: '../lib/tween',
       util: '../lib/util',
-      gui: './gfx/gui'
+      gui: './gfx/gui',
+      eventemitter: '../lib/eventemitter'
     }
   });
 

@@ -111,11 +111,11 @@
               return b.users[0];
             });
             return JH.GetUsers(userIds, function(users) {
-              var usersById, _i, _len;
+              var userObj, usersById, _i, _len;
               usersById = {};
               for (_i = 0, _len = users.length; _i < _len; _i++) {
-                user = users[_i];
-                usersById[user._id] = user;
+                userObj = users[_i];
+                usersById[userObj._id] = userObj;
               }
               return activate(battles, user, usersById);
             });

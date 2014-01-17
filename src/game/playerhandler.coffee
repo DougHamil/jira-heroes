@@ -36,29 +36,29 @@ class PlayerHandler extends EventEmitter
               # Can only target cards on the field
               if targetCard? and targetCard.position is 'field'
                 cardHandler.use targetCard, (err, actions) =>
-                  cb err, actions
+                  cb err, actions if cb?
                   if not err?
                     @emit Events.USE_CARD, card, targetCard, actions
               else
-                cb Errors.INVALID_TARGET
+                cb Errors.INVALID_TARGET if cb?
             # Card use targeting a hero
             else if target.hero?
               hero = @battle.getHero(target.hero)
               if hero?
                 cardHandler.use hero, (err, actions) =>
-                  cb err, actions
+                  cb err, actions if cb?
                   if not err?
                     @emit Events.USE_CARD, card, hero, actions
               else
-                cb Errors.INVALID_TARGET
+                cb Errors.INVALID_TARGET if cb?
             else
-              cb Errors.INVALID_ACTION
+              cb Errors.INVALID_ACTION if cb?
           else
-            cb Errors.INVALID_ACTION
+            cb Errors.INVALID_ACTION if cb?
         else
-          cb Errors.INVALID_CARD
+          cb Errors.INVALID_CARD if cb?
       else
-        cb Errors.INVALID_ACTION
+        cb Errors.INVALID_ACTION if cb?
 
   onEndTurn: ->
     (cb) =>
@@ -66,9 +66,9 @@ class PlayerHandler extends EventEmitter
         actions = [new EndTurnAction(@player)]
         payloads = @battle.processActions actions
         @emit 'end-turn', payloads
-        cb null, payloads
+        cb null, payloads if cb?
       else
-        cb Errors.INVALID_ACTION
+        cb Errors.INVALID_ACTION if cb?
 
   onPlayCard: ->
     (cardId, target, cb) =>
@@ -76,21 +76,21 @@ class PlayerHandler extends EventEmitter
       if @model.state.phase == 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
         cardHandler.play target, (err, actions) =>
           if err?
-            cb err
+            cb err if cb?
           else
             @emit Events.PLAY_CARD, cardHandler.model, actions
-            cb null, cardHandler.model, actions
+            cb null, cardHandler.model, actions if cb?
       else
-        cb Errors.INVALID_ACTION
+        cb Errors.INVALID_ACTION if cb?
 
   onReady: ->
       (cb) =>
         if @model.state.phase == 'initial' and @player.userId not in @model.state.playersReady
           @model.state.playersReady.push @player.userId
-          cb null
+          cb null if cb?
           @emit Events.READY
         else
-          cb Errors.INVALID_ACTION
+          cb Errors.INVALID_ACTION if cb?
 
   ###
   # Override properties for automated tests
@@ -99,7 +99,7 @@ class PlayerHandler extends EventEmitter
     (prop, value, cb) =>
       if global.isTest?
         @player[prop] = value
-      cb()
+      cb() if cb?
 
   drawCards: (num) ->
     if not num? then num = 1

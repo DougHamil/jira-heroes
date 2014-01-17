@@ -58,15 +58,11 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
       @.interactive = true
 
-    onHoverStart: (cb) ->
-      @.mouseover = =>
-        cb @
-    onHoverEnd: (cb) ->
-      @.mouseout = =>
-        cb @
-    onClick: (cb) ->
-      @.click = =>
-        cb @
+    onHoverStart: (cb) -> @.mouseover = => cb @
+    onHoverEnd: (cb) -> @.mouseout = => cb @
+    onClick: (cb) -> @.click = => cb @
+    onMouseDown: (cb) -> @.mousedown = => cb @
+    onMouseUp: (cb) -> @.mouseup = =>cb @
 
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer

@@ -3,7 +3,7 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['jquery', 'jiraheroes', 'gui', 'client/battlemanager', 'engine', 'pixi'], function($, JH, GUI, BattleManager, engine) {
+  define(['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'engine', 'pixi'], function($, JH, GUI, CardManager, BattleManager, engine) {
     /*
     # This view displays the actual battle part of the game to the player
     */
@@ -25,17 +25,89 @@
         return this.statusText.setText(text);
       };
 
+      Battle.prototype.initUI = function(phase) {
+        var readyBtn, txt,
+          _this = this;
+        if (this.innerStage != null) {
+          this.removeChild(this.innerStage);
+        }
+        this.innerStage = new PIXI.DisplayObjectContainer;
+        if (phase === 'initial') {
+          if (!this.battle.isReadied()) {
+            readyBtn = new GUI.TextButton('Ready', GUI.STYLES.TEXT);
+            readyBtn.position = {
+              x: engine.WIDTH / 2 - readyBtn.width / 2,
+              y: engine.HEIGHT / 2 - readyBtn.height / 2
+            };
+            readyBtn.onClick(function() {
+              return _this.battle.emitReadyEvent(function(err) {
+                var txt;
+                if (err == null) {
+                  _this.innerStage.removeChild(readyBtn);
+                  txt = new PIXI.Text('Waiting for opponent to ready-up', GUI.STYLES.TEXT);
+                  txt.position = {
+                    x: engine.WIDTH / 2 - txt.width / 2,
+                    y: engine.HEIGHT / 2 - txt.height / 2
+                  };
+                  return _this.innerStage.addChild(txt);
+                }
+              });
+            });
+            this.innerStage.addChild(readyBtn);
+          } else {
+            txt = new PIXI.Text('Waiting for opponent to ready-up', GUI.STYLES.TEXT);
+            txt.position = {
+              x: engine.WIDTH / 2 - txt.width / 2,
+              y: engine.HEIGHT / 2 - txt.height / 2
+            };
+            this.innerStage.addChild(txt);
+          }
+        }
+        return this.addChild(this.innerStage);
+      };
+
+      Battle.prototype.createCardSprite = function(card) {
+        var sprite;
+        sprite = new GUI.Card(JH.cards[card["class"]], card.damage, card.health, card.status);
+        return sprite;
+      };
+
       Battle.prototype.onBattleStatus = function(status) {
         if ((status != null) && status.id === 'BATTLE_NOT_READY') {
           return this.setStatusText('Waiting for opponent to join...');
         }
       };
 
+      Battle.prototype.onBattleJoined = function(battle) {
+        var updateStatus,
+          _this = this;
+        this.battle = battle;
+        updateStatus = function() {
+          return _this.setStatusText(_this.battle.getConnectedPlayers().length + ' players connected.');
+        };
+        this.battle.on('player-connected', function() {
+          return updateStatus();
+        });
+        this.battle.on('player-disconnected', function() {
+          return updateStatus();
+        });
+        this.battle.on('player-readied', function() {
+          return updateStatus();
+        });
+        this.battle.on('phase', function(o, n) {
+          return _this.initUI(n);
+        });
+        this.cardManager = new CardManager(JH.cards, JH.user._id, this.battle);
+        this.addChild(this.cardManager);
+        updateStatus();
+        return this.initUI(this.battle.getPhase());
+      };
+
       Battle.prototype.activate = function(battle) {
         var _this = this;
         this.battle = battle;
         this.myStage.addChild(this);
-        this.battleManager = new BattleManager(JH.user, this.battle);
+        this.battleManager = new BattleManager(JH.user, this.battle._id);
         this.battleManager.on('connected', function() {});
         this.battleManager.on('battle-ready', function() {
           _this.setStatusText('Battle is ready!');
@@ -44,19 +116,21 @@
         this.battleManager.on('battle-status', function(status) {
           return _this.onBattleStatus(status);
         });
-        this.battleManager.on('player-connected', function(userId) {
-          return _this.setStatusText('Joined battle ' + _this.battleManager.model.battle.connectedPlayers.length + ' players connected.');
-        });
-        this.battleManager.on('player-disconnected', function(userId) {
-          return _this.setStatusText('Joined battle ' + _this.battleManager.model.battle.connectedPlayers.length + ' players connected.');
-        });
         return this.battleManager.on('joined', function(battle) {
-          return _this.setStatusText('Joined battle ' + battle.battle.connectedPlayers.length + ' players connected.');
+          return _this.onBattleJoined(battle);
         });
       };
 
       Battle.deactivate = function() {
-        return this.myStage.removeChild(this);
+        this.myStage.removeChild(this);
+        if (this.innerStage != null) {
+          this.removeChild(this.innerStage);
+          this.innerStage = null;
+        }
+        if (this.cardManager != null) {
+          this.removeChild(this.cardManager);
+          return this.cardManager = null;
+        }
       };
 
       return Battle;

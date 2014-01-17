@@ -105,6 +105,8 @@
           userIds = battles.map(function(b) {
             return b.users[0];
           });
+          console.log(JH.user);
+          console.log(battles);
           battles = battles.filter(function(b) {
             var _ref;
             return _ref = JH.user._id, __indexOf.call(b.users, _ref) < 0;

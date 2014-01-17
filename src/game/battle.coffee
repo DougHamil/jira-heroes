@@ -49,6 +49,7 @@ class Battle
   # Called when the player is ready to start the battle
   onReady: (userId) ->
     =>
+      @emitAllBut userId, 'player-ready', userId
       if @model.state.playersReady.length is @model.players.length
         @startGame()
 
@@ -208,10 +209,10 @@ class Battle
   getData: (user) ->
     player = @players[user._id]
     out =
-      battle:
-        connectedPlayers: (playerId for playerId, socket of @sockets)
-        state:
-          phase:@model.state.phase
+      connectedPlayers: (playerId for playerId, socket of @sockets)
+      readiedPlayers: @model.state.playersReady
+      state:
+        phase:@model.state.phase
       you:
         hero: player.getHero()
         field: player.getFieldCards()
