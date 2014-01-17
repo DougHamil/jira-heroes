@@ -32,7 +32,18 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
           txt = new PIXI.Text 'Waiting for opponent to ready-up', GUI.STYLES.TEXT
           txt.position = {x:engine.WIDTH/2 - txt.width/2, y: engine.HEIGHT/2 - txt.height/2}
           @innerStage.addChild txt
+      else if phase is 'game'
+        @energySprite = new PIXI.Text @battle.getEnergy() + " energy"
+        @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
+        @cardManager = new CardManager(JH.cards, JH.user._id, @battle)
+        @.addChild @energySprite
+        @.addChild @cardManager
+
       @.addChild @innerStage
+
+    updateGameStatus: ->
+      if @energySprite?
+        @energySprite.setText @battle.getEnergy() + " energy"
 
     createCardSprite: (card) ->
       sprite = new GUI.Card JH.cards[card.class], card.damage, card.health, card.status
@@ -48,9 +59,8 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
       @battle.on 'player-connected', => updateStatus()
       @battle.on 'player-disconnected', => updateStatus()
       @battle.on 'player-readied', => updateStatus()
+      @battle.on 'your-turn', (e) => @updateGameStatus()
       @battle.on 'phase', (o, n) => @initUI(n)
-      @cardManager = new CardManager(JH.cards, JH.user._id, @battle)
-      @.addChild @cardManager
       updateStatus()
       @initUI @battle.getPhase()
 

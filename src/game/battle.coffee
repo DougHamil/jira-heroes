@@ -8,6 +8,7 @@ Events = require './events'
 
 CARDS_DRAWN_PER_TURN = 1 # Number of cards to draw each turn
 INITIAL_CARD_COUNT = 3 # Second turn player gets 3 cards to start
+ENERGY_INCREASE_PER_TURN = 1
 
 class Battle
   constructor: (@model) ->
@@ -112,8 +113,8 @@ class Battle
     # Pick the next player and set to active
     if not firstTurn? or not firstTurn
       @assignNextActivePlayer()
-    @emitActive 'your-turn'
-    @emitAllButActive 'opponent-turn', @model.state.activePlayer
+    @emitActive 'your-turn', ENERGY_INCREASE_PER_TURN
+    @emitAllButActive 'opponent-turn', @model.state.activePlayer, ENERGY_INCREASE_PER_TURN
     # Draw card
     if not firstTurn? or not firstTurn
       @drawCards(@model.state.activePlayer, CARDS_DRAWN_PER_TURN)
@@ -214,6 +215,7 @@ class Battle
       state:
         phase:@model.state.phase
       you:
+        energy: player.getEnergy()
         hero: player.getHero()
         field: player.getFieldCards()
         hand: player.getHandCards()

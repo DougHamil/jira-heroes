@@ -54,6 +54,9 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @tauntFrameSprite.visible = isTaunting
       @frameSprite.visible = !isTaunting
 
+    onHoverStart: (cb) -> @.mouseover = => cb @
+    onHoverEnd: (cb) -> @.mouseout = => cb @
+
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()

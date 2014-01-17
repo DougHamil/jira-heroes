@@ -4,7 +4,12 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'gui', 'engine', 'util', 'pixi'], function($, GUI, engine, Util) {
-    var CardManager, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME;
+    var CardManager, FIELD_AREA, FIELD_ORIGIN, FIELD_PADDING, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME, TOKEN_CARD_OFFSET;
+    FIELD_ORIGIN = {
+      x: 20,
+      y: engine.HEIGHT / 2
+    };
+    FIELD_PADDING = 50;
     HAND_ORIGIN = {
       x: 20,
       y: engine.HEIGHT - 20
@@ -13,6 +18,8 @@
     HAND_HOVER_OFFSET = 50;
     HAND_PADDING = 20;
     HOVER_ANIM_TIME = 200;
+    TOKEN_CARD_OFFSET = 100;
+    FIELD_AREA = new PIXI.Rectangle(20, 200, engine.WIDTH - 80, 500);
     /*
     # Manages all card sprites in the battle by positioning and animating them
     # as the battle unfolds.
@@ -22,23 +29,77 @@
       __extends(CardManager, _super);
 
       function CardManager(cardClasses, userId, battle) {
-        var card, _i, _len, _ref,
+        var card, _i, _j, _len, _len1, _ref, _ref1,
           _this = this;
         this.cardClasses = cardClasses;
         this.userId = userId;
         this.battle = battle;
         CardManager.__super__.constructor.apply(this, arguments);
         this.cardSprites = {};
+        this.cardTokens = {};
         this.handSprites = [];
+        this.fieldSprites = [];
         _ref = this.battle.getCardsInHand();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           card = _ref[_i];
           this.putCardInHand(card, false);
         }
+        _ref1 = this.battle.getCardsOnField();
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          card = _ref1[_j];
+          this.putCardOnField(card, false);
+        }
         engine.updateCallbacks.push(function() {
           return _this.update();
         });
+        document.body.onmouseup = function() {
+          if (_this.targetingSource != null) {
+            if (!_this.onTargeted(_this.targetingSource, _this.stage.getMousePosition().clone())) {
+              if (_this.targetingSource.dropTween != null) {
+                _this.targetingSource.dropTween.start();
+              }
+            }
+            return _this.targetingSource = null;
+          }
+        };
       }
+
+      CardManager.prototype.putCardOnField = function(card, animate) {
+        var addInteraction, cardSprite, position, tokenSprite, tween,
+          _this = this;
+        if (animate == null) {
+          animate = true;
+        }
+        cardSprite = this.getCardSprite(card);
+        tokenSprite = this.getTokenSprite(card);
+        position = this.getOpenFieldPosition();
+        addInteraction = function(sprite) {
+          var cardPos;
+          cardPos = sprite.position.clone();
+          cardPos.x += sprite.width + TOKEN_CARD_OFFSET;
+          sprite.cardSprite.position = cardPos;
+          sprite.cardSprite.visible = false;
+          sprite.onHoverStart(function() {
+            return sprite.cardSprite.visible = true;
+          });
+          sprite.onHoverEnd(function() {
+            return sprite.cardSprite.visible = false;
+          });
+          return sprite.onMouseUp(function() {});
+        };
+        if (animate) {
+          tween = Util.spriteTween(cardSprite, cardSprite.position, position, HAND_ANIM_TIME).start();
+          cardSprite.tween = tween;
+          tween.onComplete(addInteraction(tokenSprite));
+        } else {
+          tokenSprite.position = position;
+          addInteraction(tokenSprite)();
+        }
+        this.fieldSprites.push(tokenSprite);
+        return this.handSprites = this.handSprites.filter(function(s) {
+          return s !== cardSprite;
+        });
+      };
 
       CardManager.prototype.putCardInHand = function(card, animate) {
         var addInteraction, position, sprite, tween,
@@ -48,9 +109,11 @@
         }
         sprite = this.getCardSprite(card);
         position = this.getOpenHandPosition();
+        sprite.sourcePosition = position;
         addInteraction = function(sprite) {
           return function() {
-            var from, to;
+            var cardClass, from, to;
+            cardClass = _this.cardClasses[sprite.card["class"]];
             to = {
               x: sprite.position.x,
               y: sprite.position.y - HAND_HOVER_OFFSET
@@ -61,25 +124,36 @@
             };
             sprite.onHoverStart(function() {
               var tween;
-              tween = Util.spriteTween(sprite, sprite.position, to, HOVER_ANIM_TIME);
-              tween.start();
-              return sprite.tween = tween;
-            });
-            sprite.onHoverEnd(function() {
-              var tween;
-              if (_this.dragSprite !== sprite) {
-                tween = Util.spriteTween(sprite, sprite.position, from, HOVER_ANIM_TIME);
+              if ((_this.dragSprite == null) && (_this.targetingSource == null)) {
+                tween = Util.spriteTween(sprite, sprite.position, to, HOVER_ANIM_TIME);
                 tween.start();
                 return sprite.tween = tween;
               }
             });
+            sprite.onHoverEnd(function() {
+              var tween;
+              if (_this.dragSprite !== sprite && _this.targetingSource !== sprite) {
+                tween = Util.spriteTween(sprite, sprite.position, from, HOVER_ANIM_TIME);
+                tween.start();
+                return sprite.tween = tween;
+              } else if (_this.targetingSource === sprite) {
+                tween = Util.spriteTween(sprite, sprite.position, from, HOVER_ANIM_TIME);
+                return sprite.dropTween = tween;
+              }
+            });
             sprite.onMouseDown(function() {
-              if (sprite.tween != null) {
-                sprite.tween.stop();
-                _this.dragOffset = _this.stage.getMousePosition().clone();
-                _this.dragOffset.x -= sprite.position.x;
-                _this.dragOffset.y -= sprite.position.y;
-                return _this.dragSprite = sprite;
+              if (cardClass.playAbility != null) {
+                return _this.setTargetingSource(sprite);
+              } else {
+                if (sprite.tween != null) {
+                  sprite.tween.stop();
+                  _this.dragOffset = _this.stage.getMousePosition().clone();
+                  _this.dragOffset.x -= sprite.position.x;
+                  _this.dragOffset.y -= sprite.position.y;
+                  _this.dragSprite = sprite;
+                  _this.removeChild(_this.dragSprite);
+                  return _this.addChild(_this.dragSprite);
+                }
               }
             });
             return sprite.onMouseUp(function() {
@@ -90,8 +164,8 @@
               if (_this.dragSprite === sprite) {
                 _this.dragSprite = null;
                 tween = Util.spriteTween(sprite, sprite.position, from, HOVER_ANIM_TIME);
-                tween.start();
-                return sprite.tween = tween;
+                sprite.tween = tween;
+                return _this.onCardDropped(sprite);
               }
             });
           };
@@ -107,14 +181,84 @@
         return this.handSprites.push(sprite);
       };
 
-      CardManager.prototype.update = function() {
-        var pos;
-        if ((this.dragSprite != null) && (this.stage != null)) {
-          pos = this.stage.getMousePosition().clone();
-          pos.x -= this.dragOffset.x;
-          pos.y -= this.dragOffset.y;
-          return this.dragSprite.position = pos;
+      CardManager.prototype.onTargeted = function(sourceSprite, targetPosition) {};
+
+      CardManager.prototype.onCardDropped = function(sprite) {
+        var card, cardClass, corner, corners, played, _i, _len,
+          _this = this;
+        corners = [];
+        corners.push(sprite.position);
+        corners.push({
+          x: sprite.position.x,
+          y: sprite.position.y + sprite.height
+        });
+        corners.push({
+          x: sprite.position.x + sprite.width,
+          y: sprite.position.y + sprite.height
+        });
+        corners.push({
+          x: sprite.position.x + sprite.width,
+          y: sprite.position.y
+        });
+        played = false;
+        for (_i = 0, _len = corners.length; _i < _len; _i++) {
+          corner = corners[_i];
+          if (FIELD_AREA.contains(corner.x, corner.y)) {
+            card = sprite.card;
+            cardClass = this.cardClasses[card["class"]];
+            if (cardClass.rushAbility != null) {
+              sprite.dropTween = sprite.tween;
+              this.setTargetingSource(sprite);
+            } else {
+              this.battle.emitPlayCardEvent(sprite.card._id, null, function(err) {
+                if (err != null) {
+                  console.log(err);
+                  return sprite.tween.start();
+                }
+              });
+            }
+            played = true;
+            break;
+          }
         }
+        if (!played) {
+          return sprite.tween.start();
+        }
+      };
+
+      CardManager.prototype.update = function() {
+        var pos, sourcePos;
+        if (this.targetingSprite != null) {
+          this.removeChild(this.targetingSprite);
+          this.targetingSprite = null;
+        }
+        if (this.stage != null) {
+          if (this.dragSprite != null) {
+            pos = this.stage.getMousePosition().clone();
+            pos.x -= this.dragOffset.x;
+            pos.y -= this.dragOffset.y;
+            return this.dragSprite.position = pos;
+          } else if (this.targetingSource != null) {
+            pos = this.stage.getMousePosition().clone();
+            sourcePos = {
+              x: this.targetingSource.position.x + this.targetingSource.width / 2,
+              y: this.targetingSource.position.y + this.targetingSource.height / 2
+            };
+            this.targetingSprite = this.createTargetingSprite(sourcePos, pos);
+            return this.addChild(this.targetingSprite);
+          }
+        }
+      };
+
+      CardManager.prototype.setTargetingSource = function(sprite) {
+        return this.targetingSource = sprite;
+      };
+
+      CardManager.prototype.getOpenFieldPosition = function() {
+        return {
+          x: FIELD_ORIGIN.x + (this.getCardWidth() + FIELD_PADDING) * this.fieldSprites.length,
+          y: FIELD_ORIGIN.y - this.getCardHeight()
+        };
       };
 
       CardManager.prototype.getOpenHandPosition = function() {
@@ -144,6 +288,19 @@
         return 0;
       };
 
+      CardManager.prototype.getTokenSprite = function(card) {
+        var sprite;
+        sprite = this.tokenSprites[card._id];
+        if (sprite == null) {
+          sprite = new GUI.CardToken(card, this.cardClasses[card["class"]]);
+          sprite.card = card;
+          sprite.cardSprite = this.getCardSprite(card);
+          this.tokenSprites[card._id] = sprite;
+          this.addChild(sprite);
+        }
+        return sprite;
+      };
+
       CardManager.prototype.getCardSprite = function(card) {
         var sprite;
         sprite = this.cardSprites[card._id];
@@ -154,6 +311,17 @@
           this.addChild(sprite);
         }
         return sprite;
+      };
+
+      CardManager.prototype.createTargetingSprite = function(start, end) {
+        var s;
+        s = new PIXI.Graphics();
+        s.beginFill();
+        s.lineStyle(10, 0x000000, 1.0);
+        s.moveTo(start.x, start.y);
+        s.lineTo(end.x, end.y);
+        s.endFill();
+        return s;
       };
 
       CardManager.prototype.buildSpriteForCard = function(card) {

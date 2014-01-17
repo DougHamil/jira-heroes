@@ -78,6 +78,20 @@
         return this.frameSprite.visible = !isTaunting;
       };
 
+      CardToken.prototype.onHoverStart = function(cb) {
+        var _this = this;
+        return this.mouseover = function() {
+          return cb(_this);
+        };
+      };
+
+      CardToken.prototype.onHoverEnd = function(cb) {
+        var _this = this;
+        return this.mouseout = function() {
+          return cb(_this);
+        };
+      };
+
       CardToken.prototype.createImageMask = function() {
         var mask;
         mask = new PIXI.Graphics();

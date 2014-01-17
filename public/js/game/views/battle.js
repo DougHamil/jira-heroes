@@ -62,8 +62,23 @@
             };
             this.innerStage.addChild(txt);
           }
+        } else if (phase === 'game') {
+          this.energySprite = new PIXI.Text(this.battle.getEnergy() + " energy");
+          this.energySprite.position = {
+            x: engine.WIDTH - 20 - this.energySprite.width,
+            y: 20
+          };
+          this.cardManager = new CardManager(JH.cards, JH.user._id, this.battle);
+          this.addChild(this.energySprite);
+          this.addChild(this.cardManager);
         }
         return this.addChild(this.innerStage);
+      };
+
+      Battle.prototype.updateGameStatus = function() {
+        if (this.energySprite != null) {
+          return this.energySprite.setText(this.battle.getEnergy() + " energy");
+        }
       };
 
       Battle.prototype.createCardSprite = function(card) {
@@ -94,11 +109,12 @@
         this.battle.on('player-readied', function() {
           return updateStatus();
         });
+        this.battle.on('your-turn', function(e) {
+          return _this.updateGameStatus();
+        });
         this.battle.on('phase', function(o, n) {
           return _this.initUI(n);
         });
-        this.cardManager = new CardManager(JH.cards, JH.user._id, this.battle);
-        this.addChild(this.cardManager);
         updateStatus();
         return this.initUI(this.battle.getPhase());
       };

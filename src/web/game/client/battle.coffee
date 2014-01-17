@@ -8,7 +8,12 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
       @socket.on 'player-connected', (userId) => @onPlayerConnected(userId)
       @socket.on 'player-disconnected', (userId) => @onPlayerDisconnected(userId)
       @socket.on 'player-ready', (userId) => @onPlayerReadied(userId)
+      @socket.on 'your-turn', (energy) => @onYourTurn(energy)
       @socket.on 'phase', (oldPhase, newPhase) => @onPhaseChanged(oldPhase, newPhase)
+
+    onYourTurn: (energyIncrease) ->
+      @model.you.energy += energyIncrease
+      @emit 'your-turn', energyIncrease
 
     onPhaseChanged:(oldPhase, newPhase) ->
       @model.state.phase = newPhase
@@ -30,5 +35,8 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
     getPhase: -> return @model.state.phase
     isReadied: -> return @userId in @model.readiedPlayers
     getCardsInHand: -> return @model.you.hand
+    getCardsOnField: -> return @model.you.field
+    getEnergy: -> return @model.you.energy
 
     emitReadyEvent: (cb) -> @socket.emit 'ready', cb
+    emitPlayCardEvent: (cardId, target, cb) -> @socket.emit 'play-card', cardId, target, cb

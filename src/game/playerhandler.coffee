@@ -140,6 +140,9 @@ class PlayerHandler extends EventEmitter
     else
       return null
 
+  getEnergy: ->
+    return @player.energy
+
   getDeck: ->
     return @player.deck
 

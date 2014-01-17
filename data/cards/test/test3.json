@@ -5,6 +5,11 @@
 	"energy":2,
 	"health":2,
 	"damage":1,
+	"playAbility": {
+		"type":"heal",
+		"text":"heal target",
+		"data":{}
+	},
 	"media": {
 		"image": "test/test3.png"
 	}

@@ -28,10 +28,18 @@
         this.socket.on('player-ready', function(userId) {
           return _this.onPlayerReadied(userId);
         });
+        this.socket.on('your-turn', function(energy) {
+          return _this.onYourTurn(energy);
+        });
         this.socket.on('phase', function(oldPhase, newPhase) {
           return _this.onPhaseChanged(oldPhase, newPhase);
         });
       }
+
+      Battle.prototype.onYourTurn = function(energyIncrease) {
+        this.model.you.energy += energyIncrease;
+        return this.emit('your-turn', energyIncrease);
+      };
 
       Battle.prototype.onPhaseChanged = function(oldPhase, newPhase) {
         this.model.state.phase = newPhase;
@@ -72,8 +80,20 @@
         return this.model.you.hand;
       };
 
+      Battle.prototype.getCardsOnField = function() {
+        return this.model.you.field;
+      };
+
+      Battle.prototype.getEnergy = function() {
+        return this.model.you.energy;
+      };
+
       Battle.prototype.emitReadyEvent = function(cb) {
         return this.socket.emit('ready', cb);
+      };
+
+      Battle.prototype.emitPlayCardEvent = function(cardId, target, cb) {
+        return this.socket.emit('play-card', cardId, target, cb);
       };
 
       return Battle;
