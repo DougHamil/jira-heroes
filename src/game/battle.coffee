@@ -1,4 +1,6 @@
 Errors = require './errors'
+DrawCardAction = require './actions/drawcard'
+StartTurnAction = require './actions/startturn'
 ActionProcessor = require './actionprocessor'
 CardCache = require '../../lib/models/cardcache'
 PlayerHandler = require './playerhandler'
@@ -84,11 +86,22 @@ class Battle
   emitActive: (action, data...) ->
     @emit @model.state.activePlayer, action, data...
 
+  emitActionsActive: (event, actions) ->
+    @emit @model.state.activePlayer, event, @sanitizePayloads(@model.state.activePlayer, actions)
+
   emit: (userId, action, data...) ->
     @sockets[userId].emit action, data...
 
+  emitActionsAllButActive: (event, actions) ->
+    @emitActionsAllBut @model.state.activePlayer, event, actions
+
   emitAllButActive: (action, data...) ->
     @emitAllBut @model.state.activePlayer, action, data...
+
+  emitActionsAllBut: (ignore, event, actions) ->
+    for userId, socket of @sockets
+      if ignore isnt userId
+        socket.emit event, @sanitizePayloads(userId, actions)
 
   emitAllBut: (ignore, action, data...) ->
     for userId, socket of @sockets
@@ -104,32 +117,39 @@ class Battle
     @model.state.phase = 'game'
     @emitAll 'phase', oldPhase, @model.state.phase
     @assignNextActivePlayer()
-    @drawCards(@model.state.activePlayer, INITIAL_CARD_COUNT)
+    initActions = []
+    for i in [0..INITIAL_CARD_COUNT]
+      initActions.push new DrawCardAction(@getActivePlayer())
     for p in @getNonActivePlayers()
-      @drawCards(p, INITIAL_CARD_COUNT - 1)
-    @nextTurn(true)
+      for i in [0..(INITIAL_CARD_COUNT-1)]
+        initActions.push new DrawCardAction(@getPlayer(p))
+    @nextTurn(initActions)
 
-  nextTurn: (firstTurn)->
+  nextTurn: (initActions)->
     # Pick the next player and set to active
     if not firstTurn? or not firstTurn
       @assignNextActivePlayer()
-    @emitActive 'your-turn', ENERGY_INCREASE_PER_TURN
-    @emitAllButActive 'opponent-turn', @model.state.activePlayer, ENERGY_INCREASE_PER_TURN
-    # Draw card
-    if not firstTurn? or not firstTurn
-      @drawCards(@model.state.activePlayer, CARDS_DRAWN_PER_TURN)
+    cardsToDraw = CARDS_DRAWN_PER_TURN if not cardsToDraw?
+    actions = initActions || []
+    actions.push new StartTurnAction(@getActivePlayer())
+    payloads = @processActions(actions)
+    @emitActionsActive 'your-turn', payloads
+    @emitActionsAllButActive 'opponent-turn', payloads
+
+  sanitizePayloads: (userId, payloads) ->
+    out = []
+    for payload in payloads
+      if payload.player? and payload.player isnt userId and payload.sanitized?
+        out.push payload.sanitized
+      else
+        out.push payload
+    return out
 
   assignNextActivePlayer: ->
     if @model.state.activePlayer?
       @model.state.activePlayer = @getNextPlayer(@model.state.activePlayer).userId
     else
       @model.state.activePlayer = @getRandomPlayer().userId
-
-  drawCards: (userId, count) ->
-    cards = @players[userId].drawCards(count)
-    @emitAllBut userId, 'opponent-draw-cards', userId, cards.map (c) -> c._id
-    @emit userId, 'draw-cards', cards
-    return cards
 
   getNextPlayer: (userId)->
     idx = @model.users.indexOf(userId)
@@ -141,6 +161,9 @@ class Battle
 
   getRandomPlayer: ->
     return @model.players[Math.floor(Math.random() * @model.players.length)]
+
+  getActivePlayer: ->
+    return @getPlayer(@model.state.activePlayer)
 
   getNonActivePlayers: ->
     return @model.users.filter (u) => u isnt @model.state.activePlayer
@@ -198,9 +221,12 @@ class Battle
 
   sanitizeOpponentData: (player) ->
     out =
+      userId: player.getUserId()
+      energy: player.getEnergy()
+      maxEnergy: player.getMaxEnergy()
       hero: player.getHero() #TODO: Make sure that all hero data is fine for the player to see (secrets and such should be stripped)
       field: player.getFieldCards()
-      handSize: player.getHandCards().length # Player does not get to see opponent's cards
+      hand: player.getHandCards().map( (c) -> c._id) # Player does not get to see opponent's cards
       deckSize: player.getDeckCards().length
 
   getOpponentsData: (user) ->
@@ -212,9 +238,11 @@ class Battle
     out =
       connectedPlayers: (playerId for playerId, socket of @sockets)
       readiedPlayers: @model.state.playersReady
+      activePlayer: @model.state.activePlayer
       state:
         phase:@model.state.phase
       you:
+        maxEnergy: player.getMaxEnergy()
         energy: player.getEnergy()
         hero: player.getHero()
         field: player.getFieldCards()

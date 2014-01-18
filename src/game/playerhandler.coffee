@@ -101,21 +101,17 @@ class PlayerHandler extends EventEmitter
         @player[prop] = value
       cb() if cb?
 
-  drawCards: (num) ->
-    if not num? then num = 1
+  ###
+  # Called by DrawCardAction to draw a single card
+  ###
+  drawCard: ->
     deck = @getDeckCards()
     if deck.length is 0
       return null
     else
-      drawnCards = []
-      for i in [0..num]
-        card = deck[Math.floor(Math.random() * deck.length)]
-        card.position = 'hand'
-        drawnCards.push card
-        deck = deck.filter (c) -> c isnt card
-        if deck.length is 0
-          return drawnCards
-      return drawnCards
+      card = deck[Math.floor(Math.random() * deck.length)]
+      card.position = 'hand'
+      return card
 
   getFieldCards: ->
     return @player.deck.cards.filter (c) -> c.position is 'field'
@@ -140,14 +136,11 @@ class PlayerHandler extends EventEmitter
     else
       return null
 
-  getEnergy: ->
-    return @player.energy
-
-  getDeck: ->
-    return @player.deck
-
-  getHero: ->
-    return @player.deck.hero
+  getMaxEnergy: -> return @player.maxEnergy
+  getEnergy: -> return @player.energy
+  getUserId: -> return @player.userId
+  getDeck: -> return @player.deck
+  getHero: -> return @player.deck.hero
 
   hasCard: (cardId) ->
     return (@player.deck.cards.filter (c) -> c._id is cardId).length > 0

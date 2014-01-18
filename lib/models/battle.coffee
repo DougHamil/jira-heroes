@@ -44,8 +44,10 @@ newPlayerInstance = (userId, deck, cb) ->
           cb err
         else
           player =
+            _id: userId
             userId: userId
             energy: 0
+            maxEnergy: 0
             deck:
               hero: hero
               cards: cards
@@ -65,8 +67,10 @@ _cardSchema = new mongoose.Schema
 
 # Represents a user in a battle, contains their energy, their deck (with hero and cards)
 _playerSchema = new mongoose.Schema
+  _id:String
   userId: String
   energy: Number
+  maxEnergy: Number
   deck:
     hero:
       class: String

@@ -1,3 +1,4 @@
+EnergyAction = require './cardstatusadd'
 CardStatusAddAction = require './cardstatusadd'
 
 class PlayCardAction

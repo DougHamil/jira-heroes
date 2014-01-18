@@ -28,17 +28,39 @@
         this.socket.on('player-ready', function(userId) {
           return _this.onPlayerReadied(userId);
         });
-        this.socket.on('your-turn', function(energy) {
-          return _this.onYourTurn(energy);
+        this.socket.on('your-turn', function(actions) {
+          return _this.processAndEmit('your-turn', actions);
+        });
+        this.socket.on('opponent-turn', function(actions) {
+          return _this.processAndEmit('opponent-turn', actions);
         });
         this.socket.on('phase', function(oldPhase, newPhase) {
           return _this.onPhaseChanged(oldPhase, newPhase);
         });
       }
 
-      Battle.prototype.onYourTurn = function(energyIncrease) {
-        this.model.you.energy += energyIncrease;
-        return this.emit('your-turn', energyIncrease);
+      Battle.prototype.processAndEmit = function(event, actions) {
+        var action, _i, _len;
+        for (_i = 0, _len = actions.length; _i < _len; _i++) {
+          action = actions[_i];
+          this.process(action);
+        }
+        return this.emit(event, actions);
+      };
+
+      Battle.prototype.process = function(action) {
+        console.log(action);
+        switch (action.type) {
+          case 'start-turn':
+            return this.model.activePlayer = action.player;
+          case 'draw-card':
+            console.log(action);
+            return this.getPlayer(action.player).hand.push(action.card);
+          case 'max-energy':
+            return this.getPlayer(action.player).maxEnergy += action.amount;
+          case 'energy':
+            return this.getPlayer(action.player).energy += action.amount;
+        }
       };
 
       Battle.prototype.onPhaseChanged = function(oldPhase, newPhase) {
@@ -61,6 +83,22 @@
           return p !== userId;
         });
         return this.emit('player-disconnected', userId);
+      };
+
+      Battle.prototype.getPlayer = function(id) {
+        var user, _i, _len, _ref;
+        if (id === this.userId) {
+          return this.model.you;
+        } else {
+          _ref = this.model.opponents;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            user = _ref[_i];
+            if (user.userId === id) {
+              return user;
+            }
+          }
+          return null;
+        }
       };
 
       Battle.prototype.getConnectedPlayers = function() {
@@ -86,6 +124,10 @@
 
       Battle.prototype.getEnergy = function() {
         return this.model.you.energy;
+      };
+
+      Battle.prototype.getMaxEnergy = function() {
+        return this.model.you.maxEnergy;
       };
 
       Battle.prototype.emitReadyEvent = function(cb) {
