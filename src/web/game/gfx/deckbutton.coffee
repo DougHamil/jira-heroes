@@ -17,9 +17,11 @@ define ['gfx/styles', 'util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine)
       @bg.height = CARD_HEIGHT
       @bg.beginFill STYLES.BUTTON_COLOR
       @bg.drawRect 0, 0, @bg.width, @bg.height
+      @bg.endFill()
       @highlight = new PIXI.Graphics()
       @highlight.beginFill STYLES.HIGHLIGHT_COLOR
       @highlight.drawRect(-HIGHLIGHT_WIDTH, -HIGHLIGHT_WIDTH, @bg.width + HIGHLIGHT_WIDTH*2 , @bg.height + HIGHLIGHT_WIDTH*2)
+      @highlight.endFill()
       @highlight.visible = false
       @name.position = {x:0, y:@bg.height - @name.height}
       @cardText.position = {x:@bg.width - @cardText.width, y:0}

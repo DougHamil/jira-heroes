@@ -26,43 +26,20 @@
       };
 
       Battle.prototype.initUI = function(phase) {
-        var readyBtn, txt,
-          _this = this;
+        var _this = this;
         if (this.innerStage != null) {
           this.removeChild(this.innerStage);
         }
         this.innerStage = new PIXI.DisplayObjectContainer;
-        if (phase === 'initial') {
-          if (!this.battle.isReadied()) {
-            readyBtn = new GUI.TextButton('Ready', GUI.STYLES.TEXT);
-            readyBtn.position = {
-              x: engine.WIDTH / 2 - readyBtn.width / 2,
-              y: engine.HEIGHT / 2 - readyBtn.height / 2
-            };
-            readyBtn.onClick(function() {
-              return _this.battle.emitReadyEvent(function(err) {
-                var txt;
-                if (err == null) {
-                  _this.innerStage.removeChild(readyBtn);
-                  txt = new PIXI.Text('Waiting for opponent to ready-up', GUI.STYLES.TEXT);
-                  txt.position = {
-                    x: engine.WIDTH / 2 - txt.width / 2,
-                    y: engine.HEIGHT / 2 - txt.height / 2
-                  };
-                  return _this.innerStage.addChild(txt);
-                }
-              });
-            });
-            this.innerStage.addChild(readyBtn);
-          } else {
-            txt = new PIXI.Text('Waiting for opponent to ready-up', GUI.STYLES.TEXT);
-            txt.position = {
-              x: engine.WIDTH / 2 - txt.width / 2,
-              y: engine.HEIGHT / 2 - txt.height / 2
-            };
-            this.innerStage.addChild(txt);
-          }
-        } else if (phase === 'game') {
+        if (phase === 'game') {
+          this.endTurnButton = new GUI.EndTurnButton();
+          this.endTurnButton.position = {
+            x: engine.WIDTH - 20 - this.endTurnButton.width,
+            y: engine.HEIGHT / 2 - this.endTurnButton.height / 2
+          };
+          this.endTurnButton.onClick(function() {
+            return _this.battle.emitEndTurnEvent();
+          });
           this.energySprite = new PIXI.Text(this.battle.getEnergy() + " energy");
           this.energySprite.position = {
             x: engine.WIDTH - 20 - this.energySprite.width,
@@ -71,14 +48,13 @@
           this.cardManager = new CardManager(JH.cards, JH.user._id, this.battle);
           this.addChild(this.energySprite);
           this.addChild(this.cardManager);
+          this.addChild(this.endTurnButton);
         }
         return this.addChild(this.innerStage);
       };
 
-      Battle.prototype.updateGameStatus = function() {
-        if (this.energySprite != null) {
-          return this.energySprite.setText(this.battle.getEnergy() + " energy");
-        }
+      Battle.prototype.updateEnergy = function() {
+        return this.energySprite.setText(this.battle.getEnergy() + " energy");
       };
 
       Battle.prototype.createCardSprite = function(card) {
@@ -106,17 +82,33 @@
         this.battle.on('player-disconnected', function() {
           return updateStatus();
         });
-        this.battle.on('player-readied', function() {
-          return updateStatus();
+        this.battle.on('your-turn', function() {
+          return _this.setYourTurn(true);
         });
-        this.battle.on('your-turn', function(e) {
-          return _this.updateGameStatus();
+        this.battle.on('opponent-turn', function() {
+          return _this.setYourTurn(false);
         });
         this.battle.on('phase', function(o, n) {
           return _this.initUI(n);
         });
+        this.battle.on('action-energy', function() {
+          return _this.updateEnergy();
+        });
+        this.battle.on('action-max-energy', function() {
+          return _this.updateEnergy();
+        });
         updateStatus();
-        return this.initUI(this.battle.getPhase());
+        this.initUI(this.battle.getPhase());
+        this.updateEnergy();
+        return this.setYourTurn(this.battle.isYourTurn());
+      };
+
+      Battle.prototype.setYourTurn = function(isYourTurn) {
+        if (isYourTurn) {
+          return this.setStatusText("It's your turn!");
+        } else {
+          return this.setStatusText("Opponent's turn");
+        }
       };
 
       Battle.prototype.activate = function(battle) {

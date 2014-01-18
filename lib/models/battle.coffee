@@ -85,7 +85,6 @@ _schema = new mongoose.Schema
   state:
     phase: {type:String, default:'initial'}
     activePlayer: String
-    playersReady: [String]
 
 # Get the data that the public endpoint can provide
 _schema.methods.getPublicData = ->

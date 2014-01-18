@@ -12,7 +12,7 @@ class StartTurnAction
 
     actions = []
     # On start of turn, draw x cards and increase energy by y units
-    for i in [0..CARDS_DRAWN_PER_TURN]
+    for i in [1..CARDS_DRAWN_PER_TURN]
       actions.push new CardDrawAction(@player)
     actions.push new MaxEnergyAction(@player, ENERGY_INCREASE_PER_TURN)
     actions.push new RefillEnergyAction(@player)

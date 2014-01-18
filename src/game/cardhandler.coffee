@@ -58,7 +58,6 @@ class CardHandler
       cb Errors.INVALID_ACTION
 
   _play: (target, cardClass, cb) ->
-    @playerHandler.player.energy -= cardClass.energy
     @model.used = false
     @model.usedRushAbility = false
 
@@ -74,7 +73,7 @@ class CardHandler
       # Spell cards are always discarded
       actions.push Actions.DiscardCard @model
     else
-      actions.push Actions.PlayCard @model, cardClass
+      actions.push Actions.PlayCard(@model, cardClass)
     cb null, @battle.processActions(actions)
 
   useRush: (target, cb) ->

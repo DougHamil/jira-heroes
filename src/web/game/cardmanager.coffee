@@ -6,6 +6,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   HAND_HOVER_OFFSET = 50
   HAND_PADDING = 20
   HOVER_ANIM_TIME = 200
+  DEFAULT_TWEEN_TIME = 400
   TOKEN_CARD_OFFSET = 100
   FIELD_AREA = new PIXI.Rectangle 20, 200, engine.WIDTH - 80, 500
 
@@ -17,6 +18,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
     constructor: (@cardClasses, @userId, @battle) ->
       super
       @cardSprites = {}
+      @tokenSprites = {}
       @cardTokens = {}
       @handSprites = []
       @fieldSprites = []
@@ -32,6 +34,11 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
             if @targetingSource.dropTween?
               @targetingSource.dropTween.start()
           @targetingSource = null
+      @battle.on 'action-draw-card', (action) => @onDrawCardAction(action)
+
+    onDrawCardAction: (action) ->
+      if action.player is @userId
+        @putCardInHand(action.card)
 
     putCardOnField: (card, animate) ->
       # Default to animate
@@ -39,25 +46,28 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       cardSprite = @getCardSprite card
       tokenSprite = @getTokenSprite card
       position = @getOpenFieldPosition()
-      addInteraction = (sprite) =>
-        cardPos = sprite.position.clone()
-        cardPos.x += sprite.width + TOKEN_CARD_OFFSET
-        sprite.cardSprite.position = cardPos
-        sprite.cardSprite.visible = false
-        # Show card when token is hovered
-        sprite.onHoverStart =>
-          sprite.cardSprite.visible = true
-        sprite.onHoverEnd =>
+      addInteraction = (sprite) => =>
+          cardPos = Util.clone(sprite.position)
+          cardPos.x += sprite.width + TOKEN_CARD_OFFSET
+          sprite.cardSprite.position = cardPos
           sprite.cardSprite.visible = false
-        sprite.onMouseUp =>
+          sprite.visible = true
+          # Show card when token is hovered
+          sprite.onHoverStart =>
+            sprite.cardSprite.visible = true
+          sprite.onHoverEnd =>
+            sprite.cardSprite.visible = false
+          sprite.onMouseUp =>
 
+      tokenSprite.visible = false
+      tokenSprite.position = position
       if animate
         # Animate card sprite going to token position
-        tween = Util.spriteTween(cardSprite, cardSprite.position, position, HAND_ANIM_TIME).start()
+        tween = Util.spriteTween(cardSprite, cardSprite.position, position, DEFAULT_TWEEN_TIME)
         cardSprite.tween = tween
+        tween.start()
         tween.onComplete addInteraction(tokenSprite)
       else
-        tokenSprite.position = position
         addInteraction(tokenSprite)()
       @fieldSprites.push tokenSprite
       @handSprites = @handSprites.filter (s) -> s isnt cardSprite
@@ -132,22 +142,26 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         if FIELD_AREA.contains(corner.x, corner.y)
           card = sprite.card
           cardClass = @cardClasses[card.class]
-          # If this card has an ability to cast on play, then let the user pick a target
-          if cardClass.rushAbility?
-            # Add a drop tween so the card is returned to hand when targeting is complete
-            sprite.dropTween = sprite.tween
-            @setTargetingSource(sprite)
-          else
-            # If no rush ability, then just try to play the card
-            @battle.emitPlayCardEvent sprite.card._id, null, (err) =>
-              # Return card to source
-              if err?
-                console.log err
-                sprite.tween.start()
+          @battle.emitPlayCardEvent sprite.card._id, null, (err) =>
+            # Return card to source
+            if err?
+              console.log err
+              sprite.tween.start()
+            else
+              console.log "Played card "+sprite.card._id
+              # Position the card onto the field
+              @removeInteractions sprite
+              @putCardOnField sprite.card
+              # If there is a rush ability then set the targeting source as the sprite
+              if cardClass.rushAbility?
+                sprite.dropTween = null
+                @setTargetingSource(sprite)
           played = true
           break
       if not played
         sprite.tween.start()
+
+    removeInteractions: (cardSprite) -> cardSprite.removeAllInteractions()
 
     update: ->
       if @targetingSprite?

@@ -16,7 +16,6 @@ class PlayerHandler extends EventEmitter
 
   disconnect: ->
   connect: (@socket) ->
-      @socket.on Events.READY, @onReady()
       @socket.on Events.PLAY_CARD, @onPlayCard()
       @socket.on Events.END_TURN, @onEndTurn()
       @socket.on Events.USE_CARD, @onUseCard()
@@ -36,7 +35,7 @@ class PlayerHandler extends EventEmitter
               # Can only target cards on the field
               if targetCard? and targetCard.position is 'field'
                 cardHandler.use targetCard, (err, actions) =>
-                  cb err, actions if cb?
+                  cb err if cb?
                   if not err?
                     @emit Events.USE_CARD, card, targetCard, actions
               else
@@ -46,7 +45,7 @@ class PlayerHandler extends EventEmitter
               hero = @battle.getHero(target.hero)
               if hero?
                 cardHandler.use hero, (err, actions) =>
-                  cb err, actions if cb?
+                  cb err if cb?
                   if not err?
                     @emit Events.USE_CARD, card, hero, actions
               else
@@ -66,31 +65,22 @@ class PlayerHandler extends EventEmitter
         actions = [new EndTurnAction(@player)]
         payloads = @battle.processActions actions
         @emit 'end-turn', payloads
-        cb null, payloads if cb?
+        cb null if cb?
       else
         cb Errors.INVALID_ACTION if cb?
 
   onPlayCard: ->
     (cardId, target, cb) =>
       cardHandler = @getCardHandler(cardId)
-      if @model.state.phase == 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
+      if @model.state.phase is 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
         cardHandler.play target, (err, actions) =>
           if err?
-            cb err if cb?
+            cb err
           else
             @emit Events.PLAY_CARD, cardHandler.model, actions
-            cb null, cardHandler.model, actions if cb?
+            cb null, cardHandler.model
       else
         cb Errors.INVALID_ACTION if cb?
-
-  onReady: ->
-      (cb) =>
-        if @model.state.phase == 'initial' and @player.userId not in @model.state.playersReady
-          @model.state.playersReady.push @player.userId
-          cb null if cb?
-          @emit Events.READY
-        else
-          cb Errors.INVALID_ACTION if cb?
 
   ###
   # Override properties for automated tests

@@ -33,9 +33,11 @@
         this.bg.height = CARD_HEIGHT;
         this.bg.beginFill(STYLES.BUTTON_COLOR);
         this.bg.drawRect(0, 0, this.bg.width, this.bg.height);
+        this.bg.endFill();
         this.highlight = new PIXI.Graphics();
         this.highlight.beginFill(STYLES.HIGHLIGHT_COLOR);
         this.highlight.drawRect(-HIGHLIGHT_WIDTH, -HIGHLIGHT_WIDTH, this.bg.width + HIGHLIGHT_WIDTH * 2, this.bg.height + HIGHLIGHT_WIDTH * 2);
+        this.highlight.endFill();
         this.highlight.visible = false;
         this.name.position = {
           x: 0,

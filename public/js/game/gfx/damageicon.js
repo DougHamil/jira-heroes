@@ -3,36 +3,23 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['gfx/styles', 'util', 'pixi', 'tween'], function(STYLES, Util) {
-    var DamageIcon, ICON_SIZE, ICON_TEXTURE;
-    ICON_SIZE = 32;
-    ICON_TEXTURE = PIXI.Texture.fromImage('/media/images/icons/damage.png');
+  define(['gfx/icon', 'gfx/styles', 'util', 'pixi', 'tween'], function(Icon, STYLES, Util) {
+    var DamageIcon, ICON_TEXTURE;
+    ICON_TEXTURE = '/media/images/icons/damage.png';
     return DamageIcon = (function(_super) {
       __extends(DamageIcon, _super);
 
       function DamageIcon(damage) {
-        DamageIcon.__super__.constructor.apply(this, arguments);
-        this.iconSprite = new PIXI.Sprite(ICON_TEXTURE);
-        this.iconSprite.width = ICON_SIZE;
-        this.iconSprite.height = ICON_SIZE;
-        this.text = new PIXI.Text(damage.toString(), GUI.STYLES.TEXT);
-        this.text.anchor = {
-          x: 0.5,
-          y: 0.5
-        };
-        this.addChild(this.iconSprite);
-        this.addChild(this.text);
-        this.width = ICON_SIZE;
-        this.height = ICON_SIZE;
+        DamageIcon.__super__.constructor.call(this, damage.toString(), ICON_TEXTURE);
       }
 
       DamageIcon.prototype.setDamage = function(damage) {
-        return this.text.setText(damage);
+        return this.setText(damage.toString());
       };
 
       return DamageIcon;
 
-    })(PIXI.DisplayObjectContainer);
+    })(Icon);
   });
 
 }).call(this);

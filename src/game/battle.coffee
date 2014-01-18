@@ -28,8 +28,11 @@ class Battle
       player.cards = cardsById
       @registerPlayer(player.userId, @players[player.userId])
 
+    # Start the battle if it's still in initial phase
+    if @model.state.phase is 'initial'
+      @startGame()
+
   registerPlayer: (userId, handler) ->
-    handler.on Events.READY, @onReady(userId)                      # Player is in battle and wishes to start
     handler.on Events.PLAY_CARD, @onPlayCard(userId)               # Deploy card from hand to field
     handler.on Events.END_TURN, @onEndTurn(userId)                 # Turn over
     handler.on Events.USE_CARD, @onUseCard(userId)                 # Player used a card, targeting something
@@ -49,27 +52,23 @@ class Battle
     @sockets[user._id] = socket
     @emitAllBut user._id.toString(), 'player-connected', user._id
 
-  # Called when the player is ready to start the battle
-  onReady: (userId) ->
-    =>
-      @emitAllBut userId, 'player-ready', userId
-      if @model.state.playersReady.length is @model.players.length
-        @startGame()
-
   # Called when a player used a card, targeting another card
   onUseCard: (userId) ->
     (card, target, actions) ->
-      @emitAllButActive 'opponent-'+Events.USE_CARD, userId, card, target._id, actions
+      @emitAllButActive 'opponent-'+Events.USE_CARD, userId, card, target._id
+      @emitActionsAll 'action', actions
 
   # Called when the player has played a card
   onPlayCard: (userId) ->
     (card, actions) =>
-      @emitAllButActive 'opponent-'+Events.PLAY_CARD, userId, card, actions
+      @emitAllButActive 'opponent-'+Events.PLAY_CARD, userId, card
+      @emitActionsAll 'action', actions
 
   # Called when the player has completed his turn
   onEndTurn: (userId) ->
     (actions) =>
-      @emitAllButActive 'opponent-'+Events.END_TURN, userId, actions
+      @emitAllButActive 'opponent-'+Events.END_TURN, userId
+      @emitActionsAll 'action', actions
       @nextTurn()
 
   # Registers an ability as active and the ability will be passed all events
@@ -90,7 +89,8 @@ class Battle
     @emit @model.state.activePlayer, event, @sanitizePayloads(@model.state.activePlayer, actions)
 
   emit: (userId, action, data...) ->
-    @sockets[userId].emit action, data...
+    if @sockets[userId]?
+      @sockets[userId].emit action, data...
 
   emitActionsAllButActive: (event, actions) ->
     @emitActionsAllBut @model.state.activePlayer, event, actions
@@ -108,14 +108,16 @@ class Battle
       if ignore isnt userId
         socket.emit action, data...
 
+  emitActionsAll: (event, actions) ->
+    for userId, socket of @sockets
+      socket.emit event, @sanitizePayloads(userId, actions)
+
   emitAll: (action, data...) ->
     for userId, socket of @sockets
       socket.emit action, data...
 
   startGame: ->
-    oldPhase = @model.state.phase
     @model.state.phase = 'game'
-    @emitAll 'phase', oldPhase, @model.state.phase
     @assignNextActivePlayer()
     initActions = []
     for i in [0..INITIAL_CARD_COUNT]
@@ -127,9 +129,8 @@ class Battle
 
   nextTurn: (initActions)->
     # Pick the next player and set to active
-    if not firstTurn? or not firstTurn
+    if not initAction?
       @assignNextActivePlayer()
-    cardsToDraw = CARDS_DRAWN_PER_TURN if not cardsToDraw?
     actions = initActions || []
     actions.push new StartTurnAction(@getActivePlayer())
     payloads = @processActions(actions)
@@ -169,6 +170,8 @@ class Battle
     return @model.users.filter (u) => u isnt @model.state.activePlayer
 
   getPlayer: (playerId) ->
+    if typeof playerId is 'object'
+      playerId = playerId.userId
     return @getPlayerHandler(playerId).player
 
   getPlayerHandler: (playerId) ->
@@ -237,7 +240,6 @@ class Battle
     player = @players[user._id]
     out =
       connectedPlayers: (playerId for playerId, socket of @sockets)
-      readiedPlayers: @model.state.playersReady
       activePlayer: @model.state.activePlayer
       state:
         phase:@model.state.phase

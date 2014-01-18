@@ -4,7 +4,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'gui', 'engine', 'util', 'pixi'], function($, GUI, engine, Util) {
-    var CardManager, FIELD_AREA, FIELD_ORIGIN, FIELD_PADDING, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME, TOKEN_CARD_OFFSET;
+    var CardManager, DEFAULT_TWEEN_TIME, FIELD_AREA, FIELD_ORIGIN, FIELD_PADDING, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME, TOKEN_CARD_OFFSET;
     FIELD_ORIGIN = {
       x: 20,
       y: engine.HEIGHT / 2
@@ -18,6 +18,7 @@
     HAND_HOVER_OFFSET = 50;
     HAND_PADDING = 20;
     HOVER_ANIM_TIME = 200;
+    DEFAULT_TWEEN_TIME = 400;
     TOKEN_CARD_OFFSET = 100;
     FIELD_AREA = new PIXI.Rectangle(20, 200, engine.WIDTH - 80, 500);
     /*
@@ -36,6 +37,7 @@
         this.battle = battle;
         CardManager.__super__.constructor.apply(this, arguments);
         this.cardSprites = {};
+        this.tokenSprites = {};
         this.cardTokens = {};
         this.handSprites = [];
         this.fieldSprites = [];
@@ -62,7 +64,16 @@
             return _this.targetingSource = null;
           }
         };
+        this.battle.on('action-draw-card', function(action) {
+          return _this.onDrawCardAction(action);
+        });
       }
+
+      CardManager.prototype.onDrawCardAction = function(action) {
+        if (action.player === this.userId) {
+          return this.putCardInHand(action.card);
+        }
+      };
 
       CardManager.prototype.putCardOnField = function(card, animate) {
         var addInteraction, cardSprite, position, tokenSprite, tween,
@@ -74,25 +85,30 @@
         tokenSprite = this.getTokenSprite(card);
         position = this.getOpenFieldPosition();
         addInteraction = function(sprite) {
-          var cardPos;
-          cardPos = sprite.position.clone();
-          cardPos.x += sprite.width + TOKEN_CARD_OFFSET;
-          sprite.cardSprite.position = cardPos;
-          sprite.cardSprite.visible = false;
-          sprite.onHoverStart(function() {
-            return sprite.cardSprite.visible = true;
-          });
-          sprite.onHoverEnd(function() {
-            return sprite.cardSprite.visible = false;
-          });
-          return sprite.onMouseUp(function() {});
+          return function() {
+            var cardPos;
+            cardPos = Util.clone(sprite.position);
+            cardPos.x += sprite.width + TOKEN_CARD_OFFSET;
+            sprite.cardSprite.position = cardPos;
+            sprite.cardSprite.visible = false;
+            sprite.visible = true;
+            sprite.onHoverStart(function() {
+              return sprite.cardSprite.visible = true;
+            });
+            sprite.onHoverEnd(function() {
+              return sprite.cardSprite.visible = false;
+            });
+            return sprite.onMouseUp(function() {});
+          };
         };
+        tokenSprite.visible = false;
+        tokenSprite.position = position;
         if (animate) {
-          tween = Util.spriteTween(cardSprite, cardSprite.position, position, HAND_ANIM_TIME).start();
+          tween = Util.spriteTween(cardSprite, cardSprite.position, position, DEFAULT_TWEEN_TIME);
           cardSprite.tween = tween;
+          tween.start();
           tween.onComplete(addInteraction(tokenSprite));
         } else {
-          tokenSprite.position = position;
           addInteraction(tokenSprite)();
         }
         this.fieldSprites.push(tokenSprite);
@@ -206,17 +222,20 @@
           if (FIELD_AREA.contains(corner.x, corner.y)) {
             card = sprite.card;
             cardClass = this.cardClasses[card["class"]];
-            if (cardClass.rushAbility != null) {
-              sprite.dropTween = sprite.tween;
-              this.setTargetingSource(sprite);
-            } else {
-              this.battle.emitPlayCardEvent(sprite.card._id, null, function(err) {
-                if (err != null) {
-                  console.log(err);
-                  return sprite.tween.start();
+            this.battle.emitPlayCardEvent(sprite.card._id, null, function(err) {
+              if (err != null) {
+                console.log(err);
+                return sprite.tween.start();
+              } else {
+                console.log("Played card " + sprite.card._id);
+                _this.removeInteractions(sprite);
+                _this.putCardOnField(sprite.card);
+                if (cardClass.rushAbility != null) {
+                  sprite.dropTween = null;
+                  return _this.setTargetingSource(sprite);
                 }
-              });
-            }
+              }
+            });
             played = true;
             break;
           }
@@ -224,6 +243,10 @@
         if (!played) {
           return sprite.tween.start();
         }
+      };
+
+      CardManager.prototype.removeInteractions = function(cardSprite) {
+        return cardSprite.removeAllInteractions();
       };
 
       CardManager.prototype.update = function() {

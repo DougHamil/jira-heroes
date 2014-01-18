@@ -6,6 +6,7 @@
       return $.extend({}, {}, obj);
     };
     UTILS = {
+      clone: copy,
       copy: copy,
       spriteTween: function(sprite, from, to, time, options, onComplete) {
         var tween;

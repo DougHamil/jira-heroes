@@ -34,7 +34,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @damageIcon.anchor = {x:0.5, y:0.5}
       @healthIcon.anchor = {x:0.5, y:0.5}
       @damageIcon.position = {x:-@damageIcon.width/2, y:@height - @damageIcon.height/2}
-      @healthIcon.position = {x:-@healthIcon.width/2, y:@height - @healthIcon.height/2}
+      @healthIcon.position = {x:@width - @healthIcon.width/2, y:@height - @healthIcon.height/2}
 
       @.addChild @imageSprite
       @.addChild @frameSprite
@@ -56,10 +56,12 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
 
     onHoverStart: (cb) -> @.mouseover = => cb @
     onHoverEnd: (cb) -> @.mouseout = => cb @
+    onMouseUp: (cb) -> @.mouseup = => cb @
+    onMouseDown: (cb) -> @.mousedown = => cb @
 
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
-      mask.drawCircle(0, 0, TOKEN_WIDTH)
+      mask.drawCircle(0, 0, TOKEN_WIDTH/2)
       mask.endFill()
       return mask

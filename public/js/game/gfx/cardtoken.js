@@ -54,7 +54,7 @@
           y: this.height - this.damageIcon.height / 2
         };
         this.healthIcon.position = {
-          x: -this.healthIcon.width / 2,
+          x: this.width - this.healthIcon.width / 2,
           y: this.height - this.healthIcon.height / 2
         };
         this.addChild(this.imageSprite);
@@ -92,11 +92,25 @@
         };
       };
 
+      CardToken.prototype.onMouseUp = function(cb) {
+        var _this = this;
+        return this.mouseup = function() {
+          return cb(_this);
+        };
+      };
+
+      CardToken.prototype.onMouseDown = function(cb) {
+        var _this = this;
+        return this.mousedown = function() {
+          return cb(_this);
+        };
+      };
+
       CardToken.prototype.createImageMask = function() {
         var mask;
         mask = new PIXI.Graphics();
         mask.beginFill();
-        mask.drawCircle(0, 0, TOKEN_WIDTH);
+        mask.drawCircle(0, 0, TOKEN_WIDTH / 2);
         mask.endFill();
         return mask;
       };

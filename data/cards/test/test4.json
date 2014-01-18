@@ -2,7 +2,7 @@
 	"name":"testcard4",
 	"displayName":"Test Card 4",
 	"cost":0,
-	"energy":2,
+	"energy":1,
 	"health":2,
 	"damage":1,
 	"media": {

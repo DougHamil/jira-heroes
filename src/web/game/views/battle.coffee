@@ -16,34 +16,23 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
       if @innerStage?
         @.removeChild @innerStage
       @innerStage = new PIXI.DisplayObjectContainer
-      if phase is 'initial'
-        if not @battle.isReadied()
-          # Show ready button
-          readyBtn = new GUI.TextButton 'Ready', GUI.STYLES.TEXT
-          readyBtn.position = {x:engine.WIDTH/2 - readyBtn.width/2, y: engine.HEIGHT/2 - readyBtn.height/2}
-          readyBtn.onClick => @battle.emitReadyEvent (err)=>
-            if not err?
-              @innerStage.removeChild readyBtn
-              txt = new PIXI.Text 'Waiting for opponent to ready-up', GUI.STYLES.TEXT
-              txt.position = {x:engine.WIDTH/2 - txt.width/2, y: engine.HEIGHT/2 - txt.height/2}
-              @innerStage.addChild txt
-          @innerStage.addChild readyBtn
-        else
-          txt = new PIXI.Text 'Waiting for opponent to ready-up', GUI.STYLES.TEXT
-          txt.position = {x:engine.WIDTH/2 - txt.width/2, y: engine.HEIGHT/2 - txt.height/2}
-          @innerStage.addChild txt
-      else if phase is 'game'
+      if phase is 'game'
+        @endTurnButton = new GUI.EndTurnButton()
+        @endTurnButton.position = {x: engine.WIDTH - 20 - @endTurnButton.width, y: engine.HEIGHT/2 - @endTurnButton.height/2}
+        @endTurnButton.onClick => @battle.emitEndTurnEvent()
+
         @energySprite = new PIXI.Text @battle.getEnergy() + " energy"
         @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
         @cardManager = new CardManager(JH.cards, JH.user._id, @battle)
+
         @.addChild @energySprite
         @.addChild @cardManager
+        @.addChild @endTurnButton
 
       @.addChild @innerStage
 
-    updateGameStatus: ->
-      if @energySprite?
-        @energySprite.setText @battle.getEnergy() + " energy"
+    updateEnergy: ->
+      @energySprite.setText @battle.getEnergy() + " energy"
 
     createCardSprite: (card) ->
       sprite = new GUI.Card JH.cards[card.class], card.damage, card.health, card.status
@@ -58,11 +47,21 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
         @setStatusText @battle.getConnectedPlayers().length + ' players connected.'
       @battle.on 'player-connected', => updateStatus()
       @battle.on 'player-disconnected', => updateStatus()
-      @battle.on 'player-readied', => updateStatus()
-      @battle.on 'your-turn', (e) => @updateGameStatus()
+      @battle.on 'your-turn', => @setYourTurn(true)
+      @battle.on 'opponent-turn', => @setYourTurn(false)
       @battle.on 'phase', (o, n) => @initUI(n)
+      @battle.on 'action-energy', => @updateEnergy()
+      @battle.on 'action-max-energy', => @updateEnergy()
       updateStatus()
       @initUI @battle.getPhase()
+      @updateEnergy()
+      @setYourTurn(@battle.isYourTurn())
+
+    setYourTurn: (isYourTurn) ->
+      if isYourTurn
+        @setStatusText("It's your turn!")
+      else
+        @setStatusText("Opponent's turn")
 
     activate: (@battle) ->
       @myStage.addChild @

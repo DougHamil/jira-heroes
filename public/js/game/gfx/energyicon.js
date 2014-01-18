@@ -3,36 +3,23 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['gfx/styles', 'util', 'pixi', 'tween'], function(STYLES, Util) {
-    var EnergyIcon, ICON_SIZE, ICON_TEXTURE;
-    ICON_SIZE = 32;
-    ICON_TEXTURE = PIXI.Texture.fromImage('/media/images/icons/energy.png');
+  define(['gfx/icon', 'gfx/styles', 'util', 'pixi', 'tween'], function(Icon, STYLES, Util) {
+    var EnergyIcon, ICON_TEXTURE;
+    ICON_TEXTURE = '/media/images/icons/energy.png';
     return EnergyIcon = (function(_super) {
       __extends(EnergyIcon, _super);
 
       function EnergyIcon(energy) {
-        EnergyIcon.__super__.constructor.apply(this, arguments);
-        this.iconSprite = new PIXI.Sprite(ICON_TEXTURE);
-        this.iconSprite.width = ICON_SIZE;
-        this.iconSprite.height = ICON_SIZE;
-        this.text = new PIXI.Text(energy.toString(), GUI.STYLES.TEXT);
-        this.text.anchor = {
-          x: 0.5,
-          y: 0.5
-        };
-        this.addChild(this.iconSprite);
-        this.addChild(this.text);
-        this.width = ICON_SIZE;
-        this.height = ICON_SIZE;
+        EnergyIcon.__super__.constructor.call(this, energy.toString(), ICON_TEXTURE);
       }
 
       EnergyIcon.prototype.setEnergy = function(energy) {
-        return this.text.setText(energy);
+        return this.setText(energy.toString());
       };
 
       return EnergyIcon;
 
-    })(PIXI.DisplayObjectContainer);
+    })(Icon);
   });
 
 }).call(this);

@@ -3,6 +3,7 @@ define ['jquery', 'pixi', 'tween'], ($) ->
     return $.extend {}, {}, obj
 
   UTILS =
+    clone:copy
     copy:copy
     spriteTween:(sprite, from, to, time, options, onComplete) ->
       tween = new TWEEN.Tween(UTILS.copy(from))

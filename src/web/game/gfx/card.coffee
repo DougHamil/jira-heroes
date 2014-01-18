@@ -1,4 +1,4 @@
-define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
+define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, EnergyIcon, styles, Util) ->
   IMAGE_SIZE =
     width: 64
     height: 64
@@ -32,18 +32,18 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
       @imageSprite.width = IMAGE_SIZE.width
       @imageSprite.height = IMAGE_SIZE.height
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
-      @healthText = new PIXI.Text health.toString(), styles.CARD_STAT
-      @damageText = new PIXI.Text damage.toString(), styles.CARD_STAT
+      @healthIcon = new HealthIcon health
+      @damageIcon = new DamageIcon damage
+      @energyIcon = new EnergyIcon cardClass.energy
       @description = @buildAbilityText cardClass
 
       @description.anchor = {x:0.5, y:0}
       @description.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height / 2}
       @titleText.anchor = {x: 0.5, y:0}
       @titleText.position = {x:@backgroundSprite.width / 2, y: 0}
-      @healthText.anchor = {x: 0.5, y:0.5}
-      @healthText.position = {x:@backgroundSprite.width, y: @backgroundSprite.height}
-      @damageText.anchor = {x: 0.5, y:0.5}
-      @damageText.position = {x:0, y: @backgroundSprite.height}
+      @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
+      @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
+      @energyIcon.position = {x:-@energyIcon.width/2, y:-@energyIcon.height/2}
       @imageSprite.anchor = {x: 0.5, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
 
@@ -51,18 +51,26 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
       @.addChild @imageSprite
       @.addChild @titleText
       @.addChild @description
-      @.addChild @healthText
-      @.addChild @damageText
+      @.addChild @healthIcon
+      @.addChild @damageIcon
+      @.addChild @energyIcon
       @width = CARD_SIZE.width
       @height = CARD_SIZE.height
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
       @.interactive = true
 
-    onHoverStart: (cb) -> @.mouseover = => cb @
-    onHoverEnd: (cb) -> @.mouseout = => cb @
-    onClick: (cb) -> @.click = => cb @
-    onMouseDown: (cb) -> @.mousedown = => cb @
-    onMouseUp: (cb) -> @.mouseup = =>cb @
+    onHoverStart: (cb) -> @.mouseover = => cb @ if cb?
+    onHoverEnd: (cb) -> @.mouseout = => cb @ if cb?
+    onClick: (cb) -> @.click = => cb @ if cb?
+    onMouseDown: (cb) -> @.mousedown = => cb @ if cb?
+    onMouseUp: (cb) -> @.mouseup = =>cb @ if cb?
+
+    removeAllInteractions: ->
+      @.mouseover = null
+      @.mouseout = null
+      @.click = null
+      @.mousedown = null
+      @.mouseup = null
 
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer

@@ -1,4 +1,4 @@
-module.exports = class CardStatusAdd
+class CardStatusAddAction
   constructor:(@card, @status) ->
 
   enact: (battle) ->
@@ -12,3 +12,4 @@ module.exports = class CardStatusAdd
     else
       return []
 
+module.exports = CardStatusAddAction

@@ -3,7 +3,7 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['gfx/styles', 'util', 'pixi', 'tween'], function(styles, Util) {
+  define(['gfx/damageicon', 'gfx/healthicon', 'gfx/energyicon', 'gfx/styles', 'util', 'pixi', 'tween'], function(DamageIcon, HealthIcon, EnergyIcon, styles, Util) {
     var BACKGROUND_TEXTURE, CARD_SIZE, Card, IMAGE_PATH, IMAGE_POS, IMAGE_SIZE, MISSING_TEXTURE;
     IMAGE_SIZE = {
       width: 64,
@@ -46,8 +46,9 @@
         this.imageSprite.width = IMAGE_SIZE.width;
         this.imageSprite.height = IMAGE_SIZE.height;
         this.titleText = new PIXI.Text(cardClass.displayName, styles.CARD_TITLE);
-        this.healthText = new PIXI.Text(health.toString(), styles.CARD_STAT);
-        this.damageText = new PIXI.Text(damage.toString(), styles.CARD_STAT);
+        this.healthIcon = new HealthIcon(health);
+        this.damageIcon = new DamageIcon(damage);
+        this.energyIcon = new EnergyIcon(cardClass.energy);
         this.description = this.buildAbilityText(cardClass);
         this.description.anchor = {
           x: 0.5,
@@ -65,21 +66,17 @@
           x: this.backgroundSprite.width / 2,
           y: 0
         };
-        this.healthText.anchor = {
-          x: 0.5,
-          y: 0.5
+        this.healthIcon.position = {
+          x: this.backgroundSprite.width - this.healthIcon.width,
+          y: this.backgroundSprite.height - this.healthIcon.height
         };
-        this.healthText.position = {
-          x: this.backgroundSprite.width,
-          y: this.backgroundSprite.height
-        };
-        this.damageText.anchor = {
-          x: 0.5,
-          y: 0.5
-        };
-        this.damageText.position = {
+        this.damageIcon.position = {
           x: 0,
-          y: this.backgroundSprite.height
+          y: this.backgroundSprite.height - this.damageIcon.height
+        };
+        this.energyIcon.position = {
+          x: -this.energyIcon.width / 2,
+          y: -this.energyIcon.height / 2
         };
         this.imageSprite.anchor = {
           x: 0.5,
@@ -93,8 +90,9 @@
         this.addChild(this.imageSprite);
         this.addChild(this.titleText);
         this.addChild(this.description);
-        this.addChild(this.healthText);
-        this.addChild(this.damageText);
+        this.addChild(this.healthIcon);
+        this.addChild(this.damageIcon);
+        this.addChild(this.energyIcon);
         this.width = CARD_SIZE.width;
         this.height = CARD_SIZE.height;
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
@@ -104,36 +102,54 @@
       Card.prototype.onHoverStart = function(cb) {
         var _this = this;
         return this.mouseover = function() {
-          return cb(_this);
+          if (cb != null) {
+            return cb(_this);
+          }
         };
       };
 
       Card.prototype.onHoverEnd = function(cb) {
         var _this = this;
         return this.mouseout = function() {
-          return cb(_this);
+          if (cb != null) {
+            return cb(_this);
+          }
         };
       };
 
       Card.prototype.onClick = function(cb) {
         var _this = this;
         return this.click = function() {
-          return cb(_this);
+          if (cb != null) {
+            return cb(_this);
+          }
         };
       };
 
       Card.prototype.onMouseDown = function(cb) {
         var _this = this;
         return this.mousedown = function() {
-          return cb(_this);
+          if (cb != null) {
+            return cb(_this);
+          }
         };
       };
 
       Card.prototype.onMouseUp = function(cb) {
         var _this = this;
         return this.mouseup = function() {
-          return cb(_this);
+          if (cb != null) {
+            return cb(_this);
+          }
         };
+      };
+
+      Card.prototype.removeAllInteractions = function() {
+        this.mouseover = null;
+        this.mouseout = null;
+        this.click = null;
+        this.mousedown = null;
+        return this.mouseup = null;
       };
 
       Card.prototype.buildAbilityText = function(cardClass) {
