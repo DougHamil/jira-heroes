@@ -1,4 +1,5 @@
 define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
+  DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
   FIELD_ORIGIN = {x:20, y: engine.HEIGHT/2}
   FIELD_PADDING = 50
   HAND_ORIGIN = {x:20, y:engine.HEIGHT - 20}
@@ -35,6 +36,11 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
               @targetingSource.dropTween.start()
           @targetingSource = null
       @battle.on 'action-draw-card', (action) => @onDrawCardAction(action)
+      @battle.on 'action-end-turn', (action) => @onEndTurnAction(action)
+
+    onEndTurnAction: (action) ->
+      if action.player is @userId
+        @verifyHandPositions()
 
     onDrawCardAction: (action) ->
       if action.player is @userId
@@ -72,53 +78,55 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @fieldSprites.push tokenSprite
       @handSprites = @handSprites.filter (s) -> s isnt cardSprite
 
+    setHandInteraction: (sprite) ->
+      cardClass = @cardClasses[sprite.card.class]
+      to = {x:sprite.position.x, y:sprite.position.y-HAND_HOVER_OFFSET}
+      from = {x:sprite.position.x, y:sprite.position.y}
+      sprite.onHoverStart =>
+        if not @dragSprite? and not @targetingSource?
+          tween = Util.spriteTween sprite, sprite.position, to, HOVER_ANIM_TIME
+          tween.start()
+          sprite.tween = tween
+      sprite.onHoverEnd =>
+        if @dragSprite isnt sprite and @targetingSource isnt sprite
+          tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
+          tween.start()
+          sprite.tween = tween
+        else if @targetingSource is sprite
+          tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
+          sprite.dropTween = tween
+      sprite.onMouseDown =>
+        # If this card has a cast ability, then it's a spell card, so pick a target
+        if cardClass.playAbility?
+          @setTargetingSource(sprite)
+        else
+          if sprite.tween?
+            sprite.tween.stop()
+            @dragOffset = @stage.getMousePosition().clone()
+            @dragOffset.x -= sprite.position.x
+            @dragOffset.y -= sprite.position.y
+            @dragSprite = sprite
+            @.removeChild @dragSprite
+            @.addChild @dragSprite
+      sprite.onMouseUp =>
+        if sprite.tween?
+          sprite.tween.stop()
+        if @dragSprite is sprite
+          @dragSprite = null
+          tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
+          sprite.tween = tween
+          @onCardDropped sprite
+
     putCardInHand: (card, animate) ->
       # Default to animate
       animate = true if not animate?
       sprite = @getCardSprite card
       position = @getOpenHandPosition()
       sprite.sourcePosition = position
-      addInteraction = (sprite) =>
-        =>
-          cardClass = @cardClasses[sprite.card.class]
-          to = {x:sprite.position.x, y:sprite.position.y-HAND_HOVER_OFFSET}
-          from = {x:sprite.position.x, y:sprite.position.y}
-          sprite.onHoverStart =>
-            if not @dragSprite? and not @targetingSource?
-              tween = Util.spriteTween sprite, sprite.position, to, HOVER_ANIM_TIME
-              tween.start()
-              sprite.tween = tween
-          sprite.onHoverEnd =>
-            if @dragSprite isnt sprite and @targetingSource isnt sprite
-              tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
-              tween.start()
-              sprite.tween = tween
-            else if @targetingSource is sprite
-              tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
-              sprite.dropTween = tween
-
-          sprite.onMouseDown =>
-            # If this card has a cast ability, then it's a spell card, so pick a target
-            if cardClass.playAbility?
-              @setTargetingSource(sprite)
-            else
-              if sprite.tween?
-                sprite.tween.stop()
-                @dragOffset = @stage.getMousePosition().clone()
-                @dragOffset.x -= sprite.position.x
-                @dragOffset.y -= sprite.position.y
-                @dragSprite = sprite
-                @.removeChild @dragSprite
-                @.addChild @dragSprite
-          sprite.onMouseUp =>
-            if sprite.tween?
-              sprite.tween.stop()
-            if @dragSprite is sprite
-              @dragSprite = null
-              tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
-              sprite.tween = tween
-              @onCardDropped sprite
+      addInteraction = (sprite) => => @setHandInteraction(sprite)
       if animate
+        if sprite.position.x is 0 and sprite.position.y is 0
+          sprite.position = Util.clone(DECK_ORIGIN)
         tween = Util.spriteTween(sprite, sprite.position, position, HAND_ANIM_TIME).start()
         sprite.tween = tween
         tween.onComplete addInteraction(sprite)
@@ -126,6 +134,18 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         sprite.position = position
         addInteraction(sprite)()
       @handSprites.push sprite
+
+    verifyHandPositions: ->
+      index = 0
+      setInteractions = (sprite) => => @setHandInteraction(sprite)
+      for cardSprite in @handSprites
+        pos = @getHandPositionAt(index)
+        if cardSprite.x isnt pos.x or cardSprite.y isnt pos.y
+          @removeInteractions(cardSprite)
+          cardSprite.tween = Util.spriteTween(cardSprite, cardSprite.position, pos, HAND_ANIM_TIME)
+          cardSprite.tween.start()
+          cardSprite.tween.onComplete setInteractions(cardSprite)
+        index++
 
     onTargeted: (sourceSprite, targetPosition) ->
       #TODO: Go through all tokens on the board and determine if they contain the target position
@@ -183,8 +203,9 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
     setTargetingSource: (sprite) ->
       @targetingSource = sprite
 
+    getHandPositionAt: (idx) -> return {x:HAND_ORIGIN.x + (@getCardWidth() + HAND_PADDING) * idx, y:HAND_ORIGIN.y - @getCardHeight()}
     getOpenFieldPosition: -> return {x:FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @fieldSprites.length, y: FIELD_ORIGIN.y - @getCardHeight()}
-    getOpenHandPosition: -> return {x:HAND_ORIGIN.x + (@getCardWidth() + HAND_PADDING) * @handSprites.length, y:HAND_ORIGIN.y - @getCardHeight()}
+    getOpenHandPosition: -> return @getHandPositionAt(@handSprites.length)
 
     getCardHeight: ->
       for id, sprite of @cardSprites
