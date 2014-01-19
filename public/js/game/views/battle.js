@@ -3,7 +3,7 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'engine', 'pixi'], function($, JH, GUI, CardManager, BattleManager, engine) {
+  define(['jquery', 'jiraheroes', 'gui', 'cardanimator', 'client/battlemanager', 'engine', 'pixi'], function($, JH, GUI, CardAnimator, BattleManager, engine) {
     /*
     # This view displays the actual battle part of the game to the player
     */
@@ -45,9 +45,9 @@
             x: engine.WIDTH - 20 - this.energySprite.width,
             y: 20
           };
-          this.cardManager = new CardManager(JH.cards, JH.user._id, this.battle);
+          this.cardAnimator = new CardAnimator(JH.cards, JH.user._id, this.battle);
           this.addChild(this.energySprite);
-          this.addChild(this.cardManager);
+          this.addChild(this.cardAnimator);
           this.addChild(this.endTurnButton);
         }
         return this.addChild(this.innerStage);
@@ -135,9 +135,9 @@
           this.removeChild(this.innerStage);
           this.innerStage = null;
         }
-        if (this.cardManager != null) {
-          this.removeChild(this.cardManager);
-          return this.cardManager = null;
+        if (this.cardAnimator != null) {
+          this.removeChild(this.cardAnimator);
+          return this.cardAnimator = null;
         }
       };
 

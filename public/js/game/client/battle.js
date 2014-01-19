@@ -120,6 +120,11 @@
               this.cardsById[action.card._id] = action.card;
             }
             this.getPlayer(action.player).field.push(action.card);
+            break;
+          case 'cast-card':
+            if (action.card._id != null) {
+              this.cardsById[action.card._id] = action.card;
+            }
         }
         console.log(action);
         return this.emit('action-' + action.type, action);
@@ -172,6 +177,17 @@
 
       Battle.prototype.getCardsInHand = function() {
         return this.model.you.hand;
+      };
+
+      Battle.prototype.getEnemyCardsInHand = function() {
+        var cards, enemy, _i, _len, _ref;
+        cards = [];
+        _ref = this.model.opponents;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          enemy = _ref[_i];
+          cards = cards.concat(enemy.hand);
+        }
+        return cards;
       };
 
       Battle.prototype.getCardsOnField = function() {

@@ -20,6 +20,10 @@
     return CardToken = (function(_super) {
       __extends(CardToken, _super);
 
+      CardToken.Width = TOKEN_WIDTH;
+
+      CardToken.Height = TOKEN_HEIGHT;
+
       function CardToken(card, cardClass) {
         var imageTexture;
         CardToken.__super__.constructor.apply(this, arguments);

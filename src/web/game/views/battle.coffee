@@ -1,4 +1,4 @@
-define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'engine', 'pixi'], ($, JH, GUI, CardManager, BattleManager, engine) ->
+define ['jquery', 'jiraheroes', 'gui', 'cardanimator', 'client/battlemanager', 'engine', 'pixi'], ($, JH, GUI, CardAnimator, BattleManager, engine) ->
   ###
   # This view displays the actual battle part of the game to the player
   ###
@@ -23,10 +23,10 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
 
         @energySprite = new PIXI.Text @battle.getEnergy() + " energy"
         @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
-        @cardManager = new CardManager(JH.cards, JH.user._id, @battle)
+        @cardAnimator = new CardAnimator(JH.cards, JH.user._id, @battle)
 
         @.addChild @energySprite
-        @.addChild @cardManager
+        @.addChild @cardAnimator
         @.addChild @endTurnButton
 
       @.addChild @innerStage
@@ -78,6 +78,6 @@ define ['jquery', 'jiraheroes', 'gui', 'cardmanager', 'client/battlemanager', 'e
       if @innerStage?
         @.removeChild @innerStage
         @innerStage = null
-      if @cardManager?
-        @.removeChild @cardManager
-        @cardManager = null
+      if @cardAnimator?
+        @.removeChild @cardAnimator
+        @cardAnimator = null

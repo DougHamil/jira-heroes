@@ -16,6 +16,8 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
   # Draws everything for a card, showing the image, damage, heatlh, status, etc.
   ###
   class Card extends PIXI.DisplayObjectContainer
+    @Width: CARD_SIZE.width
+    @Height: CARD_SIZE.height
     @FromClass: (cardClass) ->
       return new Card cardClass, cardClass.damage, cardClass.health, []
     constructor: (cardClass, damage, health, status) ->

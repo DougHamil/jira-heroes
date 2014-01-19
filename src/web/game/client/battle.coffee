@@ -61,6 +61,9 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
           if action.card._id?
             @cardsById[action.card._id] = action.card
           @getPlayer(action.player).field.push action.card
+        when 'cast-card'
+          if action.card._id?
+            @cardsById[action.card._id] = action.card
       console.log action
       @emit 'action-'+action.type, action
 
@@ -89,6 +92,11 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
     getPhase: -> return @model.state.phase
     getCard: (id) -> return @cardsById[id]
     getCardsInHand: -> return @model.you.hand
+    getEnemyCardsInHand: ->
+      cards = []
+      for enemy in @model.opponents
+        cards = cards.concat(enemy.hand)
+      return cards
     getCardsOnField: -> return @model.you.field
     getEnemyCardsOnField: ->
       cards = []

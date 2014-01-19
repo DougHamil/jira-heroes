@@ -11,6 +11,8 @@ define ['./gfx/herobutton',
         './gfx/cardfan',
         './gfx/cardtoken',
         './gfx/endturnbutton',
+        './gfx/flippedcard',
+        './gfx/orderedspriterow',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -26,6 +28,8 @@ define ['./gfx/herobutton',
         CardFan,
         CardToken,
         EndTurnButton,
+        FlippedCard,
+        OrderedSpriteRow,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -41,6 +45,8 @@ define ['./gfx/herobutton',
     CardFan:CardFan
     CardToken: CardToken
     EndTurnButton: EndTurnButton
+    FlippedCard: FlippedCard
+    OrderedSpriteRow: OrderedSpriteRow
     STYLES: styles
 
   return GUI

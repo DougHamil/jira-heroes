@@ -27,6 +27,10 @@
     return Card = (function(_super) {
       __extends(Card, _super);
 
+      Card.Width = CARD_SIZE.width;
+
+      Card.Height = CARD_SIZE.height;
+
       Card.FromClass = function(cardClass) {
         return new Card(cardClass, cardClass.damage, cardClass.health, []);
       };

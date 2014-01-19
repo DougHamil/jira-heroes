@@ -11,6 +11,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
   # Represents a card on the field, shown as the card's image with health and damage icons. Minimalized version of the source card.
   ###
   class CardToken extends PIXI.DisplayObjectContainer
+    @Width: TOKEN_WIDTH
+    @Height: TOKEN_HEIGHT
     constructor: (card, cardClass) ->
       super
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image

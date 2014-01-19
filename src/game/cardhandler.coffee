@@ -70,7 +70,8 @@ class CardHandler
       @model.usedRushAbility = false
       actions = []
       if cardClass.playAbility.class?
-        actions = @_castAbilityFromModel cardClass.playAbility, target
+        actions.push Actions.CastCard(@model, cardClass)
+        actions = actions.concat(@_castAbilityFromModel(cardClass.playAbility, target))
         # Spell cards are always discarded
         actions.push Actions.DiscardCard @model
       else

@@ -32,8 +32,8 @@ class PlayerHandler extends EventEmitter
             # Card use targeting a card
             if target.card?
               targetCard = @battle.getCard(target.card)
-              # Can only target cards on the field
-              if targetCard? and targetCard.position is 'field'
+              # Can only target cards on the field and cannot target self
+              if targetCard? and targetCard.position is 'field' and targetCard isnt card
                 cardHandler.use targetCard, (err, actions) =>
                   cb err if cb?
                   if not err?
