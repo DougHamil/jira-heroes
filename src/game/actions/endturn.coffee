@@ -8,6 +8,7 @@ module.exports = class EndTurnAction
     for card in battle.getFieldCards(@player)
       if 'sleeping' in card.status
         actions.push new CardStatusRemoveAction(card, 'sleeping')
+      card.used = false
     PAYLOAD =
       type: 'end-turn'
       player: @player.userId

@@ -5,7 +5,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['jquery', 'gui', 'engine', 'util', 'pixi'], function($, GUI, engine, Util) {
-    var CardManager, DECK_ORIGIN, DEFAULT_TWEEN_TIME, ENEMY_FIELD_ORIGIN, FIELD_AREA, FIELD_ORIGIN, FIELD_PADDING, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME, TOKEN_CARD_OFFSET;
+    var CardManager, DECK_ORIGIN, DEFAULT_TWEEN_TIME, DISCARD_ORIGIN, ENEMY_FIELD_ORIGIN, FIELD_AREA, FIELD_ORIGIN, FIELD_PADDING, HAND_ANIM_TIME, HAND_HOVER_OFFSET, HAND_ORIGIN, HAND_PADDING, HOVER_ANIM_TIME, TOKEN_CARD_OFFSET;
     DECK_ORIGIN = {
       x: engine.WIDTH + 200,
       y: engine.HEIGHT
@@ -18,6 +18,10 @@
       x: 20,
       y: 100
     };
+    DISCARD_ORIGIN = {
+      x: -200,
+      y: 0
+    };
     FIELD_PADDING = 50;
     HAND_ORIGIN = {
       x: 20,
@@ -28,7 +32,7 @@
     HAND_PADDING = 20;
     HOVER_ANIM_TIME = 200;
     DEFAULT_TWEEN_TIME = 400;
-    TOKEN_CARD_OFFSET = 100;
+    TOKEN_CARD_OFFSET = 50;
     FIELD_AREA = new PIXI.Rectangle(20, 200, engine.WIDTH - 80, 500);
     /*
     # Manages all card sprites in the battle by positioning and animating them
@@ -96,7 +100,14 @@
         this.battle.on('action-damage', function(action) {
           return _this.onDamageAction(action);
         });
+        this.battle.on('action-discard-card', function(action) {
+          return _this.onDiscardCardAction(action);
+        });
       }
+
+      CardManager.prototype.onDiscardCardAction = function(action) {
+        return this.putCardInDiscard(this.cardSprites[action.card].card);
+      };
 
       CardManager.prototype.onDamageAction = function(action) {
         var cardSprite, tokenSprite;
@@ -162,6 +173,26 @@
         } else {
           return addInteraction(tokenSprite)();
         }
+      };
+
+      CardManager.prototype.putCardInDiscard = function(card, animate) {
+        var cardSprite, position, tokenSprite;
+        if (animate == null) {
+          animate = true;
+        }
+        cardSprite = this.getCardSprite(card);
+        tokenSprite = this.getTokenSprite(card);
+        position = this.getDiscardPosition();
+        tokenSprite.tween = Util.spriteTween(tokenSprite, tokenSprite.position, position, DEFAULT_TWEEN_TIME);
+        tokenSprite.tween.start();
+        tokenSprite.removeAllInteractions();
+        cardSprite.visible = false;
+        this.enemyFieldSprites = this.enemyFieldSprites.filter(function(s) {
+          return s.card !== card;
+        });
+        return this.fieldSprites = this.fieldSprites.filter(function(s) {
+          return s.card !== card;
+        });
       };
 
       CardManager.prototype.putEnemyCardOnField = function(card, animate) {
@@ -232,8 +263,8 @@
               _this.dragOffset.x -= sprite.position.x;
               _this.dragOffset.y -= sprite.position.y;
               _this.dragSprite = sprite;
-              _this.removeChild(_this.dragSprite);
-              return _this.addChild(_this.dragSprite);
+              _this.cardSpriteLayer.removeChild(_this.dragSprite);
+              return _this.cardSpriteLayer.addChild(_this.dragSprite);
             }
           }
         });
@@ -305,15 +336,15 @@
       };
 
       CardManager.prototype.onTargeted = function(sourceSprite, targetPosition) {
-        var cardId, tokenSprite, _ref, _results,
+        var cardId, foundTarget, tokenSprite, _ref,
           _this = this;
+        foundTarget = false;
         _ref = this.tokenSprites;
-        _results = [];
         for (cardId in _ref) {
           tokenSprite = _ref[cardId];
           if (tokenSprite.contains(targetPosition)) {
             if (__indexOf.call(this.handSprites, sourceSprite) >= 0) {
-              console.log("Attempting to cast spell of card " + sourceSprite.card._id);
+              foundTarget = true;
               this.battle.emitPlayCardEvent(sourceSprite.card._id, cardId, function(err) {
                 if (err != null) {
                   console.log(err);
@@ -321,21 +352,22 @@
                 }
               });
             } else if (__indexOf.call(this.fieldSprites, sourceSprite) >= 0) {
-              console.log("Attempting to attack with card " + sourceSprite.card._id);
+              foundTarget = true;
               this.battle.emitUseCardEvent(sourceSprite.card._id, {
                 card: cardId
               }, function(err) {
                 if (err != null) {
-                  return console.log(err);
+                  console.log(err);
+                  if (sourceSprite.dropTween != null) {
+                    return sourceSprite.dropTween.start();
+                  }
                 }
               });
             }
             break;
-          } else {
-            _results.push(void 0);
           }
         }
-        return _results;
+        return foundTarget;
       };
 
       CardManager.prototype.onCardDropped = function(sprite) {
@@ -439,6 +471,10 @@
 
       CardManager.prototype.getOpenHandPosition = function() {
         return this.getHandPositionAt(this.handSprites.length);
+      };
+
+      CardManager.prototype.getDiscardPosition = function() {
+        return DISCARD_ORIGIN;
       };
 
       CardManager.prototype.getCardHeight = function() {

@@ -33,6 +33,10 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
           card = @getCard(action.target)
           if card?
             card.health -= action.damage
+        when 'discard-card'
+          card = @getCard(action.card)
+          if card?
+            card.position = 'discard'
         when 'start-turn'
           @model.activePlayer = action.player
         when 'draw-card'

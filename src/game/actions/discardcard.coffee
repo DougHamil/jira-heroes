@@ -7,7 +7,7 @@ class DiscardCardAction
     cardHandler.unregisterPassiveAbilities()
     PAYLOAD =
       type:'discard-card'
-      card: @cardModel
+      card: @cardModel._id
     return [PAYLOAD]
 
 module.exports = DiscardCardAction

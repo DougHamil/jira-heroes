@@ -2,6 +2,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
   FIELD_ORIGIN = {x:20, y: engine.HEIGHT/2}
   ENEMY_FIELD_ORIGIN = {x:20, y: 100}
+  DISCARD_ORIGIN = {x:-200, y: 0}
   FIELD_PADDING = 50
   HAND_ORIGIN = {x:20, y:engine.HEIGHT - 20}
   HAND_ANIM_TIME = 1000
@@ -9,7 +10,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   HAND_PADDING = 20
   HOVER_ANIM_TIME = 200
   DEFAULT_TWEEN_TIME = 400
-  TOKEN_CARD_OFFSET = 100
+  TOKEN_CARD_OFFSET = 50
   FIELD_AREA = new PIXI.Rectangle 20, 200, engine.WIDTH - 80, 500
 
   ###
@@ -48,6 +49,11 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @battle.on 'action-end-turn', (action) => @onEndTurnAction(action)
       @battle.on 'action-play-card', (action) => @onPlayCardAction(action)
       @battle.on 'action-damage', (action) => @onDamageAction(action)
+      @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
+
+    onDiscardCardAction: (action) ->
+      # TODO: Instead handle destroy action and show FX for destroying card
+      @putCardInDiscard @cardSprites[action.card].card
 
     onDamageAction: (action) ->
       cardSprite = @cardSprites[action.target]
@@ -56,6 +62,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         cardSprite.setHealth(@battle.getCard(action.target).health)
       if tokenSprite
         tokenSprite.setHealth(@battle.getCard(action.target).health)
+
     onPlayCardAction: (action) ->
       if action.player isnt @userId
         @putEnemyCardOnField action.card
@@ -92,6 +99,18 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         tween.onComplete addInteraction(tokenSprite)
       else
         addInteraction(tokenSprite)()
+
+    putCardInDiscard: (card, animate) ->
+      animate = true if not animate?
+      cardSprite = @getCardSprite card
+      tokenSprite = @getTokenSprite card
+      position = @getDiscardPosition()
+      tokenSprite.tween = Util.spriteTween tokenSprite, tokenSprite.position, position, DEFAULT_TWEEN_TIME
+      tokenSprite.tween.start()
+      tokenSprite.removeAllInteractions()
+      cardSprite.visible = false
+      @enemyFieldSprites = @enemyFieldSprites.filter (s) -> s.card isnt card
+      @fieldSprites = @fieldSprites.filter (s) -> s.card isnt card
 
     putEnemyCardOnField: (card, animate) ->
       animate = true if not animate?
@@ -139,8 +158,8 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
             @dragOffset.x -= sprite.position.x
             @dragOffset.y -= sprite.position.y
             @dragSprite = sprite
-            @.removeChild @dragSprite
-            @.addChild @dragSprite
+            @cardSpriteLayer.removeChild @dragSprite
+            @cardSpriteLayer.addChild @dragSprite
       sprite.onMouseUp =>
         if sprite.tween?
           sprite.tween.stop()
@@ -181,22 +200,28 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         index++
 
     onTargeted: (sourceSprite, targetPosition) ->
+      foundTarget = false
       for cardId, tokenSprite of @tokenSprites
         if tokenSprite.contains(targetPosition)
           # If this is a spell card being played from the hand, then play the spell with the target
           if sourceSprite in @handSprites
-            console.log "Attempting to cast spell of card #{sourceSprite.card._id}"
+            foundTarget = true
             @battle.emitPlayCardEvent sourceSprite.card._id, cardId, (err) =>
               if err?
                 console.log err
                 sourceSprite.tween.start()
           # If this is a token sprite and we're trying to attack, then attack
           else if sourceSprite in @fieldSprites
-            console.log "Attempting to attack with card #{sourceSprite.card._id}"
+            foundTarget = true
             @battle.emitUseCardEvent sourceSprite.card._id, {card:cardId}, (err) =>
-              console.log err if err?
+              if err?
+                console.log err
+                if sourceSprite.dropTween?
+                  sourceSprite.dropTween.start()
+
           break
       # TODO:  go through hero tokens and see if they're casting on heroes
+      return foundTarget
 
     onCardDropped: (sprite) ->
       corners = []
@@ -254,6 +279,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
     getOpenFieldPosition: -> return {x:FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @fieldSprites.length, y: FIELD_ORIGIN.y}
     getOpenEnemyFieldPosition: -> return {x:ENEMY_FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @enemyFieldSprites.length, y: ENEMY_FIELD_ORIGIN.y}
     getOpenHandPosition: -> return @getHandPositionAt(@handSprites.length)
+    getDiscardPosition: -> return DISCARD_ORIGIN
 
     getCardHeight: ->
       for id, sprite of @cardSprites

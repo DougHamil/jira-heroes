@@ -82,6 +82,12 @@
               card.health -= action.damage;
             }
             break;
+          case 'discard-card':
+            card = this.getCard(action.card);
+            if (card != null) {
+              card.position = 'discard';
+            }
+            break;
           case 'start-turn':
             this.model.activePlayer = action.player;
             break;

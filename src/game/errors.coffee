@@ -25,6 +25,7 @@ errors =
   CARD_SLEEPING: 'Card is sleeping, cannot be used until next turn'
   MUST_ATTACK_TAUNT: 'Must attack a taunt card'
   CARD_CANNOT_ATTACK: 'Card cannot attack'
+  CARD_USED: 'Card has already been used this turn'
 
 errorObjs = {}
 for id, message of errors

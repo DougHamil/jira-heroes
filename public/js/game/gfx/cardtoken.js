@@ -116,6 +116,14 @@
         };
       };
 
+      CardToken.prototype.removeAllInteractions = function() {
+        this.mouseover = null;
+        this.mouseout = null;
+        this.click = null;
+        this.mousedown = null;
+        return this.mouseup = null;
+      };
+
       CardToken.prototype.createImageMask = function() {
         var mask;
         mask = new PIXI.Graphics();

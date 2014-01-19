@@ -1,5 +1,4 @@
 define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, STYLES, Util) ->
-
   TOKEN_WIDTH = 128
   TOKEN_HEIGHT = 128
   IMAGE_PATH = '/media/images/cards/'
@@ -45,7 +44,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.hitArea = new PIXI.Rectangle 0, 0, @width, @height
       @.interactive = true
 
-
       @setTaunt ('taunt' in card.status)
 
     contains: (point) ->
@@ -66,6 +64,13 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     onHoverEnd: (cb) -> @.mouseout = => cb @
     onMouseUp: (cb) -> @.mouseup = => cb @
     onMouseDown: (cb) -> @.mousedown = => cb @
+
+    removeAllInteractions: ->
+      @.mouseover = null
+      @.mouseout = null
+      @.click = null
+      @.mousedown = null
+      @.mouseup = null
 
     createImageMask: ->
       mask = new PIXI.Graphics()

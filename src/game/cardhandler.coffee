@@ -50,9 +50,17 @@ class CardHandler
 
   _use: (target, cardClass, cb) ->
     if cardClass.useAbility?
-      cb null, @_castAbilityFromModel cardClass.useAbility, target
+      try
+        cb null, @_castAbilityFromModel cardClass.useAbility, target
+        @model.used = true
+      catch ex
+        cb ex
     else if @attackAbility?
-      cb null, @_castAbility @attackAbility, target
+      try
+        cb null, @_castAbility @attackAbility, target
+        @model.used = true
+      catch ex
+        cb ex
     else
       cb Errors.INVALID_ACTION
 
@@ -88,8 +96,10 @@ class CardHandler
   use: (target, cb) ->
     if target?
       # Sleeping cards cannot be used, and cards cannot be used twice in a turn
-      if STATUS.SLEEPING in @model.status or @model.used
-        cb Errors.CARD_SLEEPING, null
+      if STATUS.SLEEPING in @model.status
+        cb Errors.CARD_SLEEPING
+      else if @model.used
+        cb Errors.CARD_USED
       else
         CardCache.get @model.class, (err, cardClass) =>
           @_use target, cardClass, cb
