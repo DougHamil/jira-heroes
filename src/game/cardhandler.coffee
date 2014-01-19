@@ -33,9 +33,8 @@ class CardHandler
       @attackAbility = null
 
   _castAbility: (ability, target) ->
-    target = @_getHeroOrCard(target)
-    actions = ability.cast target
-    actions = @battle.filterActions actions
+    actions = ability.cast @battle, target
+    actions = @battle.processActions actions
     return actions
 
   _castAbilityFromModel: (abilityModel, target) ->

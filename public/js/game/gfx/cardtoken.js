@@ -62,8 +62,18 @@
         this.addChild(this.tauntFrameSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
+        this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
+        this.interactive = true;
         this.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
       }
+
+      CardToken.prototype.contains = function(point) {
+        point = {
+          x: point.x - this.position.x,
+          y: point.y - this.position.y
+        };
+        return this.hitArea.contains(point.x, point.y);
+      };
 
       CardToken.prototype.setHealth = function(health) {
         return this.healthIcon.setHealth(health);

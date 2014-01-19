@@ -13,11 +13,37 @@
       __extends(Battle, _super);
 
       function Battle(userId, model, socket) {
-        var _this = this;
+        var card, opp, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1, _ref2, _ref3, _ref4,
+          _this = this;
         this.userId = userId;
         this.model = model;
         this.socket = socket;
         Battle.__super__.constructor.apply(this, arguments);
+        this.cardsById = {};
+        _ref = this.model.you.hand;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          card = _ref[_i];
+          this.cardsById[card._id] = card;
+        }
+        _ref1 = this.model.you.field;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          card = _ref1[_j];
+          this.cardsById[card._id] = card;
+        }
+        _ref2 = this.model.opponents;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          opp = _ref2[_k];
+          _ref3 = opp.hand;
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            card = _ref3[_l];
+            this.cardsById[card] = card;
+          }
+          _ref4 = opp.field;
+          for (_m = 0, _len4 = _ref4.length; _m < _len4; _m++) {
+            card = _ref4[_m];
+            this.cardsById[card._id] = card;
+          }
+        }
         this.socket.on('player-connected', function(userId) {
           return _this.onPlayerConnected(userId);
         });
@@ -48,11 +74,21 @@
       };
 
       Battle.prototype.process = function(action) {
+        var card;
         switch (action.type) {
+          case 'damage':
+            card = this.getCard(action.target);
+            if (card != null) {
+              card.health -= action.damage;
+            }
+            break;
           case 'start-turn':
             this.model.activePlayer = action.player;
             break;
           case 'draw-card':
+            if (action.card._id != null) {
+              this.cardsById[action.card._id] = action.card;
+            }
             this.getPlayer(action.player).hand.push(action.card);
             break;
           case 'max-energy':
@@ -60,6 +96,12 @@
             break;
           case 'energy':
             this.getPlayer(action.player).energy += action.amount;
+            break;
+          case 'play-card':
+            if (action.card._id != null) {
+              this.cardsById[action.card._id] = action.card;
+            }
+            this.getPlayer(action.player).field.push(action.card);
         }
         console.log(action);
         return this.emit('action-' + action.type, action);
@@ -106,12 +148,27 @@
         return this.model.state.phase;
       };
 
+      Battle.prototype.getCard = function(id) {
+        return this.cardsById[id];
+      };
+
       Battle.prototype.getCardsInHand = function() {
         return this.model.you.hand;
       };
 
       Battle.prototype.getCardsOnField = function() {
         return this.model.you.field;
+      };
+
+      Battle.prototype.getEnemyCardsOnField = function() {
+        var cards, enemy, _i, _len, _ref;
+        cards = [];
+        _ref = this.model.opponents;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          enemy = _ref[_i];
+          cards = cards.concat(enemy.field);
+        }
+        return cards;
       };
 
       Battle.prototype.getEnergy = function() {
@@ -132,6 +189,10 @@
 
       Battle.prototype.emitPlayCardEvent = function(cardId, target, cb) {
         return this.socket.emit('play-card', cardId, target, cb);
+      };
+
+      Battle.prototype.emitUseCardEvent = function(cardId, target, cb) {
+        return this.socket.emit('use-card', cardId, target, cb);
       };
 
       return Battle;

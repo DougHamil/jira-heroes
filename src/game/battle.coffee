@@ -54,7 +54,7 @@ class Battle
 
   # Called when a player used a card, targeting another card
   onUseCard: (userId) ->
-    (card, target, actions) ->
+    (card, target, actions) =>
       @emitAllButActive 'opponent-'+Events.USE_CARD, userId, card, target._id
       @emitActionsAll 'action', actions
 
@@ -233,7 +233,7 @@ class Battle
       deckSize: player.getDeckCards().length
 
   getOpponentsData: (user) ->
-    others = @model.players.filter (p) -> p.userId isnt user._id
+    others = @model.players.filter (p) -> p.userId isnt user._id.toString()
     return others.map((o) => @sanitizeOpponentData(@players[o.userId]))
 
   getData: (user) ->

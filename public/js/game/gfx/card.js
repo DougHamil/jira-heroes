@@ -99,6 +99,18 @@
         this.interactive = true;
       }
 
+      Card.prototype.setHealth = function(health) {
+        return this.healthIcon.setHealth(health);
+      };
+
+      Card.prototype.setDamage = function(damage) {
+        return this.damageIcon.setDamage(damage);
+      };
+
+      Card.prototype.setEnergy = function(energy) {
+        return this.energyIcon.setEnergy(energy);
+      };
+
       Card.prototype.onHoverStart = function(cb) {
         var _this = this;
         return this.mouseover = function() {

@@ -59,6 +59,9 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
       @.interactive = true
 
+    setHealth: (health) -> @healthIcon.setHealth(health)
+    setDamage: (damage) -> @damageIcon.setDamage(damage)
+    setEnergy: (energy) -> @energyIcon.setEnergy(energy)
     onHoverStart: (cb) -> @.mouseover = => cb @ if cb?
     onHoverEnd: (cb) -> @.mouseout = => cb @ if cb?
     onClick: (cb) -> @.click = => cb @ if cb?

@@ -1,6 +1,7 @@
 define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
   FIELD_ORIGIN = {x:20, y: engine.HEIGHT/2}
+  ENEMY_FIELD_ORIGIN = {x:20, y: 100}
   FIELD_PADDING = 50
   HAND_ORIGIN = {x:20, y:engine.HEIGHT - 20}
   HAND_ANIM_TIME = 1000
@@ -23,10 +24,18 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @cardTokens = {}
       @handSprites = []
       @fieldSprites = []
+      @enemyFieldSprites = []
+      @cardSpriteLayer = new PIXI.DisplayObjectContainer()
+      @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
+      @.addChild @tokenSpriteLayer
+      @.addChild @cardSpriteLayer
       for card in @battle.getCardsInHand()
         @putCardInHand card, false
       for card in @battle.getCardsOnField()
         @putCardOnField card, false
+      for card in @battle.getEnemyCardsOnField()
+        console.log card
+        @putEnemyCardOnField card, false
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = =>
         if @targetingSource?
@@ -37,34 +46,42 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
           @targetingSource = null
       @battle.on 'action-draw-card', (action) => @onDrawCardAction(action)
       @battle.on 'action-end-turn', (action) => @onEndTurnAction(action)
+      @battle.on 'action-play-card', (action) => @onPlayCardAction(action)
+      @battle.on 'action-damage', (action) => @onDamageAction(action)
+
+    onDamageAction: (action) ->
+      cardSprite = @cardSprites[action.target]
+      tokenSprite = @tokenSprites[action.target]
+      if cardSprite?
+        cardSprite.setHealth(@battle.getCard(action.target).health)
+      if tokenSprite
+        tokenSprite.setHealth(@battle.getCard(action.target).health)
+    onPlayCardAction: (action) ->
+      if action.player isnt @userId
+        @putEnemyCardOnField action.card
 
     onEndTurnAction: (action) ->
       if action.player is @userId
-        @verifyHandPositions()
+        @fixHandPositions()
 
     onDrawCardAction: (action) ->
       if action.player is @userId
         @putCardInHand(action.card)
 
-    putCardOnField: (card, animate) ->
-      # Default to animate
-      animate = true if not animate?
-      cardSprite = @getCardSprite card
-      tokenSprite = @getTokenSprite card
-      position = @getOpenFieldPosition()
+    placeFieldToken: (cardSprite, tokenSprite, position, isTargetSource, animate) ->
       addInteraction = (sprite) => =>
-          cardPos = Util.clone(sprite.position)
-          cardPos.x += sprite.width + TOKEN_CARD_OFFSET
-          sprite.cardSprite.position = cardPos
+        cardPos = Util.clone(sprite.position)
+        cardPos.x += sprite.width + TOKEN_CARD_OFFSET
+        sprite.cardSprite.position = cardPos
+        sprite.cardSprite.visible = false
+        sprite.visible = true
+        # Show card when token is hovered
+        sprite.onHoverStart =>
+          sprite.cardSprite.visible = true
+        sprite.onHoverEnd =>
           sprite.cardSprite.visible = false
-          sprite.visible = true
-          # Show card when token is hovered
-          sprite.onHoverStart =>
-            sprite.cardSprite.visible = true
-          sprite.onHoverEnd =>
-            sprite.cardSprite.visible = false
-          sprite.onMouseUp =>
-
+        if isTargetSource
+          sprite.onMouseDown => @setTargetingSource(sprite)
       tokenSprite.visible = false
       tokenSprite.position = position
       if animate
@@ -75,6 +92,22 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         tween.onComplete addInteraction(tokenSprite)
       else
         addInteraction(tokenSprite)()
+
+    putEnemyCardOnField: (card, animate) ->
+      animate = true if not animate?
+      cardSprite = @getCardSprite card
+      tokenSprite = @getTokenSprite card
+      position = @getOpenEnemyFieldPosition()
+      @placeFieldToken cardSprite, tokenSprite, position, false, animate
+      @enemyFieldSprites.push tokenSprite
+
+    putCardOnField: (card, animate) ->
+      # Default to animate
+      animate = true if not animate?
+      cardSprite = @getCardSprite card
+      tokenSprite = @getTokenSprite card
+      position = @getOpenFieldPosition()
+      @placeFieldToken cardSprite, tokenSprite, position, true, animate
       @fieldSprites.push tokenSprite
       @handSprites = @handSprites.filter (s) -> s isnt cardSprite
 
@@ -135,7 +168,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         addInteraction(sprite)()
       @handSprites.push sprite
 
-    verifyHandPositions: ->
+    fixHandPositions: ->
       index = 0
       setInteractions = (sprite) => => @setHandInteraction(sprite)
       for cardSprite in @handSprites
@@ -148,8 +181,22 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         index++
 
     onTargeted: (sourceSprite, targetPosition) ->
-      #TODO: Go through all tokens on the board and determine if they contain the target position
-      # If they do, then attempt to cast the card's ability on the target token
+      for cardId, tokenSprite of @tokenSprites
+        if tokenSprite.contains(targetPosition)
+          # If this is a spell card being played from the hand, then play the spell with the target
+          if sourceSprite in @handSprites
+            console.log "Attempting to cast spell of card #{sourceSprite.card._id}"
+            @battle.emitPlayCardEvent sourceSprite.card._id, cardId, (err) =>
+              if err?
+                console.log err
+                sourceSprite.tween.start()
+          # If this is a token sprite and we're trying to attack, then attack
+          else if sourceSprite in @fieldSprites
+            console.log "Attempting to attack with card #{sourceSprite.card._id}"
+            @battle.emitUseCardEvent sourceSprite.card._id, {card:cardId}, (err) =>
+              console.log err if err?
+          break
+      # TODO:  go through hero tokens and see if they're casting on heroes
 
     onCardDropped: (sprite) ->
       corners = []
@@ -175,7 +222,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
               # If there is a rush ability then set the targeting source as the sprite
               if cardClass.rushAbility?
                 sprite.dropTween = null
-                @setTargetingSource(sprite)
+                @setTargetingSource(@getTokenSprite(sprite.card))
           played = true
           break
       if not played
@@ -204,7 +251,8 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @targetingSource = sprite
 
     getHandPositionAt: (idx) -> return {x:HAND_ORIGIN.x + (@getCardWidth() + HAND_PADDING) * idx, y:HAND_ORIGIN.y - @getCardHeight()}
-    getOpenFieldPosition: -> return {x:FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @fieldSprites.length, y: FIELD_ORIGIN.y - @getCardHeight()}
+    getOpenFieldPosition: -> return {x:FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @fieldSprites.length, y: FIELD_ORIGIN.y}
+    getOpenEnemyFieldPosition: -> return {x:ENEMY_FIELD_ORIGIN.x + (@getCardWidth() + FIELD_PADDING) * @enemyFieldSprites.length, y: ENEMY_FIELD_ORIGIN.y}
     getOpenHandPosition: -> return @getHandPositionAt(@handSprites.length)
 
     getCardHeight: ->
@@ -223,7 +271,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         sprite.card = card
         sprite.cardSprite = @getCardSprite(card)
         @tokenSprites[card._id] = sprite
-        @.addChild sprite
+        @tokenSpriteLayer.addChild sprite
       return sprite
 
     getCardSprite: (card) ->
@@ -232,7 +280,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         sprite = @buildSpriteForCard(card)
         sprite.card = card
         @cardSprites[card._id] = sprite
-        @.addChild sprite
+        @cardSpriteLayer.addChild sprite
       return sprite
 
     createTargetingSprite: (start, end) ->

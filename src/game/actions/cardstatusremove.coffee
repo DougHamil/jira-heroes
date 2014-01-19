@@ -3,7 +3,7 @@ module.exports = class CardStatusRemoveAction
 
   enact: (battle) ->
     if @status in @card.status
-      @card.status = @card.status.filter (c) -> c isnt @status
+      @card.status = @card.status.filter (c) => c isnt @status
       PAYLOAD =
         type:'card-status-remove'
         card:@card._id

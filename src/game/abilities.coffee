@@ -10,9 +10,10 @@ class Ability
   handle: (battle, actions) ->
 
 class Abilities
-  @Attack: (sourceModel) ->
-    return @New('attack', sourceModel)
+  @Attack: (sourceModel) -> return @New('attack', sourceModel)
+
   @New: (type, sourceModel, data) ->
-    return new require('./abilities/'+type)(sourceModel, data)
+    clazz = require('./abilities/'+type)
+    return new clazz(sourceModel)
 
 module.exports = Abilities

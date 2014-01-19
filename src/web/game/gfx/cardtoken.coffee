@@ -42,7 +42,15 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @healthIcon
       @.addChild @damageIcon
 
+      @.hitArea = new PIXI.Rectangle 0, 0, @width, @height
+      @.interactive = true
+
+
       @setTaunt ('taunt' in card.status)
+
+    contains: (point) ->
+      point = {x:point.x - @position.x, y:point.y - @position.y}
+      return @hitArea.contains(point.x, point.y)
 
     setHealth: (health) ->
       @healthIcon.setHealth(health)
