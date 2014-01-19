@@ -23,8 +23,10 @@ define [], ->
       strokeThickness:2
       font:'24px silly'
     CARD_DESCRIPTION:
-      stroke: '#000000'
-      fill:'#FFFFFF'
+      stroke: '#FFFFFF'
+      fill:'#000000'
       strokeThickness:2
-      font:'16px silly'
+      font:'12px silly'
+      wordWrap: true
+      wordWrapWidth:150
   return styles

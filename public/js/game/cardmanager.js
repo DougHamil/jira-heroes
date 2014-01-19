@@ -72,7 +72,6 @@
         _ref2 = this.battle.getEnemyCardsOnField();
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           card = _ref2[_k];
-          console.log(card);
           this.putEnemyCardOnField(card, false);
         }
         engine.updateCallbacks.push(function() {
@@ -100,6 +99,9 @@
         this.battle.on('action-damage', function(action) {
           return _this.onDamageAction(action);
         });
+        this.battle.on('action-heal', function(action) {
+          return _this.onHealAction(action);
+        });
         this.battle.on('action-discard-card', function(action) {
           return _this.onDiscardCardAction(action);
         });
@@ -109,16 +111,24 @@
         return this.putCardInDiscard(this.cardSprites[action.card].card);
       };
 
-      CardManager.prototype.onDamageAction = function(action) {
+      CardManager.prototype.updateCardHealth = function(cardId) {
         var cardSprite, tokenSprite;
-        cardSprite = this.cardSprites[action.target];
-        tokenSprite = this.tokenSprites[action.target];
+        cardSprite = this.cardSprites[cardId];
+        tokenSprite = this.tokenSprites[cardId];
         if (cardSprite != null) {
-          cardSprite.setHealth(this.battle.getCard(action.target).health);
+          cardSprite.setHealth(this.battle.getCard(cardId).health);
         }
         if (tokenSprite) {
-          return tokenSprite.setHealth(this.battle.getCard(action.target).health);
+          return tokenSprite.setHealth(this.battle.getCard(cardId).health);
         }
+      };
+
+      CardManager.prototype.onDamageAction = function(action) {
+        return this.updateCardHealth(action.target);
+      };
+
+      CardManager.prototype.onHealAction = function(action) {
+        return this.updateCardHealth(action.target);
       };
 
       CardManager.prototype.onPlayCardAction = function(action) {
@@ -345,10 +355,16 @@
           if (tokenSprite.contains(targetPosition)) {
             if (__indexOf.call(this.handSprites, sourceSprite) >= 0) {
               foundTarget = true;
-              this.battle.emitPlayCardEvent(sourceSprite.card._id, cardId, function(err) {
+              this.battle.emitPlayCardEvent(sourceSprite.card._id, {
+                card: cardId
+              }, function(err) {
                 if (err != null) {
                   console.log(err);
-                  return sourceSprite.tween.start();
+                  if (sourceSprite.dropTween != null) {
+                    return sourceSprite.dropTween.start();
+                  } else if (sourceSprite.tween != null) {
+                    return sourceSprite.tween.start();
+                  }
                 }
               });
             } else if (__indexOf.call(this.fieldSprites, sourceSprite) >= 0) {

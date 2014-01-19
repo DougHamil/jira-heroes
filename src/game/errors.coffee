@@ -33,5 +33,6 @@ for id, message of errors
     id: id
     message: message
     error: true
+    jiraHeroesError: true
 
 module.exports = errorObjs

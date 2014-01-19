@@ -14,6 +14,6 @@ class Abilities
 
   @New: (type, sourceModel, data) ->
     clazz = require('./abilities/'+type)
-    return new clazz(sourceModel)
+    return new clazz(sourceModel, data)
 
 module.exports = Abilities

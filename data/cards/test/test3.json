@@ -6,9 +6,11 @@
 	"health":2,
 	"damage":1,
 	"playAbility": {
-		"type":"heal",
-		"text":"heal target",
-		"data":{}
+		"class":"heal",
+		"text":"Heal target minion or hero for <amount> health.",
+		"data":{
+			"amount":1
+		}
 	},
 	"media": {
 		"image": "test/test3.png"

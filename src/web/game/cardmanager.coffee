@@ -35,7 +35,6 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       for card in @battle.getCardsOnField()
         @putCardOnField card, false
       for card in @battle.getEnemyCardsOnField()
-        console.log card
         @putEnemyCardOnField card, false
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = =>
@@ -49,19 +48,23 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @battle.on 'action-end-turn', (action) => @onEndTurnAction(action)
       @battle.on 'action-play-card', (action) => @onPlayCardAction(action)
       @battle.on 'action-damage', (action) => @onDamageAction(action)
+      @battle.on 'action-heal', (action) => @onHealAction(action)
       @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
 
     onDiscardCardAction: (action) ->
       # TODO: Instead handle destroy action and show FX for destroying card
       @putCardInDiscard @cardSprites[action.card].card
 
-    onDamageAction: (action) ->
-      cardSprite = @cardSprites[action.target]
-      tokenSprite = @tokenSprites[action.target]
+    updateCardHealth: (cardId) ->
+      cardSprite = @cardSprites[cardId]
+      tokenSprite = @tokenSprites[cardId]
       if cardSprite?
-        cardSprite.setHealth(@battle.getCard(action.target).health)
+        cardSprite.setHealth(@battle.getCard(cardId).health)
       if tokenSprite
-        tokenSprite.setHealth(@battle.getCard(action.target).health)
+        tokenSprite.setHealth(@battle.getCard(cardId).health)
+
+    onDamageAction: (action) -> @updateCardHealth(action.target) # TODO: Show damage FX
+    onHealAction: (action) -> @updateCardHealth(action.target) # TODO: Show heal FX
 
     onPlayCardAction: (action) ->
       if action.player isnt @userId
@@ -206,15 +209,20 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
           # If this is a spell card being played from the hand, then play the spell with the target
           if sourceSprite in @handSprites
             foundTarget = true
-            @battle.emitPlayCardEvent sourceSprite.card._id, cardId, (err) =>
+            @battle.emitPlayCardEvent sourceSprite.card._id, {card:cardId}, (err) =>
               if err?
+                # TODO: Depending on error, provide feedback (not enough energy, not your turn, etc)
                 console.log err
-                sourceSprite.tween.start()
+                if sourceSprite.dropTween?
+                  sourceSprite.dropTween.start()
+                else if sourceSprite.tween?
+                  sourceSprite.tween.start()
           # If this is a token sprite and we're trying to attack, then attack
           else if sourceSprite in @fieldSprites
             foundTarget = true
             @battle.emitUseCardEvent sourceSprite.card._id, {card:cardId}, (err) =>
               if err?
+                # TODO: Depending on error, provide feedback (not enough energy, not your turn, etc)
                 console.log err
                 if sourceSprite.dropTween?
                   sourceSprite.dropTween.start()

@@ -74,12 +74,24 @@
       };
 
       Battle.prototype.process = function(action) {
-        var card;
+        var card, hero;
         switch (action.type) {
+          case 'heal':
+            card = this.getCard(action.target);
+            if (card != null) {
+              card.health += action.amount;
+            } else {
+              hero = this.getHero(action.target);
+              hero.health += action.amount;
+            }
+            break;
           case 'damage':
             card = this.getCard(action.target);
             if (card != null) {
               card.health -= action.damage;
+            } else {
+              hero = this.getHero(action.target);
+              hero.health -= action.damage;
             }
             break;
           case 'discard-card':

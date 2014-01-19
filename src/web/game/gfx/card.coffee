@@ -32,17 +32,11 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @imageSprite.width = IMAGE_SIZE.width
       @imageSprite.height = IMAGE_SIZE.height
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
-      @healthIcon = new HealthIcon health
-      @damageIcon = new DamageIcon damage
       @energyIcon = new EnergyIcon cardClass.energy
       @description = @buildAbilityText cardClass
-
-      @description.anchor = {x:0.5, y:0}
-      @description.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height / 2}
+      @description.position = {x:5, y: @backgroundSprite.height / 2 + 20}
       @titleText.anchor = {x: 0.5, y:0}
       @titleText.position = {x:@backgroundSprite.width / 2, y: 0}
-      @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
-      @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
       @energyIcon.position = {x:-@energyIcon.width/2, y:-@energyIcon.height/2}
       @imageSprite.anchor = {x: 0.5, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
@@ -51,17 +45,25 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @.addChild @imageSprite
       @.addChild @titleText
       @.addChild @description
-      @.addChild @healthIcon
-      @.addChild @damageIcon
       @.addChild @energyIcon
+
+      # Damage and health only appear for non-spell cards
+      if not cardClass.playAbility?
+        @healthIcon = new HealthIcon health
+        @damageIcon = new DamageIcon damage
+        @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
+        @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
+        @.addChild @healthIcon
+        @.addChild @damageIcon
+
       @width = CARD_SIZE.width
       @height = CARD_SIZE.height
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
       @.interactive = true
 
-    setHealth: (health) -> @healthIcon.setHealth(health)
-    setDamage: (damage) -> @damageIcon.setDamage(damage)
-    setEnergy: (energy) -> @energyIcon.setEnergy(energy)
+    setHealth: (health) -> @healthIcon.setHealth(health) if @healthIcon?
+    setDamage: (damage) -> @damageIcon.setDamage(damage) if @damageIcon?
+    setEnergy: (energy) -> @energyIcon.setEnergy(energy) if @energyIcon?
     onHoverStart: (cb) -> @.mouseover = => cb @ if cb?
     onHoverEnd: (cb) -> @.mouseout = => cb @ if cb?
     onClick: (cb) -> @.click = => cb @ if cb?
@@ -78,20 +80,29 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer
       count = 0
+      if cardClass.playAbility? and cardClass.playAbility.text?
+        text = @_buildAbilityText cardClass.playAbility.text, cardClass.playAbility.data
+        text.position = {x:0, y: count * text.height}
+        count++
+        parent.addChild text
+
       for ability in cardClass.passiveAbilities
-        chunks = ability.text.split ' '
-        string = ""
-        for chunk in chunks
-          # Extract a property from the metadata of the ability
-          if /^<\w+>$/.test(chunk)
-            prop = chunk.replace /[<>]/g, ''
-            chunk = ability.data[prop]
-          string += (chunk + ' ')
-        text = new PIXI.Text string, styles.CARD_DESCRIPTION
+        text = @_buildAbilityText ability.text, ability.data
         text.position = {x: 0, y: count * text.height}
         count++
         parent.addChild text
       # TODO: Figure out how to display 'traits' such as rush
       return parent
 
-
+    _buildAbilityText: (abilityText, abilityData) ->
+      chunks = abilityText.split ' '
+      string = ""
+      for chunk in chunks
+        # Extract a property from the metadata of the ability
+        if /^<\w+>$/.test(chunk)
+          prop = chunk.replace /[<>]/g, ''
+          chunk = abilityData[prop]
+          if not chunk?
+            chunk = "[UNKNOWN: #{prop}]"
+        string += (chunk + ' ')
+      return new PIXI.Text string, styles.CARD_DESCRIPTION

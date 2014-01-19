@@ -5,7 +5,7 @@ path = require 'path'
 readdirp = require 'readdirp'
 
 _abilitySchemaOpts =
-  type:String
+  class:String
   text:String
   data: mongoose.Schema.Types.Mixed
 _abilitySchema = new mongoose.Schema _abilitySchemaOpts

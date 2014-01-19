@@ -29,10 +29,20 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
 
     process: (action) ->
       switch action.type
+        when 'heal'
+          card = @getCard(action.target)
+          if card?
+            card.health += action.amount
+          else
+            hero = @getHero(action.target)
+            hero.health += action.amount
         when 'damage'
           card = @getCard(action.target)
           if card?
             card.health -= action.damage
+          else
+            hero = @getHero(action.target)
+            hero.health -= action.damage
         when 'discard-card'
           card = @getCard(action.card)
           if card?

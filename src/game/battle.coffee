@@ -187,14 +187,15 @@ class Battle
       playerId = playerId._id
     return (p for id, p of @players when id isnt playerId)
 
-  getHero: (heroId) ->
-    if typeof heroId is 'object' and heroId.userId?
-      return @getPlayerHandler(heroId.userId).getHero()
-    for _, p of @players
-      hero = p.getHero()
-      if hero._id is heroId
-        return hero
-    return null
+  # Get the hero for the player ID
+  getHero: (userId) ->
+    if typeof userId is 'object' and userId.userId?
+      return @getPlayerHandler(userId.userId).getHero()
+    player = @getPlayerHandler(userId)
+    if player?
+      return player.getHero()
+    else
+      return null
 
   getCardHandler: (cardId) ->
     return @cards[cardId]

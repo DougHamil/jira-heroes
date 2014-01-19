@@ -30,6 +30,7 @@ newHeroInstance = (hero, cb) ->
       out =
         class: heroClass._id
         health: heroClass.health
+        maxHealth: heroClass.health
         damage: heroClass.damage
       cb null, out
 
@@ -75,6 +76,7 @@ _playerSchema = new mongoose.Schema
     hero:
       class: String
       health: Number
+      maxHealth: Number
       damage: Number
     cards: [_cardSchema]
 

@@ -33,12 +33,10 @@ class CardHandler
       @attackAbility = null
 
   _castAbility: (ability, target) ->
-    actions = ability.cast @battle, target
-    actions = @battle.processActions actions
-    return actions
+    return ability.cast @battle, target
 
   _castAbilityFromModel: (abilityModel, target) ->
-    ability = Abilities.fromType abilityModel.type, @battle, @, abilityModel.data
+    ability = Abilities.New abilityModel.class, @model, abilityModel.data
     return @_castAbility ability, target
 
   _useRush: (target, cardClass, cb) ->
@@ -49,15 +47,17 @@ class CardHandler
       cb Errors.INVALID_ACTION
 
   _use: (target, cardClass, cb) ->
-    if cardClass.useAbility?
+    if cardClass.useAbility.class?
       try
-        cb null, @_castAbilityFromModel cardClass.useAbility, target
+        actions = @_castAbilityFromModel cardClass.useAbility, target
+        cb null, @battle.processActions(actions)
         @model.used = true
       catch ex
         cb ex
     else if @attackAbility?
       try
-        cb null, @_castAbility @attackAbility, target
+        actions = @_castAbility @attackAbility, target
+        cb null, @battle.processActions(actions)
         @model.used = true
       catch ex
         cb ex
@@ -65,23 +65,26 @@ class CardHandler
       cb Errors.INVALID_ACTION
 
   _play: (target, cardClass, cb) ->
-    @model.used = false
-    @model.usedRushAbility = false
-
-    # Create passive ability objects
-    @passiveAbilities = []
-    for ability in cardClass.passiveAbilities
-      ability = Abilities.fromType ability.type, @battle, @, ability.data
-      @passiveAbility.push ability
-
-    actions = []
-    if cardClass.playAbility?
-      actions = @_castAbilityFromModel cardClass.playAbility, target
-      # Spell cards are always discarded
-      actions.push Actions.DiscardCard @model
-    else
-      actions.push Actions.PlayCard(@model, cardClass)
-    cb null, @battle.processActions(actions)
+    try
+      @model.used = false
+      @model.usedRushAbility = false
+      actions = []
+      if cardClass.playAbility.class?
+        actions = @_castAbilityFromModel cardClass.playAbility, target
+        # Spell cards are always discarded
+        actions.push Actions.DiscardCard @model
+      else
+        # Create passive ability objects, PlayCardAction will register them with the battle
+        @passiveAbilities = []
+        for ability in cardClass.passiveAbilities
+          ability = Abilities.New ability.type, @, ability.data
+          @passiveAbilities.push ability
+        actions.push Actions.PlayCard(@model, cardClass)
+      cb null, @battle.processActions(actions)
+    catch err
+      cb err
+      if not err.jiraHeroesError?
+        throw err
 
   useRush: (target, cb) ->
     if target?
@@ -119,12 +122,14 @@ class CardHandler
         cb Errors.NOT_ENOUGH_ENERGY
 
   registerPassiveAbilities: ->
-    for ability in @passiveAbilities
-      @battle.registerAbility ability
+    if @passiveAbilities?
+      for ability in @passiveAbilities
+        @battle.registerAbility ability
 
   unregisterPassiveAbilities: ->
-    for ability in @passiveAbilities
-      @battle.unregisterAbility ability
+    if @passiveAbilities?
+      for ability in @passiveAbilities
+        @battle.unregisterAbility ability
 
   discard: ->
     @unregisterPassiveAbilities()

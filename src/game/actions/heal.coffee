@@ -1,7 +1,7 @@
-module.exports = class HealAction
+class HealAction
   constructor: (@source, @target, @amount) ->
 
-  enact: ->
+  enact: (battle)->
     totalHealed = @target.maxHealth - @target.health
     if totalHealed > @amount
       totalHealed = @amount
@@ -13,4 +13,4 @@ module.exports = class HealAction
       amount: totalHealed
     return [PAYLOAD]
 
-
+module.exports = HealAction

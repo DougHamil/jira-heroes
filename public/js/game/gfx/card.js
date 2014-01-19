@@ -46,17 +46,11 @@
         this.imageSprite.width = IMAGE_SIZE.width;
         this.imageSprite.height = IMAGE_SIZE.height;
         this.titleText = new PIXI.Text(cardClass.displayName, styles.CARD_TITLE);
-        this.healthIcon = new HealthIcon(health);
-        this.damageIcon = new DamageIcon(damage);
         this.energyIcon = new EnergyIcon(cardClass.energy);
         this.description = this.buildAbilityText(cardClass);
-        this.description.anchor = {
-          x: 0.5,
-          y: 0
-        };
         this.description.position = {
-          x: this.backgroundSprite.width / 2,
-          y: this.backgroundSprite.height / 2
+          x: 5,
+          y: this.backgroundSprite.height / 2 + 20
         };
         this.titleText.anchor = {
           x: 0.5,
@@ -65,14 +59,6 @@
         this.titleText.position = {
           x: this.backgroundSprite.width / 2,
           y: 0
-        };
-        this.healthIcon.position = {
-          x: this.backgroundSprite.width - this.healthIcon.width,
-          y: this.backgroundSprite.height - this.healthIcon.height
-        };
-        this.damageIcon.position = {
-          x: 0,
-          y: this.backgroundSprite.height - this.damageIcon.height
         };
         this.energyIcon.position = {
           x: -this.energyIcon.width / 2,
@@ -90,9 +76,21 @@
         this.addChild(this.imageSprite);
         this.addChild(this.titleText);
         this.addChild(this.description);
-        this.addChild(this.healthIcon);
-        this.addChild(this.damageIcon);
         this.addChild(this.energyIcon);
+        if (cardClass.playAbility == null) {
+          this.healthIcon = new HealthIcon(health);
+          this.damageIcon = new DamageIcon(damage);
+          this.healthIcon.position = {
+            x: this.backgroundSprite.width - this.healthIcon.width,
+            y: this.backgroundSprite.height - this.healthIcon.height
+          };
+          this.damageIcon.position = {
+            x: 0,
+            y: this.backgroundSprite.height - this.damageIcon.height
+          };
+          this.addChild(this.healthIcon);
+          this.addChild(this.damageIcon);
+        }
         this.width = CARD_SIZE.width;
         this.height = CARD_SIZE.height;
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
@@ -100,15 +98,21 @@
       }
 
       Card.prototype.setHealth = function(health) {
-        return this.healthIcon.setHealth(health);
+        if (this.healthIcon != null) {
+          return this.healthIcon.setHealth(health);
+        }
       };
 
       Card.prototype.setDamage = function(damage) {
-        return this.damageIcon.setDamage(damage);
+        if (this.damageIcon != null) {
+          return this.damageIcon.setDamage(damage);
+        }
       };
 
       Card.prototype.setEnergy = function(energy) {
-        return this.energyIcon.setEnergy(energy);
+        if (this.energyIcon != null) {
+          return this.energyIcon.setEnergy(energy);
+        }
       };
 
       Card.prototype.onHoverStart = function(cb) {
@@ -165,23 +169,22 @@
       };
 
       Card.prototype.buildAbilityText = function(cardClass) {
-        var ability, chunk, chunks, count, parent, prop, string, text, _i, _j, _len, _len1, _ref;
+        var ability, count, parent, text, _i, _len, _ref;
         parent = new PIXI.DisplayObjectContainer;
         count = 0;
+        if ((cardClass.playAbility != null) && (cardClass.playAbility.text != null)) {
+          text = this._buildAbilityText(cardClass.playAbility.text, cardClass.playAbility.data);
+          text.position = {
+            x: 0,
+            y: count * text.height
+          };
+          count++;
+          parent.addChild(text);
+        }
         _ref = cardClass.passiveAbilities;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           ability = _ref[_i];
-          chunks = ability.text.split(' ');
-          string = "";
-          for (_j = 0, _len1 = chunks.length; _j < _len1; _j++) {
-            chunk = chunks[_j];
-            if (/^<\w+>$/.test(chunk)) {
-              prop = chunk.replace(/[<>]/g, '');
-              chunk = ability.data[prop];
-            }
-            string += chunk + ' ';
-          }
-          text = new PIXI.Text(string, styles.CARD_DESCRIPTION);
+          text = this._buildAbilityText(ability.text, ability.data);
           text.position = {
             x: 0,
             y: count * text.height
@@ -190,6 +193,24 @@
           parent.addChild(text);
         }
         return parent;
+      };
+
+      Card.prototype._buildAbilityText = function(abilityText, abilityData) {
+        var chunk, chunks, prop, string, _i, _len;
+        chunks = abilityText.split(' ');
+        string = "";
+        for (_i = 0, _len = chunks.length; _i < _len; _i++) {
+          chunk = chunks[_i];
+          if (/^<\w+>$/.test(chunk)) {
+            prop = chunk.replace(/[<>]/g, '');
+            chunk = abilityData[prop];
+            if (chunk == null) {
+              chunk = "[UNKNOWN: " + prop + "]";
+            }
+          }
+          string += chunk + ' ';
+        }
+        return new PIXI.Text(string, styles.CARD_DESCRIPTION);
       };
 
       return Card;
