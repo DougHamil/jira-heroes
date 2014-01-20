@@ -14,8 +14,8 @@ define [], ->
       font:'20px silly'
     CARD_TITLE:
       stroke: '#000000'
-      fill:'#FFFFFF'
-      strokeThickness:2
+      fill:'#000000'
+      strokeThickness:0
       font:'20px silly'
     CARD_STAT:
       stroke: '#000000'
@@ -24,9 +24,9 @@ define [], ->
       font:'24px silly'
     CARD_DESCRIPTION:
       stroke: '#FFFFFF'
-      fill:'#000000'
-      strokeThickness:2
+      fill:'#FFFFFF'
+      strokeThickness:0
       font:'12px silly'
       wordWrap: true
-      wordWrapWidth:150
+      wordWrapWidth:140
   return styles

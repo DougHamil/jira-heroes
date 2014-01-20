@@ -11,7 +11,7 @@
     };
     CARD_SIZE = {
       width: 150,
-      height: 214
+      height: 225
     };
     IMAGE_POS = {
       x: CARD_SIZE.width / 2,
@@ -54,15 +54,15 @@
         this.description = this.buildAbilityText(cardClass);
         this.description.position = {
           x: 5,
-          y: this.backgroundSprite.height / 2 + 20
+          y: this.backgroundSprite.height / 2 + 25
         };
         this.titleText.anchor = {
           x: 0.5,
-          y: 0
+          y: 0.5
         };
         this.titleText.position = {
           x: this.backgroundSprite.width / 2,
-          y: 0
+          y: this.backgroundSprite.height / 2 + 4
         };
         this.energyIcon.position = {
           x: -this.energyIcon.width / 2,

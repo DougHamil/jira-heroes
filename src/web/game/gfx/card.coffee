@@ -4,7 +4,7 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     height: 64
   CARD_SIZE =
     width: 150
-    height: 214
+    height: 225
   IMAGE_POS =
     x: CARD_SIZE.width / 2
     y: 22
@@ -36,9 +36,9 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
       @energyIcon = new EnergyIcon cardClass.energy
       @description = @buildAbilityText cardClass
-      @description.position = {x:5, y: @backgroundSprite.height / 2 + 20}
-      @titleText.anchor = {x: 0.5, y:0}
-      @titleText.position = {x:@backgroundSprite.width / 2, y: 0}
+      @description.position = {x:5, y: @backgroundSprite.height / 2 + 25}
+      @titleText.anchor = {x: 0.5, y:0.5}
+      @titleText.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height/2+4}
       @energyIcon.position = {x:-@energyIcon.width/2, y:-@energyIcon.height/2}
       @imageSprite.anchor = {x: 0.5, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}

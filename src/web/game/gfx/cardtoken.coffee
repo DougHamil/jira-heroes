@@ -34,12 +34,13 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @healthIcon = new HealthIcon card.health
       @damageIcon.anchor = {x:0.5, y:0.5}
       @healthIcon.anchor = {x:0.5, y:0.5}
-      @damageIcon.position = {x:-@damageIcon.width/2, y:@height - @damageIcon.height/2}
-      @healthIcon.position = {x:@width - @healthIcon.width/2, y:@height - @healthIcon.height/2}
+      @damageIcon.position = {x:0, y:@height - @damageIcon.height}
+      @healthIcon.position = {x:@width - @healthIcon.width, y:@height - @healthIcon.height}
 
-      @.addChild @imageSprite
       @.addChild @frameSprite
-      @.addChild @tauntFrameSprite
+      @.addChild @imageSprite.mask
+      @.addChild @imageSprite
+      #@.addChild @tauntFrameSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
 
@@ -77,6 +78,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
-      mask.drawCircle(0, 0, TOKEN_WIDTH/2)
+      mask.drawCircle(TOKEN_WIDTH/2, TOKEN_HEIGHT/2, TOKEN_WIDTH/2-5)
       mask.endFill()
       return mask

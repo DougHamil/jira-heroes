@@ -54,16 +54,16 @@
           y: 0.5
         };
         this.damageIcon.position = {
-          x: -this.damageIcon.width / 2,
-          y: this.height - this.damageIcon.height / 2
+          x: 0,
+          y: this.height - this.damageIcon.height
         };
         this.healthIcon.position = {
-          x: this.width - this.healthIcon.width / 2,
-          y: this.height - this.healthIcon.height / 2
+          x: this.width - this.healthIcon.width,
+          y: this.height - this.healthIcon.height
         };
-        this.addChild(this.imageSprite);
         this.addChild(this.frameSprite);
-        this.addChild(this.tauntFrameSprite);
+        this.addChild(this.imageSprite.mask);
+        this.addChild(this.imageSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
@@ -132,7 +132,7 @@
         var mask;
         mask = new PIXI.Graphics();
         mask.beginFill();
-        mask.drawCircle(0, 0, TOKEN_WIDTH / 2);
+        mask.drawCircle(TOKEN_WIDTH / 2, TOKEN_HEIGHT / 2, TOKEN_WIDTH / 2 - 5);
         mask.endFill();
         return mask;
       };
