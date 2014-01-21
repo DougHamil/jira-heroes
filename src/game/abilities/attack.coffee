@@ -5,7 +5,11 @@ class AttackAbility
     @source = @model.sourceCard
 
   cast: (battle, target) ->
-    # Simply return a damage action with the target and the card's damage
-    return [new DamageAction(@source, target, @source.damage), new DamageAction(target, @source, target.damage)]
+    actions = []
+    actions.push new DamageAction(@source, target, @source.damage)
+    # If the target is not frozen, then the target will strike back
+    if not target.status? or 'frozen' not in target.status
+      actions.push new DamageAction(target, @source, target.damage)
+    return actions
 
 module.exports = AttackAbility

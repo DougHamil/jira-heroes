@@ -1,3 +1,4 @@
+
 # Example ability class
 class Ability
   # Model contains a data object, a sourceCard object, and a class.
@@ -16,6 +17,9 @@ class Abilities
 
   @New: (type, sourceCard, data) ->
     clazz = require('./abilities/'+type)
+    # Stupid clone
+    if data?
+      data = JSON.parse(JSON.stringify(data))
     model =
       class:type
       data:data

@@ -221,6 +221,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
           tween = Util.spriteTween sprite, sprite.position, from, HOVER_ANIM_TIME
           sprite.dropTween = tween
       sprite.onMouseDown =>
+        console.log cardClass.playAbility
         # If this card has a cast ability, then it's a spell card, so pick a target
         if cardClass.playAbility? and (not cardClass.playAbility.requiresTarget? or cardClass.playAbility.requiresTarget)
           @setTargetingSource(sprite)

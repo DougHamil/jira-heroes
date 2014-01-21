@@ -13,7 +13,7 @@ class EndTurnDrawCardAbility
     player = battle.getPlayerOfCard(@sourceCard)
     for action in actions
       # Only draw if it's our player's end of turn
-      if action instanceof EndTurnAction and player.userId is action.player
+      if action instanceof EndTurnAction and player is action.player
         for i in [0...@amount]
           actions.push new DrawCardAction(player)
         break

@@ -157,7 +157,10 @@
         card = this.battle.getCard(action.card);
         tokenSprite = this.getTokenSprite(card);
         if ((tokenSprite != null) && (card != null)) {
-          return tokenSprite.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
+          tokenSprite.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
+        }
+        if ((tokenSprite != null) && (card != null)) {
+          return tokenSprite.setFrozen((__indexOf.call(card.status, 'frozen') >= 0));
         }
       };
 
@@ -362,7 +365,8 @@
           }
         });
         sprite.onMouseDown(function() {
-          if (cardClass.playAbility != null) {
+          console.log(cardClass.playAbility);
+          if ((cardClass.playAbility != null) && ((cardClass.playAbility.requiresTarget == null) || cardClass.playAbility.requiresTarget)) {
             return _this.setTargetingSource(sprite);
           } else {
             if (sprite.tween != null) {
@@ -543,10 +547,12 @@
             } else {
               console.log("Played card " + sprite.card._id);
               _this.removeInteractions(sprite);
-              _this.putCardOnField(sprite.card);
-              if (cardClass.rushAbility != null) {
-                sprite.dropTween = null;
-                return _this.setTargetingSource(_this.getTokenSprite(sprite.card));
+              if (sprite.card.playAbility == null) {
+                _this.putCardOnField(sprite.card);
+                if (cardClass.rushAbility != null) {
+                  sprite.dropTween = null;
+                  return _this.setTargetingSource(_this.getTokenSprite(sprite.card));
+                }
               }
             }
           });

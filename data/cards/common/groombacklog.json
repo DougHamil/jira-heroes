@@ -1,0 +1,19 @@
+{
+	"name":"groombacklog",
+	"displayName":"Groom Backlog",
+	"cost":0,
+	"energy":3,
+	"health":0,
+	"damage":0,
+	"playAbility": {
+		"class":"draw_cards",
+		"text":"Draws <amount> cards",
+		"requiresTarget": false,
+		"data":{
+			"amount":3
+		}
+	},
+	"media": {
+		"image": "common/groombacklog.png"
+	}
+}

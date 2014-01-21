@@ -19,8 +19,9 @@ class MultiTurnStatusAbility
     if player?
       # Look for an end turn action
       for action in actions
-        if action instanceof EndTurnAction and action.player is player.userId
+        if action instanceof EndTurnAction and action.player is player
           @model.data.turns -= 1
+          console.log @model.data.turns
           if @model.data.turns <= 0
             actions.push new CardStatusRemoveAction(@target, @status)
             battle.unregisterPassiveAbility @

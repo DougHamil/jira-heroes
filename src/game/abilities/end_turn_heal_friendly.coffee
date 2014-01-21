@@ -14,7 +14,7 @@ class EndTurnHealFriendly
     player = battle.getPlayerOfCard(@cardModel)
     for action in actions
       # Only heal if this player's turn is over
-      if action instanceof EndTurnAction and player.userId is action.player
+      if action instanceof EndTurnAction and player is action.player
         for minion in battle.getFieldCards(player)
           actions.push new HealAction(@cardModel, minion, @amount)
         if @healHero?
