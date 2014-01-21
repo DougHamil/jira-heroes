@@ -17,6 +17,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
       @width = TOKEN_WIDTH
       @height = TOKEN_HEIGHT
+      @frozenSprite = new PIXI.Text "FROZEN", STYLES.TEXT
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = TOKEN_WIDTH
       @imageSprite.height = TOKEN_HEIGHT
@@ -38,6 +39,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @tauntFrameSprite
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
+      @.addChild @frozenSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
 
@@ -45,6 +47,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.interactive = true
 
       @setTaunt ('taunt' in card.status)
+      @setFrozen ('frozen' in card.status)
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
@@ -56,6 +59,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
 
+    setFrozen: (isFrozen) ->
+      @frozenSprite.visible = isFrozen
     setTaunt: (isTaunting) ->
       @tauntFrameSprite.visible = isTaunting
       @frameSprite.visible = !isTaunting

@@ -77,6 +77,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       card = @battle.getCard(action.card)
       tokenSprite = @getTokenSprite(card)
       tokenSprite.setTaunt(('taunt' in card.status)) if tokenSprite? and card?
+      tokenSprite.setFrozen(('frozen' in card.status)) if tokenSprite? and card?
 
     onDiscardCardAction: (action) ->
       # TODO: Instead handle destroy action and show FX for destroying card
@@ -221,7 +222,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
           sprite.dropTween = tween
       sprite.onMouseDown =>
         # If this card has a cast ability, then it's a spell card, so pick a target
-        if cardClass.playAbility?
+        if cardClass.playAbility? and (not cardClass.playAbility.requiresTarget? or cardClass.playAbility.requiresTarget)
           @setTargetingSource(sprite)
         else
           if sprite.tween?
@@ -338,11 +339,12 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
             console.log "Played card "+sprite.card._id
             # Position the card onto the field
             @removeInteractions sprite
-            @putCardOnField sprite.card
-            # If there is a rush ability then set the targeting source as the sprite
-            if cardClass.rushAbility?
-              sprite.dropTween = null
-              @setTargetingSource(@getTokenSprite(sprite.card))
+            if not sprite.card.playAbility?
+              @putCardOnField sprite.card
+              # If there is a rush ability then set the targeting source as the sprite
+              if cardClass.rushAbility?
+                sprite.dropTween = null
+                @setTargetingSource(@getTokenSprite(sprite.card))
         played = true
       if not played
         sprite.tween.start()
