@@ -23,6 +23,7 @@ class MultiTurnStatusAbility
           @model.data.turns -= 1
           if @model.data.turns <= 0
             actions.push new CardStatusRemoveAction(@target, @status)
+            battle.unregisterPassiveAbility @
           break
 
 module.exports = MultiTurnStatusAbility
