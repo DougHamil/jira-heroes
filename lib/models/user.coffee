@@ -68,10 +68,19 @@ User = (jira)->
     else
       _model.findOne {_id:id}, cb
 
+  _getOrCreate = (name, email, cb) ->
+    _model.findOne {name:name}, (err, user) ->
+      if err? or not user?
+        _create name, email, cb
+      else
+        cb null, user
+
+
   _fromSession = (sessionUser, cb) ->
     _get sessionUser._id, cb
 
   ret =
+    getOrCreate:_getOrCreate
     schema:_schema
     model:_model
     login:_login

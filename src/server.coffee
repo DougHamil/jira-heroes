@@ -20,6 +20,7 @@ module.exports = (config) ->
   app.use login()
   app.set 'views', path.join(process.cwd(), 'lib/views')
   app.set 'view engine', 'jade'
+  app.isTest = config.isTest
 
   out =
     app:app
