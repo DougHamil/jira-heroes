@@ -26,10 +26,6 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     constructor: (cardClass, damage, health, status) ->
       super()
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
-      if not imageTexture.baseTexture.hasLoaded
-        console.log "Error loading #{cardClass.media.image}"
-      #imageTexture = MISSING_TEXTURE
-
       @backgroundSprite = new PIXI.Sprite BACKGROUND_TEXTURE
       @backgroundSprite.width = CARD_SIZE.width
       @backgroundSprite.height = CARD_SIZE.height
@@ -46,11 +42,9 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @titleText.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height/2+4}
       @energyIcon.position = {x:0, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
-      #@imageSprite.mask = @createImageMask()
 
       @.addChild @imageSprite
       @.addChild @backgroundSprite
-      #@.addChild @imageSprite.mask
       @.addChild @titleText
       @.addChild @description
       @.addChild @energyIcon
@@ -84,13 +78,6 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @.click = null
       @.mousedown = null
       @.mouseup = null
-
-    createImageMask: ->
-      mask = new PIXI.Graphics()
-      mask.beginFill()
-      mask.drawRect(0,0,IMAGE_MASK.width, IMAGE_MASK.height)
-      mask.endFill()
-      return mask
 
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer

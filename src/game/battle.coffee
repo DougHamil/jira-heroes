@@ -33,7 +33,9 @@ class Battle
 
     # Restore passive abilities
     for abilityModel in @model.passiveAbilities
-      @registerPassiveAbility Abilities.FromModel(abilityModel)
+      sourceCard = @cards[abilityModel.sourceCardId]
+      sourceCard = sourceCard.model if sourceCard?
+      @registerPassiveAbility Abilities.FromModel(sourceCard, abilityModel)
 
     # Start the battle if it's still in initial phase
     if @model.state.phase is 'initial'

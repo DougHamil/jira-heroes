@@ -36,7 +36,7 @@ class CardHandler
     return ability.cast @battle, target
 
   _castAbilityFromModel: (abilityModel, target) ->
-    ability = Abilities.New abilityModel.class, @model, abilityModel.data
+    ability = Abilities.NewFromModel @model, abilityModel
     return @_castAbility ability, target
 
   _useRush: (target, cardClass, cb) ->
@@ -77,8 +77,8 @@ class CardHandler
       else
         # Create passive ability objects, PlayCardAction will register them with the battle
         @passiveAbilities = []
-        for ability in cardClass.passiveAbilities
-          ability = Abilities.New ability.type, @, ability.data
+        for abilityModel in cardClass.passiveAbilities
+          ability = Abilities.NewFromModel @model, abilityModel
           @passiveAbilities.push ability
         actions.push Actions.PlayCard(@model, cardClass)
       cb null, @battle.processActions(actions)

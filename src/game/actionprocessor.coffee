@@ -11,7 +11,7 @@ module.exports = class ActionProcessor
     else
       # Let all of the passive abilities respond to the actions we wish to process
       # Abilities may add/remove/alter the action list
-      for ability in passiveAbilities.filter((a) -> not a.used)
+      for ability in passiveAbilities.filter((a) -> not a.used and 'frozen' not in a.model.sourceCard.status)
         # handle method returns true when the ability was invoked
         if ability.handle(battle, actions)
           ability.used = true

@@ -44,9 +44,6 @@
         var imageTexture;
         Card.__super__.constructor.call(this);
         imageTexture = PIXI.Texture.fromImage(IMAGE_PATH + cardClass.media.image);
-        if (!imageTexture.baseTexture.hasLoaded) {
-          console.log("Error loading " + cardClass.media.image);
-        }
         this.backgroundSprite = new PIXI.Sprite(BACKGROUND_TEXTURE);
         this.backgroundSprite.width = CARD_SIZE.width;
         this.backgroundSprite.height = CARD_SIZE.height;
@@ -173,15 +170,6 @@
         this.click = null;
         this.mousedown = null;
         return this.mouseup = null;
-      };
-
-      Card.prototype.createImageMask = function() {
-        var mask;
-        mask = new PIXI.Graphics();
-        mask.beginFill();
-        mask.drawRect(0, 0, IMAGE_MASK.width, IMAGE_MASK.height);
-        mask.endFill();
-        return mask;
       };
 
       Card.prototype.buildAbilityText = function(cardClass) {

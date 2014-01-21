@@ -23,11 +23,15 @@ class Abilities
     model =
       class:type
       data:data
+      sourceCardId: sourceCard._id
       sourceCard: sourceCard
     return new clazz(model, false)
 
+  @NewFromModel: (sourceCard, model) ->
+    return @New(model.class, sourceCard, model.data)
+
   # Restore an ability instance from a model
-  @FromModel: (model) ->
+  @RestoreFromModel: (sourceCard, model) ->
     clazz = require('./abilities/'+model.class)
     return new clazz(model, true)
 
