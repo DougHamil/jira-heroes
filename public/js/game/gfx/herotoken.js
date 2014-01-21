@@ -4,11 +4,10 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], function(DamageIcon, HealthIcon, STYLES, Util) {
-    var CLIP_TEXTURE, FRAME_TEXTURE, HeroToken, IMAGE_PATH, MISSING_TEXTURE, TOKEN_HEIGHT, TOKEN_WIDTH;
+    var FRAME_TEXTURE, HeroToken, IMAGE_PATH, MISSING_TEXTURE, TOKEN_HEIGHT, TOKEN_WIDTH;
     TOKEN_WIDTH = 128;
     TOKEN_HEIGHT = 128;
     IMAGE_PATH = '/media/images/heroes/';
-    CLIP_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'token_clip.png');
     FRAME_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'token_frame.png');
     MISSING_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'missing.png');
     /*
@@ -18,13 +17,15 @@
     return HeroToken = (function(_super) {
       __extends(HeroToken, _super);
 
+      HeroToken.Width = TOKEN_WIDTH;
+
+      HeroToken.Height = TOKEN_HEIGHT;
+
       function HeroToken(hero, heroClass) {
         var imageTexture;
         HeroToken.__super__.constructor.apply(this, arguments);
+        console.log(heroClass);
         imageTexture = PIXI.Texture.fromImage(IMAGE_PATH + heroClass.media.image);
-        if (!imageTexture.hasLoaded) {
-          imageTexture = MISSING_TEXTURE;
-        }
         this.width = TOKEN_WIDTH;
         this.height = TOKEN_HEIGHT;
         this.imageSprite = new PIXI.Sprite(imageTexture);
@@ -34,28 +35,30 @@
         this.frameSprite = new PIXI.Sprite(FRAME_TEXTURE);
         this.frameSprite.width = TOKEN_WIDTH;
         this.frameSprite.height = TOKEN_HEIGHT;
-        this.damageIcon = new DamageIcon(card.damage);
-        this.healthIcon = new HealthIcon(card.health);
+        this.damageIcon = new DamageIcon(hero.damage);
+        this.healthIcon = new HealthIcon(hero.health);
         this.damageIcon.anchor = {
-          x: 0.5,
-          y: 0.5
+          x: 0,
+          y: 0
         };
         this.healthIcon.anchor = {
-          x: 0.5,
-          y: 0.5
+          x: 0,
+          y: 0
         };
         this.damageIcon.position = {
-          x: -this.damageIcon.width / 2,
-          y: this.height - this.damageIcon.height / 2
+          x: 0,
+          y: this.height - this.damageIcon.height
         };
         this.healthIcon.position = {
-          x: -this.healthIcon.width / 2,
-          y: this.height - this.healthIcon.height / 2
+          x: this.width - this.healthIcon.width,
+          y: this.height - this.healthIcon.height
         };
         this.addChild(this.imageSprite);
+        this.addChild(this.imageSprite.mask);
         this.addChild(this.frameSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
+        this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
       }
 
       HeroToken.prototype.setHealth = function(health) {
@@ -66,11 +69,19 @@
         return this.damageIcon.setDamage(damage);
       };
 
+      HeroToken.prototype.contains = function(point) {
+        point = {
+          x: point.x - this.position.x,
+          y: point.y - this.position.y
+        };
+        return this.hitArea.contains(point.x, point.y);
+      };
+
       HeroToken.prototype.createImageMask = function() {
         var mask;
         mask = new PIXI.Graphics();
         mask.beginFill();
-        mask.drawCircle(0, 0, TOKEN_WIDTH);
+        mask.drawRect(0, 0, TOKEN_WIDTH, TOKEN_HEIGHT);
         mask.endFill();
         return mask;
       };

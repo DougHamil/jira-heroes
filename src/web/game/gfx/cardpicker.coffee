@@ -29,4 +29,6 @@ define ['gfx/styles', 'gfx/card', 'gfx/pagedcardgrid', 'util', 'engine', 'pixi',
       @.addChild @bg
       @.addChild @cardGrid
 
+    getSprite: (cardId) -> return @cardSprites[cardId]
+
     onCardPicked: (@onCardPickedCallback) ->

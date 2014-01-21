@@ -20,6 +20,7 @@
         this.socket = socket;
         Battle.__super__.constructor.apply(this, arguments);
         this.cardsById = {};
+        console.log(this.model);
         _ref = this.model.you.hand;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           card = _ref[_i];
@@ -76,13 +77,35 @@
       Battle.prototype.process = function(action) {
         var card, hero;
         switch (action.type) {
+          case 'card-status-add':
+            card = this.getCard(action.card);
+            if (card != null) {
+              if (card.status == null) {
+                card.status = [];
+              }
+              card.status.push(action.status);
+            }
+            break;
+          case 'card-status-remove':
+            card = this.getCard(action.card);
+            if (card != null) {
+              if (card.status == null) {
+                card.status = [];
+              }
+              card.status = card.status.filter(function(s) {
+                return s !== action.status;
+              });
+            }
+            break;
           case 'heal':
             card = this.getCard(action.target);
             if (card != null) {
               card.health += action.amount;
             } else {
               hero = this.getHero(action.target);
-              hero.health += action.amount;
+              if (hero != null) {
+                hero.health += action.amount;
+              }
             }
             break;
           case 'damage':
@@ -91,7 +114,10 @@
               card.health -= action.damage;
             } else {
               hero = this.getHero(action.target);
-              hero.health -= action.damage;
+              if (hero != null) {
+                hero.health -= action.damage;
+                console.log(hero.health);
+              }
             }
             break;
           case 'discard-card':
@@ -211,6 +237,36 @@
 
       Battle.prototype.getMaxEnergy = function() {
         return this.model.you.maxEnergy;
+      };
+
+      Battle.prototype.getHeroById = function(heroId) {
+        var opp, _i, _len, _ref;
+        if (heroId === this.model.you.hero._id) {
+          return this.model.you.hero;
+        }
+        _ref = this.model.opponents;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          opp = _ref[_i];
+          if (opp.hero._id === heroId) {
+            return opp.hero;
+          }
+        }
+        return null;
+      };
+
+      Battle.prototype.getHero = function(heroId) {
+        if (heroId != null) {
+          return this.getHeroById(heroId);
+        }
+        return this.getMyHero();
+      };
+
+      Battle.prototype.getMyHero = function() {
+        return this.model.you.hero;
+      };
+
+      Battle.prototype.getEnemyHero = function() {
+        return this.model.opponents[0].hero;
       };
 
       Battle.prototype.isYourTurn = function() {

@@ -26,6 +26,8 @@ class Battle
         cardsById[card._id] = card
         @cards[card._id] = new CardHandler(@, @players[player.userId], card)
       player.cards = cardsById
+      # TEMP
+      #player.deck.hero.health = 10
       @registerPlayer(player.userId, @players[player.userId])
 
     # Start the battle if it's still in initial phase

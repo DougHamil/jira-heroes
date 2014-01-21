@@ -4,6 +4,7 @@
 	"health":30,
 	"damage":0,
 	"media":{
+		"image":"engineer.png",
 		"icon":"/media/images/heroes/engineer_icon.png"
 	}
 }

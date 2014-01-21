@@ -83,6 +83,7 @@ class CardHandler
         actions.push Actions.PlayCard(@model, cardClass)
       cb null, @battle.processActions(actions)
     catch err
+      console.log err
       cb err
       if not err.jiraHeroesError?
         throw err

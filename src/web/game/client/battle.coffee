@@ -6,6 +6,7 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
     constructor:(@userId, @model, @socket) ->
       super
       @cardsById = {}
+      console.log @model
       for card in @model.you.hand
         @cardsById[card._id] = card
       for card in @model.you.field
@@ -29,20 +30,35 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
 
     process: (action) ->
       switch action.type
+        when 'card-status-add'
+          card = @getCard action.card
+          if card?
+            if not card.status?
+              card.status = []
+            card.status.push action.status
+        when 'card-status-remove'
+          card = @getCard action.card
+          if card?
+            if not card.status?
+              card.status = []
+            card.status = card.status.filter (s) -> s isnt action.status
         when 'heal'
           card = @getCard(action.target)
           if card?
             card.health += action.amount
           else
             hero = @getHero(action.target)
-            hero.health += action.amount
+            if hero?
+              hero.health += action.amount
         when 'damage'
           card = @getCard(action.target)
           if card?
             card.health -= action.damage
           else
             hero = @getHero(action.target)
-            hero.health -= action.damage
+            if hero?
+              hero.health -= action.damage
+              console.log hero.health
         when 'discard-card'
           card = @getCard(action.card)
           if card?
@@ -105,6 +121,19 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
       return cards
     getEnergy: -> return @model.you.energy
     getMaxEnergy: -> return @model.you.maxEnergy
+    getHeroById: (heroId) ->
+      if heroId is @model.you.hero._id
+        return @model.you.hero
+      for opp in @model.opponents
+        if opp.hero._id is heroId
+          return opp.hero
+      return null
+    getHero: (heroId) ->
+      if heroId?
+        return @getHeroById(heroId)
+      return @getMyHero()
+    getMyHero: -> return @model.you.hero
+    getEnemyHero: -> return @model.opponents[0].hero
     isYourTurn: -> return @model.activePlayer is @userId
 
     emitEndTurnEvent: -> @socket.emit 'end-turn'

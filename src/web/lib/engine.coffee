@@ -1,7 +1,6 @@
 define ['jquery', 'tween', 'pixi'], ($) ->
   stage = new PIXI.Stage 0xEDC951, true
-  renderer = new PIXI.autoDetectRenderer 1028, 768, $('#mainCanvas').get(0)
-
+  renderer = new PIXI.autoDetectRenderer 1024, 768, $('#mainCanvas').get(0)
   engine =
     stage:stage
     renderer:renderer

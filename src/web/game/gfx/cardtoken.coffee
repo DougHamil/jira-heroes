@@ -2,7 +2,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
   TOKEN_WIDTH = 128
   TOKEN_HEIGHT = 128
   IMAGE_PATH = '/media/images/cards/'
-  CLIP_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_clip.png'
   FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame.png'
   TAUNT_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame_taunt.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
@@ -16,8 +15,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     constructor: (card, cardClass) ->
       super
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
-      if not imageTexture.hasLoaded
-        imageTexture = MISSING_TEXTURE
       @width = TOKEN_WIDTH
       @height = TOKEN_HEIGHT
       @imageSprite = new PIXI.Sprite imageTexture
@@ -40,7 +37,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @frameSprite
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
-      #@.addChild @tauntFrameSprite
+      @.addChild @tauntFrameSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
 

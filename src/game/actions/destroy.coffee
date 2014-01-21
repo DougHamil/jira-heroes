@@ -1,4 +1,6 @@
 DiscardCardAction = require './discardcard'
+WinBattleAction = require './winbattle'
+LoseBattleAction = require './losebattle'
 
 class DestroyAction
   constructor: (@source, @target) ->
@@ -11,6 +13,10 @@ class DestroyAction
       hero = battle.getHero @target._id
     else
       actions.push new DiscardCardAction(@target)
+
+    if hero?
+      actions.push new WinBattleAction(@source.userId)
+      actions.push new LoseBattleAction(hero.userId)
 
     PAYLOAD =
       type: 'destroy'

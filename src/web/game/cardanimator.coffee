@@ -1,8 +1,6 @@
 define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
   ENEMY_DECK_ORIGIN = {x:engine.WIDTH + 200, y: 100}
-  FIELD_ORIGIN = {x:20, y: engine.HEIGHT/2}
-  ENEMY_FIELD_ORIGIN = {x:20, y: 100}
   DISCARD_ORIGIN = {x:-200, y: 0}
   FIELD_PADDING = 50
   ENEMY_HAND_ORIGIN = {x:20, y:-100}
@@ -13,27 +11,33 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   HOVER_ANIM_TIME = 200
   DEFAULT_TWEEN_TIME = 400
   TOKEN_CARD_OFFSET = 10
-  FIELD_AREA = new PIXI.Rectangle 20, 200, engine.WIDTH - 80, 500
+  FIELD_AREA = new PIXI.Rectangle 10, 400, engine.WIDTH - 20, 220
+  FIELD_ORIGIN = {x:20, y:FIELD_AREA.y + 10}
+  ENEMY_FIELD_ORIGIN = {x:20, y: 160}
+  HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:FIELD_ORIGIN.y}
+  ENEMY_HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:ENEMY_FIELD_ORIGIN.y}
 
   ###
   # Manages all card sprites in the battle by positioning and animating them
   # as the battle unfolds.
   ###
   class CardAnimator extends PIXI.DisplayObjectContainer
-    constructor: (@cardClasses, @userId, @battle) ->
+    constructor: (@heroClasses, @cardClasses, @userId, @battle) ->
       super
-      @flippedCardSprites = {}
-      @cardSprites = {}
-      @tokenSprites = {}
-      @cardTokens = {}
-      @handSpriteRow = new GUI.OrderedSpriteRow(HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
-      @fieldSpriteRow = new GUI.OrderedSpriteRow(FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
-      @enemyHandSpriteRow = new GUI.OrderedSpriteRow(ENEMY_HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
-      @enemyFieldSpriteRow = new GUI.OrderedSpriteRow(ENEMY_FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
+      @flippedCardSprites = {}
+      @cardSprites = {}
+      @tokenSprites = {}
+      @cardTokens = {}
+      @heroTokens = {}
+      @buildHeroTokens(@battle.getHero(), @battle.getEnemyHero(), @heroClasses)
+      @handSpriteRow = new GUI.OrderedSpriteRow(HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
+      @fieldSpriteRow = new GUI.OrderedSpriteRow(FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
+      @enemyHandSpriteRow = new GUI.OrderedSpriteRow(ENEMY_HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
+      @enemyFieldSpriteRow = new GUI.OrderedSpriteRow(ENEMY_FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
       for card in @battle.getCardsInHand()
         @putCardInHand card, false
       for card in @battle.getEnemyCardsInHand()
@@ -57,11 +61,32 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @battle.on 'action-damage', (action) => @onDamageAction(action)
       @battle.on 'action-heal', (action) => @onHealAction(action)
       @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
+      @battle.on 'action-card-status-add', (action) => @onCardStatusAction(action)
+      @battle.on 'action-card-status-remove', (action) => @onCardStatusAction(action)
+
+    buildHeroTokens: (hero, enemyHero, heroClasses) ->
+      console.log heroClasses
+      @heroTokens[hero._id] = new GUI.HeroToken hero, heroClasses[hero.class]
+      @heroTokens[enemyHero._id] = new GUI.HeroToken enemyHero, heroClasses[enemyHero.class]
+      @heroTokens[hero._id].position = HERO_ORIGIN
+      @heroTokens[enemyHero._id].position = ENEMY_HERO_ORIGIN
+      @tokenSpriteLayer.addChild @heroTokens[hero._id]
+      @tokenSpriteLayer.addChild @heroTokens[enemyHero._id]
+
+    onCardStatusAction: (action) ->
+      card = @battle.getCard(action.card)
+      tokenSprite = @getTokenSprite(card)
+      tokenSprite.setTaunt(('taunt' in card.status)) if tokenSprite? and card?
 
     onDiscardCardAction: (action) ->
       # TODO: Instead handle destroy action and show FX for destroying card
       cardSprite = @getCardSprite @battle.getCard(action.card)
       @putCardInDiscard @cardSprites[action.card].card
+
+    updateHeroHealth: (heroId) ->
+      heroSprite = @heroTokens[heroId]
+      if heroSprite?
+        heroSprite.setHealth(@battle.getHero(heroId).health)
 
     updateCardHealth: (cardId) ->
       cardSprite = @cardSprites[cardId]
@@ -71,8 +96,12 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       if tokenSprite
         tokenSprite.setHealth(@battle.getCard(cardId).health)
 
-    onDamageAction: (action) -> @updateCardHealth(action.target) # TODO: Show damage FX
-    onHealAction: (action) -> @updateCardHealth(action.target) # TODO: Show heal FX
+    onDamageAction: (action) ->
+      @updateCardHealth(action.target) # TODO: Show damage FX
+      @updateHeroHealth(action.target)
+    onHealAction: (action) ->
+      @updateCardHealth(action.target) # TODO: Show heal FX
+      @updateHeroHealth(action.target)
 
     onPlayCardAction: (action) ->
       if action.player isnt @userId
@@ -243,6 +272,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @enemyFieldSpriteRow.reorder removeInteractions, setEnemyInteractions
 
     onTargeted: (sourceSprite, targetPosition) ->
+      # TODO: Clean this up, specifically the repeated functions for emiting events on target
       foundTarget = false
       for cardId, tokenSprite of @tokenSprites
         if tokenSprite.contains(targetPosition)
@@ -266,9 +296,32 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
                 console.log err
                 if sourceSprite.dropTween?
                   sourceSprite.dropTween.start()
-
           break
-      # TODO:  go through hero tokens and see if they're casting on heroes
+      # Targeting hero?
+      for heroId, heroTokenSprite of @heroTokens
+        if heroTokenSprite.contains(targetPosition)
+          console.log heroId
+          # If this is a spell card being played from the hand, then play the spell with the target
+          if @handSpriteRow.hasSprite(sourceSprite)
+            foundTarget = true
+            @battle.emitPlayCardEvent sourceSprite.card._id, {hero:heroId}, (err) =>
+              if err?
+                # TODO: Depending on error, provide feedback (not enough energy, not your turn, etc)
+                console.log err
+                if sourceSprite.dropTween?
+                  sourceSprite.dropTween.start()
+                else if sourceSprite.tween?
+                  sourceSprite.tween.start()
+          # If this is a token sprite and we're trying to attack, then attack
+          else if @fieldSpriteRow.hasSprite(sourceSprite)
+            foundTarget = true
+            @battle.emitUseCardEvent sourceSprite.card._id, {hero:heroId}, (err) =>
+              if err?
+                # TODO: Depending on error, provide feedback (not enough energy, not your turn, etc)
+                console.log err
+                if sourceSprite.dropTween?
+                  sourceSprite.dropTween.start()
+          break
       return foundTarget
 
     onCardDropped: (mousePosition, sprite) ->

@@ -12,6 +12,7 @@ _schema = new Schema
   damage: Number
   media:
     icon: {type:String}
+    image: {type:String}
 
 _model = mongoose.model('Hero', _schema)
 

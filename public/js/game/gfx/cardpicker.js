@@ -58,6 +58,10 @@
         this.addChild(this.cardGrid);
       }
 
+      CardPicker.prototype.getSprite = function(cardId) {
+        return this.cardSprites[cardId];
+      };
+
       CardPicker.prototype.onCardPicked = function(onCardPickedCallback) {
         this.onCardPickedCallback = onCardPickedCallback;
       };

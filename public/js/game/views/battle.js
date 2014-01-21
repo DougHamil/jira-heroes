@@ -4,11 +4,12 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'jiraheroes', 'gui', 'cardanimator', 'client/battlemanager', 'engine', 'pixi'], function($, JH, GUI, CardAnimator, BattleManager, engine) {
+    var BACKDROP_TEXTURE, Battle;
+    BACKDROP_TEXTURE = PIXI.Texture.fromImage('/media/images/backdrop.png');
     /*
     # This view displays the actual battle part of the game to the player
     */
 
-    var Battle;
     return Battle = (function(_super) {
       __extends(Battle, _super);
 
@@ -16,9 +17,25 @@
         this.manager = manager;
         this.myStage = myStage;
         Battle.__super__.constructor.apply(this, arguments);
+        this.backdropImage = new PIXI.Sprite(BACKDROP_TEXTURE);
         this.statusText = new PIXI.Text('Hosting battle...', GUI.STYLES.TEXT);
+        this.winBattleText = new PIXI.Text('You won!', GUI.STYLES.HEADING);
+        this.loseBattleText = new PIXI.Text('You lost', GUI.STYLES.HEADING);
+        this.winBattleText.position = {
+          x: engine.WIDTH / 2 - this.winBattleText.width / 2,
+          y: engine.HEIGHT / 2 - this.winBattleText.height / 2
+        };
+        this.loseBattleText.position = {
+          x: engine.WIDTH / 2 - this.loseBattleText.width / 2,
+          y: engine.HEIGHT / 2 - this.loseBattleText.height / 2
+        };
         this.setStatusText('Connecting to battle...');
-        this.addChild(this.statusText);
+        this.uiLayer = new PIXI.DisplayObjectContainer();
+        this.gfxLayer = new PIXI.DisplayObjectContainer();
+        this.addChild(this.backdropImage);
+        this.addChild(this.gfxLayer);
+        this.addChild(this.uiLayer);
+        this.uiLayer.addChild(this.statusText);
       }
 
       Battle.prototype.setStatusText = function(text) {
@@ -40,15 +57,29 @@
           this.endTurnButton.onClick(function() {
             return _this.battle.emitEndTurnEvent();
           });
-          this.energySprite = new PIXI.Text(this.battle.getEnergy() + " energy");
+          this.energySprite = new PIXI.Text(this.battle.getEnergy() + " energy", GUI.STYLES.TEXT);
           this.energySprite.position = {
             x: engine.WIDTH - 20 - this.energySprite.width,
             y: 20
           };
-          this.cardAnimator = new CardAnimator(JH.cards, JH.user._id, this.battle);
-          this.addChild(this.energySprite);
-          this.addChild(this.cardAnimator);
-          this.addChild(this.endTurnButton);
+          this.cardAnimator = new CardAnimator(JH.heroes, JH.cards, JH.user._id, this.battle);
+          this.uiLayer.addChild(this.energySprite);
+          this.gfxLayer.addChild(this.cardAnimator);
+          this.uiLayer.addChild(this.endTurnButton);
+          this.battle.on('action-win-battle', function(action) {
+            if (action.player === JH.user._id) {
+              _this.removeChild(_this.gfxLayer);
+              _this.removeChild(_this.backdropImage);
+              return _this.uiLayer.addChild(_this.winBattleText);
+            }
+          });
+          this.battle.on('action-lose-battle', function(action) {
+            if (action.player === JH.user._id) {
+              _this.removeChild(_this.gfxLayer);
+              _this.removeChild(_this.backdropImage);
+              return _this.uiLayer.addChild(_this.loseBattleText);
+            }
+          });
         }
         return this.addChild(this.innerStage);
       };
