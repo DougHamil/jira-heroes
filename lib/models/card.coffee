@@ -6,6 +6,7 @@ readdirp = require 'readdirp'
 
 _abilitySchemaOpts =
   class:String
+  requireTarget: {default:true, type:Boolean}
   text:String
   data: mongoose.Schema.Types.Mixed
 _abilitySchema = new mongoose.Schema _abilitySchemaOpts
