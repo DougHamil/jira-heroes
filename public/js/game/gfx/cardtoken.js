@@ -29,6 +29,7 @@
         imageTexture = PIXI.Texture.fromImage(IMAGE_PATH + cardClass.media.image);
         this.width = TOKEN_WIDTH;
         this.height = TOKEN_HEIGHT;
+        this.frozenSprite = new PIXI.Text("FROZEN", STYLES.TEXT);
         this.imageSprite = new PIXI.Sprite(imageTexture);
         this.imageSprite.width = TOKEN_WIDTH;
         this.imageSprite.height = TOKEN_HEIGHT;
@@ -61,11 +62,13 @@
         this.addChild(this.tauntFrameSprite);
         this.addChild(this.imageSprite.mask);
         this.addChild(this.imageSprite);
+        this.addChild(this.frozenSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
         this.interactive = true;
         this.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
+        this.setFrozen((__indexOf.call(card.status, 'frozen') >= 0));
       }
 
       CardToken.prototype.contains = function(point) {
@@ -82,6 +85,10 @@
 
       CardToken.prototype.setDamage = function(damage) {
         return this.damageIcon.setDamage(damage);
+      };
+
+      CardToken.prototype.setFrozen = function(isFrozen) {
+        return this.frozenSprite.visible = isFrozen;
       };
 
       CardToken.prototype.setTaunt = function(isTaunting) {

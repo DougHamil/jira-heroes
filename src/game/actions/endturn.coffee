@@ -1,6 +1,6 @@
 CardStatusRemoveAction = require './cardstatusremove'
 
-module.exports = class EndTurnAction
+class EndTurnAction
   constructor: (@player) ->
 
   enact: (battle) ->
@@ -13,3 +13,5 @@ module.exports = class EndTurnAction
       type: 'end-turn'
       player: @player.userId
     return [PAYLOAD, actions]
+
+module.exports = EndTurnAction
