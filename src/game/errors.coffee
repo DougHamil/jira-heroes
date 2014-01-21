@@ -27,6 +27,7 @@ errors =
   CARD_CANNOT_ATTACK: 'Card cannot attack'
   CARD_USED: 'Card has already been used this turn'
   MUST_TARGET_TAUNT: 'You must target a taunt card'
+  FROZEN: 'You cannot use a frozen card or hero'
 
 errorObjs = {}
 for id, message of errors
