@@ -1,4 +1,5 @@
 DrawCardAction = require '../actions/drawcard'
+EndTurnAction = require '../actions/endturn'
 
 ###
 # This ability heals friendly units at the end of the player's turn

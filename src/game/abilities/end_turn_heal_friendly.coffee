@@ -1,4 +1,5 @@
 Events = require '../events'
+EndTurnAction = require '../actions/endturn'
 HealAction = require '../actions/heal'
 ###
 # This ability heals friendly units at the end of the player's turn
