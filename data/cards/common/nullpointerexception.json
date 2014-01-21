@@ -1,0 +1,11 @@
+{
+	"name":"nullpointerexception",
+	"displayName":"Null Ptr Exception",
+	"cost":0,
+	"energy":1,
+	"health":1,
+	"damage":2,
+	"media": {
+		"image": "common/nullpointerexception.png"
+	}
+}

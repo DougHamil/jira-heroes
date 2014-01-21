@@ -22,23 +22,7 @@
         this.myStage = myStage;
         Library.__super__.constructor.apply(this, arguments);
         this.heading = new PIXI.Text('Library', GUI.STYLES.HEADING);
-        this.nextBtn = new GUI.TextButton('Next Page');
-        this.prevBtn = new GUI.TextButton('Last Page');
         this.backBtn = new GUI.TextButton('Back');
-        this.nextBtn.position = {
-          x: engine.WIDTH - this.nextBtn.width - 20,
-          y: engine.HEIGHT - 200
-        };
-        this.nextBtn.onClick(function() {
-          return _this.nextPage();
-        });
-        this.prevBtn.onClick(function() {
-          return _this.prevPage();
-        });
-        this.prevBtn.position = {
-          x: 20,
-          y: engine.HEIGHT - 200
-        };
         this.backBtn.position = {
           x: 20,
           y: engine.HEIGHT - this.backBtn.height - 20
@@ -48,42 +32,7 @@
         });
         this.addChild(this.heading);
         this.addChild(this.backBtn);
-        this.addChild(this.nextBtn);
-        this.addChild(this.prevBtn);
       }
-
-      Library.prototype.nextPage = function() {
-        return this.setPageIndex(this.pageIndex + 1);
-      };
-
-      Library.prototype.prevPage = function() {
-        return this.setPageIndex(this.pageIndex - 1);
-      };
-
-      Library.prototype.setPageIndex = function(index) {
-        if ((this.pageIndex != null) && index >= this.pages.length || index < 0 || index === this.pageIndex) {
-
-        } else {
-          if (this.pageIndex === 0) {
-            this.prevBtn.visible = true;
-          }
-          if (this.pageIndex === (this.pages.length - 1)) {
-            this.nextBtn.visible = true;
-          }
-          if (index === (this.pages.length - 1)) {
-            this.nextBtn.visible = false;
-          } else if (index === 0) {
-            this.prevBtn.visible = false;
-          }
-          if (this.pageIndex != null) {
-            this.removeChild(this.pages[this.pageIndex]);
-          }
-          this.pageIndex = index;
-          if (this.pages[this.pageIndex] != null) {
-            return this.addChild(this.pages[this.pageIndex]);
-          }
-        }
-      };
 
       Library.prototype.deactivate = function() {
         this.myStage.removeChild(this);
@@ -93,10 +42,10 @@
         if (JH.nameText != null) {
           this.removeChild(JH.nameText);
         }
-        if (this.pages[this.pageIndex] != null) {
-          this.removeChild(this.pages[this.pageIndex]);
+        if (this.cardPicker != null) {
+          this.removeChild(this.cardPicker);
+          return this.cardPicker = null;
         }
-        return this.pageIndex = null;
       };
 
       Library.prototype.activate = function(hero) {
@@ -104,18 +53,36 @@
           _this = this;
         this.hero = hero;
         activate = function(cards) {
-          var buyCard, card, cardId, cardIndex, cardSprite, pageContainer, xpos, ypos;
+          var allCardIds, card, cardId, cardSprite, id;
           _this.updateLibrary(JH.user.library);
           JH.cards = cards;
+          allCardIds = (function() {
+            var _ref, _results;
+            _ref = JH.cards;
+            _results = [];
+            for (id in _ref) {
+              card = _ref[id];
+              _results.push(id);
+            }
+            return _results;
+          })();
+          _this.cardPicker = new GUI.CardPicker(allCardIds, JH.cards);
+          _this.cardPicker.position = {
+            x: 20,
+            y: 100
+          };
           _this.cardsById = {};
           _this.cardSprites = {};
-          _this.pages = [];
-          pageContainer = new PIXI.DisplayObjectContainer;
-          cardIndex = 0;
+          _this.cardPicker.onCardPicked(function(cardId) {
+            if (_this.library[cardId] == null) {
+              return JH.AddCardToUserLibrary(cardId, _this.onCardBought(cardId), _this.onCardBuyFail(cardId));
+            }
+          });
           for (cardId in cards) {
             card = cards[cardId];
-            cardSprite = GUI.Card.FromClass(card);
-            pageContainer.addChild(cardSprite);
+            cardSprite = _this.cardPicker.getSprite(cardId);
+            _this.cardSprites[cardId] = cardSprite;
+            _this.cardsById[card._id] = card;
             cardSprite.onHoverStart(function(card) {
               card.scale.x += 0.1;
               return card.scale.y += 0.1;
@@ -124,34 +91,9 @@
               card.scale.x -= 0.1;
               return card.scale.y -= 0.1;
             });
-            xpos = CARD_PADDING + ((cardIndex % CARDS_PER_ROW) * (CARD_PADDING + cardSprite.width));
-            ypos = Math.floor(cardIndex / CARDS_PER_ROW) * (CARD_PADDING + cardSprite.height);
-            cardSprite.position.x = xpos;
-            cardSprite.position.y = ypos;
-            if (_this.library[card._id] == null) {
-              buyCard = function(cardId) {
-                return function() {
-                  return JH.AddCardToUserLibrary(cardId, _this.onCardBought(cardId), _this.onCardBuyFail(cardId));
-                };
-              };
-              cardSprite.onClick(buyCard(card._id));
-            }
-            _this.cardsById[card._id] = card;
-            _this.cardSprites[card._id] = cardSprite;
-            cardIndex++;
-            if (cardIndex === (CARDS_PER_ROW * ROWS_PER_PAGE)) {
-              pageContainer.position = PAGE_POS;
-              cardIndex = 0;
-              _this.pages.push(pageContainer);
-              pageContainer = new PIXI.DisplayObjectContainer;
-              pageContainer.position = PAGE_POS;
-            }
-          }
-          if (cardIndex !== 0) {
-            _this.pages.push(pageContainer);
           }
           _this.addCostSprites(JH.user, _this.library, _this.cardSprites, _this.cardsById);
-          _this.setPageIndex(0);
+          _this.addChild(_this.cardPicker);
           _this.addChild(JH.pointsText);
           _this.addChild(JH.nameText);
           return _this.myStage.addChild(_this);
@@ -202,7 +144,7 @@
         costSprite = this.createCostSprite(cardSprite, card.cost, JH.user.points >= card.cost, this.library[cardId] != null);
         costSprite.position = {
           x: cardSprite.width / 2,
-          y: cardSprite.height / 2
+          y: cardSprite.height / 2 - costSprite.height
         };
         if (cardSprite.costSprite != null) {
           cardSprite.removeChild(cardSprite.costSprite);

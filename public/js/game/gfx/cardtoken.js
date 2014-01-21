@@ -5,11 +5,10 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], function(DamageIcon, HealthIcon, STYLES, Util) {
-    var CLIP_TEXTURE, CardToken, FRAME_TEXTURE, IMAGE_PATH, MISSING_TEXTURE, TAUNT_FRAME_TEXTURE, TOKEN_HEIGHT, TOKEN_WIDTH;
+    var CardToken, FRAME_TEXTURE, IMAGE_PATH, MISSING_TEXTURE, TAUNT_FRAME_TEXTURE, TOKEN_HEIGHT, TOKEN_WIDTH;
     TOKEN_WIDTH = 128;
     TOKEN_HEIGHT = 128;
     IMAGE_PATH = '/media/images/cards/';
-    CLIP_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'token_clip.png');
     FRAME_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'token_frame.png');
     TAUNT_FRAME_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'token_frame_taunt.png');
     MISSING_TEXTURE = PIXI.Texture.fromImage(IMAGE_PATH + 'missing.png');
@@ -28,9 +27,6 @@
         var imageTexture;
         CardToken.__super__.constructor.apply(this, arguments);
         imageTexture = PIXI.Texture.fromImage(IMAGE_PATH + cardClass.media.image);
-        if (!imageTexture.hasLoaded) {
-          imageTexture = MISSING_TEXTURE;
-        }
         this.width = TOKEN_WIDTH;
         this.height = TOKEN_HEIGHT;
         this.imageSprite = new PIXI.Sprite(imageTexture);
@@ -64,6 +60,7 @@
         this.addChild(this.frameSprite);
         this.addChild(this.imageSprite.mask);
         this.addChild(this.imageSprite);
+        this.addChild(this.tauntFrameSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);

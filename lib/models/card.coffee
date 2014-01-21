@@ -41,6 +41,8 @@ _load = (cb) ->
   loadFile = (file, cb) ->
     if file.indexOf('.swp') != -1
       cb null
+    else if path.basename(path.dirname(file)) is 'test'
+      cb null
     else
       data = JSON.parse(fs.readFileSync(file, 'utf8'))
       _model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->

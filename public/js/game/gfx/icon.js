@@ -4,29 +4,30 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['gfx/styles', 'util', 'pixi', 'tween'], function(STYLES, Util) {
-    var ICON_SIZE, Icon;
-    ICON_SIZE = 32;
+    var ICON_HEIGHT, ICON_WIDTH, Icon;
+    ICON_WIDTH = 64;
+    ICON_HEIGHT = 32;
     return Icon = (function(_super) {
       __extends(Icon, _super);
 
       function Icon(text, iconTexturePath, textStyle) {
         Icon.__super__.constructor.apply(this, arguments);
         this.iconSprite = new PIXI.Sprite(PIXI.Texture.fromImage(iconTexturePath));
-        this.iconSprite.width = ICON_SIZE;
-        this.iconSprite.height = ICON_SIZE;
+        this.iconSprite.width = ICON_WIDTH;
+        this.iconSprite.height = ICON_HEIGHT;
         this.text = new PIXI.Text(text, textStyle || STYLES.TEXT);
         this.text.anchor = {
           x: 0.5,
           y: 0.5
         };
         this.text.position = {
-          x: this.iconSprite.width / 2,
+          x: this.iconSprite.width / 4,
           y: this.iconSprite.height / 2
         };
         this.addChild(this.iconSprite);
         this.addChild(this.text);
-        this.width = ICON_SIZE;
-        this.height = ICON_SIZE;
+        this.width = ICON_WIDTH;
+        this.height = ICON_HEIGHT;
       }
 
       Icon.prototype.setText = function(text) {

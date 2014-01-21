@@ -1,13 +1,16 @@
 define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, EnergyIcon, styles, Util) ->
-  IMAGE_SIZE =
-    width: 64
-    height: 64
   CARD_SIZE =
     width: 150
     height: 225
   IMAGE_POS =
-    x: CARD_SIZE.width / 2
-    y: 22
+    x: 3
+    y: 3
+  IMAGE_SIZE =
+    width: 498 * (CARD_SIZE.width / 512)
+    height: 498 * (CARD_SIZE.height / 768)
+  IMAGE_MASK =
+    width: IMAGE_SIZE.width
+    height: 336 * (CARD_SIZE.height / 768)
   IMAGE_PATH = '/media/images/cards/'
   BACKGROUND_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'background.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
@@ -25,7 +28,7 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
       if not imageTexture.baseTexture.hasLoaded
         console.log "Error loading #{cardClass.media.image}"
-        imageTexture = MISSING_TEXTURE
+      #imageTexture = MISSING_TEXTURE
 
       @backgroundSprite = new PIXI.Sprite BACKGROUND_TEXTURE
       @backgroundSprite.width = CARD_SIZE.width
@@ -34,17 +37,20 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @imageSprite.width = IMAGE_SIZE.width
       @imageSprite.height = IMAGE_SIZE.height
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
+      if @titleText.width >= @backgroundSprite.width - 20
+        @titleText.width = @backgroundSprite.width - 20
       @energyIcon = new EnergyIcon cardClass.energy
       @description = @buildAbilityText cardClass
       @description.position = {x:5, y: @backgroundSprite.height / 2 + 25}
       @titleText.anchor = {x: 0.5, y:0.5}
       @titleText.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height/2+4}
-      @energyIcon.position = {x:-@energyIcon.width/2, y:-@energyIcon.height/2}
-      @imageSprite.anchor = {x: 0.5, y:0}
+      @energyIcon.position = {x:0, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
+      #@imageSprite.mask = @createImageMask()
 
-      @.addChild @backgroundSprite
       @.addChild @imageSprite
+      @.addChild @backgroundSprite
+      #@.addChild @imageSprite.mask
       @.addChild @titleText
       @.addChild @description
       @.addChild @energyIcon
@@ -79,6 +85,13 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @.mousedown = null
       @.mouseup = null
 
+    createImageMask: ->
+      mask = new PIXI.Graphics()
+      mask.beginFill()
+      mask.drawRect(0,0,IMAGE_MASK.width, IMAGE_MASK.height)
+      mask.endFill()
+      return mask
+
     buildAbilityText: (cardClass) ->
       parent = new PIXI.DisplayObjectContainer
       count = 0
@@ -94,6 +107,11 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
         count++
         parent.addChild text
       # TODO: Figure out how to display 'traits' such as rush
+      if 'taunt' in cardClass.traits
+        text = new PIXI.Text "Taunt", styles.CARD_DESCRIPTION
+        text.position = {x:0, y: count * text.height}
+        count++
+        parent.addChild text
       return parent
 
     _buildAbilityText: (abilityText, abilityData) ->

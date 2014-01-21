@@ -22,12 +22,14 @@ newCardInstance = (userId) ->
         cb null, out
 
 # Transform a hero model into a hero instance
-newHeroInstance = (hero, cb) ->
+newHeroInstance = (userId, hero, cb) ->
   HeroCache.get hero.class, (err, heroClass) ->
     if err?
       cb err
     else
       out =
+        _id:userId
+        userId: userId
         class: heroClass._id
         health: heroClass.health
         maxHealth: heroClass.health
@@ -36,7 +38,7 @@ newHeroInstance = (hero, cb) ->
 
 # Transform a user and deck into a player instance
 newPlayerInstance = (userId, deck, cb) ->
-  newHeroInstance deck.hero, (err, hero) ->
+  newHeroInstance userId, deck.hero, (err, hero) ->
     if err?
       cb err
     else
@@ -74,6 +76,8 @@ _playerSchema = new mongoose.Schema
   maxEnergy: Number
   deck:
     hero:
+      userId: String
+      _id: String
       class: String
       health: Number
       maxHealth: Number

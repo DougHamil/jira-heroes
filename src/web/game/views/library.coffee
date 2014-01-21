@@ -11,42 +11,13 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
     constructor: (@manager, @myStage) ->
       super
       @heading = new PIXI.Text 'Library', GUI.STYLES.HEADING
-      @nextBtn = new GUI.TextButton 'Next Page'
-      @prevBtn = new GUI.TextButton 'Last Page'
       @backBtn = new GUI.TextButton 'Back'
 
-      @nextBtn.position = {x:engine.WIDTH - @nextBtn.width - 20, y:engine.HEIGHT - 200}
-      @nextBtn.onClick => @nextPage()
-      @prevBtn.onClick => @prevPage()
-      @prevBtn.position = {x:20, y:engine.HEIGHT - 200}
       @backBtn.position = {x:20, y:engine.HEIGHT - @backBtn.height - 20}
       @backBtn.onClick => @manager.activateView 'MainMenu'
 
       @.addChild @heading
       @.addChild @backBtn
-      @.addChild @nextBtn
-      @.addChild @prevBtn
-
-
-    nextPage: -> @setPageIndex (@pageIndex + 1)
-    prevPage: -> @setPageIndex (@pageIndex - 1)
-    setPageIndex: (index) ->
-      if @pageIndex? and index >= @pages.length or index < 0 or index is @pageIndex
-        return
-      else
-        if @pageIndex is 0
-          @prevBtn.visible = true
-        if @pageIndex is (@pages.length - 1)
-          @nextBtn.visible = true
-        if index is (@pages.length - 1)
-          @nextBtn.visible = false
-        else if index is 0
-          @prevBtn.visible = false
-        if @pageIndex?
-          @.removeChild @pages[@pageIndex]
-        @pageIndex = index
-        if @pages[@pageIndex]?
-          @.addChild @pages[@pageIndex]
 
     deactivate: ->
       @myStage.removeChild @
@@ -54,51 +25,34 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @.removeChild JH.pointsText
       if JH.nameText?
         @.removeChild JH.nameText
-      if @pages[@pageIndex]?
-        @.removeChild @pages[@pageIndex]
-      @pageIndex = null
+      if @cardPicker?
+        @.removeChild @cardPicker
+        @cardPicker = null
 
     activate: (@hero) ->
       activate = (cards) =>
         @updateLibrary JH.user.library
         JH.cards = cards
+        allCardIds = (id for id, card of JH.cards)
+        @cardPicker = new GUI.CardPicker allCardIds, JH.cards
+        @cardPicker.position = {x:20, y:100}
         @cardsById = {}
         @cardSprites = {}
-        @pages = []
-        pageContainer = new PIXI.DisplayObjectContainer
-        cardIndex = 0
+        @cardPicker.onCardPicked (cardId) =>
+          if not @library[cardId]?
+            JH.AddCardToUserLibrary cardId, @onCardBought(cardId), @onCardBuyFail(cardId)
         for cardId, card of cards
-          cardSprite = GUI.Card.FromClass card
-          pageContainer.addChild cardSprite
+          cardSprite = @cardPicker.getSprite(cardId)
+          @cardSprites[cardId] = cardSprite
+          @cardsById[card._id] = card
           cardSprite.onHoverStart (card) =>
             card.scale.x += 0.1
             card.scale.y += 0.1
           cardSprite.onHoverEnd (card) =>
             card.scale.x -= 0.1
             card.scale.y -= 0.1
-          xpos = CARD_PADDING + ((cardIndex % CARDS_PER_ROW) * (CARD_PADDING + cardSprite.width))
-          ypos = Math.floor(cardIndex / CARDS_PER_ROW) * (CARD_PADDING + cardSprite.height)
-          cardSprite.position.x = xpos
-          cardSprite.position.y = ypos
-          # Buy on click
-          if not @library[card._id]?
-            buyCard = (cardId) =>
-              =>
-                JH.AddCardToUserLibrary cardId, @onCardBought(cardId), @onCardBuyFail(cardId)
-            cardSprite.onClick buyCard(card._id)
-          @cardsById[card._id] = card
-          @cardSprites[card._id] = cardSprite
-          cardIndex++
-          if cardIndex is (CARDS_PER_ROW * ROWS_PER_PAGE)
-            pageContainer.position = PAGE_POS
-            cardIndex = 0
-            @pages.push pageContainer
-            pageContainer = new PIXI.DisplayObjectContainer
-            pageContainer.position = PAGE_POS
-        if cardIndex != 0
-          @pages.push pageContainer
         @addCostSprites JH.user, @library, @cardSprites, @cardsById
-        @setPageIndex(0)
+        @.addChild @cardPicker
         @.addChild JH.pointsText
         @.addChild JH.nameText
         @myStage.addChild @
@@ -131,7 +85,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       card = @cardsById[cardId]
       cardSprite = @cardSprites[cardId]
       costSprite = @createCostSprite(cardSprite, card.cost, JH.user.points >= card.cost, @library[cardId]?)
-      costSprite.position = {x:cardSprite.width/2, y:cardSprite.height/2}
+      costSprite.position = {x:cardSprite.width/2, y:cardSprite.height/2 - costSprite.height}
       if cardSprite.costSprite?
         cardSprite.removeChild cardSprite.costSprite
       cardSprite.costSprite = costSprite

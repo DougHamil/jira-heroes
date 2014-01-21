@@ -26,6 +26,7 @@ errors =
   MUST_ATTACK_TAUNT: 'Must attack a taunt card'
   CARD_CANNOT_ATTACK: 'Card cannot attack'
   CARD_USED: 'Card has already been used this turn'
+  MUST_TARGET_TAUNT: 'You must target a taunt card'
 
 errorObjs = {}
 for id, message of errors
