@@ -58,9 +58,9 @@
           y: this.height - this.healthIcon.height
         };
         this.addChild(this.frameSprite);
+        this.addChild(this.tauntFrameSprite);
         this.addChild(this.imageSprite.mask);
         this.addChild(this.imageSprite);
-        this.addChild(this.tauntFrameSprite);
         this.addChild(this.healthIcon);
         this.addChild(this.damageIcon);
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);

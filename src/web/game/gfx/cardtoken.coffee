@@ -35,9 +35,9 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @healthIcon.position = {x:@width - @healthIcon.width, y:@height - @healthIcon.height}
 
       @.addChild @frameSprite
+      @.addChild @tauntFrameSprite
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
-      @.addChild @tauntFrameSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
 

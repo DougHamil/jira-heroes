@@ -8,6 +8,7 @@ module.exports = (app, Users) ->
         res.redirect '/login'
       else
         # Update and save story points since last login
+        ###
         Users.updateStoryPoints username, password, user, (err, user) ->
           if err?
             res.send 500, err
@@ -16,6 +17,11 @@ module.exports = (app, Users) ->
             redir = if req.session.redir? then req.session.redir else '/'
             delete req.session.redir
             res.redirect redir
+        ###
+        req.session.user = user
+        redir = if req.session.redir? then req.session.redir else '/'
+        delete req.session.redir
+        res.redirect redir
 
   app.post '/user/find', (req, res) ->
     userIds = req.body.users
