@@ -1,4 +1,5 @@
 Errors = require './errors'
+Abilities = require './abilities'
 DrawCardAction = require './actions/drawcard'
 StartTurnAction = require './actions/startturn'
 ActionProcessor = require './actionprocessor'
@@ -29,6 +30,10 @@ class Battle
       # TEMP
       #player.deck.hero.health = 10
       @registerPlayer(player.userId, @players[player.userId])
+
+    # Restore passive abilities
+    for abilityModel in @model.passiveAbilities
+      @registerPassiveAbility Abilities.FromModel(abilityModel)
 
     # Start the battle if it's still in initial phase
     if @model.state.phase is 'initial'
@@ -74,12 +79,14 @@ class Battle
       @nextTurn()
 
   # Registers an ability as active and the ability will be passed all events
-  registerAbility: (ability) ->
+  registerPassiveAbility: (ability) ->
+    @model.passiveAbilities.push ability.model
     @abilities.push ability
 
   # Removes an ability from registry, this de-activates the ability.
-  unregisterAbility: (ability) ->
+  unregisterPassiveAbility: (ability) ->
     @abilities.splice(@abilities.indexOf(ability), 1)
+    @model.passiveAbilities.splice(@model.passiveAbilities.indexOf(ability.model), 1)
 
   processActions: (actions) ->
     return ActionProcessor.process(@, actions, @abilities)
@@ -198,6 +205,15 @@ class Battle
       return player.getHero()
     else
       return null
+
+  getPlayerOfCard: (cardId) ->
+    if cardId._id?
+      cardId = cardId._id
+    for _, p of @players
+      card = p.getCard(cardId)
+      if card?
+        return p.getModel()
+    return null
 
   getCardHandler: (cardId) ->
     return @cards[cardId]

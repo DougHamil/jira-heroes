@@ -2,7 +2,9 @@ HealAction = require '../actions/heal'
 Errors = require '../errors'
 
 class HealAbility
-  constructor: (@source, @data) ->
+  constructor: (@model) ->
+    @source = @model.sourceCard
+    @data = @model.data
 
   cast: (battle, target) ->
     if not target?

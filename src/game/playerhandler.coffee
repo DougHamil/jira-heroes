@@ -142,6 +142,7 @@ class PlayerHandler extends EventEmitter
   getUserId: -> return @player.userId
   getDeck: -> return @player.deck
   getHero: -> return @player.deck.hero
+  getModel: -> return @player
 
   hasCard: (cardId) ->
     return (@player.deck.cards.filter (c) -> c._id is cardId).length > 0

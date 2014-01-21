@@ -126,12 +126,12 @@ class CardHandler
   registerPassiveAbilities: ->
     if @passiveAbilities?
       for ability in @passiveAbilities
-        @battle.registerAbility ability
+        @battle.registerPassiveAbility ability
 
   unregisterPassiveAbilities: ->
     if @passiveAbilities?
       for ability in @passiveAbilities
-        @battle.unregisterAbility ability
+        @battle.unregisterPassiveAbility ability
 
   discard: ->
     @unregisterPassiveAbilities()

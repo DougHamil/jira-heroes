@@ -88,6 +88,7 @@ _playerSchema = new mongoose.Schema
 _schema = new mongoose.Schema
   users: [{type:String}]
   players: [_playerSchema]
+  passiveAbilities: [mongoose.Schema.Types.Mixed]
   state:
     phase: {type:String, default:'initial'}
     activePlayer: String

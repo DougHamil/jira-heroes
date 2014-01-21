@@ -1,7 +1,8 @@
 DamageAction = require '../actions/damage'
 
 class AttackAbility
-  constructor: (@source) ->
+  constructor: (@model) ->
+    @source = @model.sourceCard
 
   cast: (battle, target) ->
     # Simply return a damage action with the target and the card's damage
