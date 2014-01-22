@@ -17,7 +17,10 @@ newCardInstance = (userId) ->
           class:cardId
           health:card.health
           maxHealth:card.health
+          maxHealthBuff: 0
           damage:card.damage
+          damageBuff:0
+          used: false
           status: []
         cb null, out
 
@@ -33,7 +36,10 @@ newHeroInstance = (userId, hero, cb) ->
         class: heroClass._id
         health: heroClass.health
         maxHealth: heroClass.health
+        maxHealthBuff: 0
         damage: heroClass.damage
+        damageBuff: 0
+        used:false
       cb null, out
 
 # Transform a user and deck into a player instance
@@ -63,10 +69,13 @@ _cardSchema = new mongoose.Schema
   health: Number
   usedRushAbility: Boolean
   maxHealth: Number
+  maxHealthBuff: Number
   damage: Number
+  damageBuff: Number
   status: [String]
   effects: [String]
   position: String
+  used: Boolean
 
 # Represents a user in a battle, contains their energy, their deck (with hero and cards)
 _playerSchema = new mongoose.Schema
@@ -81,7 +90,10 @@ _playerSchema = new mongoose.Schema
       class: String
       health: Number
       maxHealth: Number
+      maxHealthBuff: Number
       damage: Number
+      damageBuff: Number
+      used: Boolean
     cards: [_cardSchema]
 
 # Represents a single battle
