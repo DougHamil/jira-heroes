@@ -4,14 +4,14 @@ require.config
     tween:
       exports: 'TWEEN'
   paths:
-    jquery: '../lib/jquery'
-    pixi: '../lib/pixi'
-    jiraheroes: '../lib/jiraheroes'
-    engine: '../lib/engine'
-    tween: '../lib/tween'
-    util: '../lib/util'
+    jquery: '../../lib/jquery'
+    pixi: '../../lib/pixi'
+    tween: '../../lib/tween'
+    jiraheroes: '../jiraheroes'
+    engine: '../engine'
+    util: '../util'
     gui: './gfx/gui'
-    eventemitter: '../lib/eventemitter'
+    eventemitter: '../eventemitter'
     battlehelpers: '../battlehelpers'
 
 define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engine, GUI, ViewManager) ->
