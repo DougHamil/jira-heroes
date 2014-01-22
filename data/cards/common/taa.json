@@ -1,0 +1,11 @@
+{
+	"name":"taa",
+	"displayName":"TAA Tool",
+	"cost":0,
+	"energy":1,
+	"health":1,
+	"damage":3,
+	"media": {
+		"image": ""
+	}
+}
