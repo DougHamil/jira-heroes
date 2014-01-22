@@ -6,12 +6,12 @@ require.config
   paths:
     jquery: '../lib/jquery'
     pixi: '../lib/pixi'
-    jiraheroes: '../lib/jiraheroes'
-    engine: '../lib/engine'
+    jiraheroes: '../jiraheroes'
+    engine: '../engine'
     tween: '../lib/tween'
-    util: '../lib/util'
+    util: '../util'
     gui: './gfx/gui'
-    eventemitter: '../lib/eventemitter'
+    eventemitter: '../eventemitter'
     battlehelpers: '../battlehelpers'
 
 define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engine, GUI, ViewManager) ->
