@@ -13,22 +13,23 @@ class Ability
   handle: (battle, actions) ->
 
 class Abilities
-  @Attack: (sourceCard) -> return @New('attack', sourceCard)
+  @Attack: (abilityId, sourceCard) -> return @New(abilityId, 'attack', sourceCard)
 
-  @New: (type, sourceCard, data) ->
+  @New: (abilityId, type, sourceCard, data) ->
     clazz = require('./abilities/'+type)
     # Stupid clone
     if data?
       data = JSON.parse(JSON.stringify(data))
     model =
+      _id: abilityId
       class:type
       data:data
       sourceCardId: sourceCard._id
       sourceCard: sourceCard
     return new clazz(model, false)
 
-  @NewFromModel: (sourceCard, model) ->
-    return @New(model.class, sourceCard, model.data)
+  @NewFromModel: (abilityId, sourceCard, model) ->
+    return @New(abilityId, model.class, sourceCard, model.data)
 
   # Restore an ability instance from a model
   @RestoreFromModel: (sourceCard, model) ->

@@ -1,4 +1,4 @@
-define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) ->
+define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engine, EventEmitter) ->
   ###
   # Handles changes to the battle's state
   ###
@@ -6,16 +6,18 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
     constructor:(@userId, @model, @socket) ->
       super
       @cardsById = {}
-      console.log @model
       for card in @model.you.hand
         @cardsById[card._id] = card
+        BattleHelpers.addCardMethods(card)
       for card in @model.you.field
         @cardsById[card._id] = card
+        BattleHelpers.addCardMethods(card)
       for opp in @model.opponents
         for card in opp.hand
           @cardsById[card] = card
         for card in opp.field
           @cardsById[card._id] = card
+          BattleHelpers.addCardMethods(card)
       @socket.on 'player-connected', (userId) => @onPlayerConnected(userId)
       @socket.on 'player-disconnected', (userId) => @onPlayerDisconnected(userId)
       @socket.on 'your-turn', (actions) => @processAndEmit('your-turn', actions)
@@ -30,18 +32,35 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
 
     process: (action) ->
       switch action.type
-        when 'card-status-add'
-          card = @getCard action.card
-          if card?
-            if not card.status?
-              card.status = []
-            card.status.push action.status
-        when 'card-status-remove'
-          card = @getCard action.card
-          if card?
-            if not card.status?
-              card.status = []
-            card.status = card.status.filter (s) -> s isnt action.status
+        when 'add-modifier'
+          target = @getCard action.target
+          if not target?
+            target = @getHero action.target
+          if target?
+            target.modifiers.push action.modifier
+            console.log target.getStatus()
+        when 'remove-modifier'
+          target = @getCard action.target
+          if not target?
+            target = @getHero action.target
+          if target?
+            target.modifiers = target.modifiers.filter (m) -> m._id isnt action.modifier
+        when 'status-add'
+          target = @getCard action.target
+          if not target?
+            target = @getHero action.target
+          if target?
+            if not target.status?
+              target.status = []
+            target.status.push action.status
+        when 'status-remove'
+          target = @getCard action.target
+          if not target?
+            target = @getHero action.target
+          if target?
+            if not target.status?
+              target.status = []
+            target.status = target.status.filter (s) -> s isnt action.status
         when 'heal'
           card = @getCard(action.target)
           if card?
@@ -68,6 +87,7 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
         when 'draw-card'
           if action.card._id?
             @cardsById[action.card._id] = action.card
+            BattleHelpers.addCardMethods(action.card)
           @getPlayer(action.player).hand.push action.card
         when 'max-energy'
           @getPlayer(action.player).maxEnergy += action.amount
@@ -76,10 +96,12 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
         when 'play-card'
           if action.card._id?
             @cardsById[action.card._id] = action.card
+            BattleHelpers.addCardMethods(action.card)
           @getPlayer(action.player).field.push action.card
         when 'cast-card'
           if action.card._id?
             @cardsById[action.card._id] = action.card
+            BattleHelpers.addCardMethods(action.card)
       console.log action
       @emit 'action-'+action.type, action
 
@@ -106,7 +128,10 @@ define ['util', 'engine', 'eventemitter', 'pixi'], (Util, engine, EventEmitter) 
 
     getConnectedPlayers: -> return @model.connectedPlayers
     getPhase: -> return @model.state.phase
-    getCard: (id) -> return @cardsById[id]
+    getCard: (id) ->
+      if id._id?
+        return id
+      return @cardsById[id]
     getCardsInHand: -> return @model.you.hand
     getEnemyCardsInHand: ->
       cards = []

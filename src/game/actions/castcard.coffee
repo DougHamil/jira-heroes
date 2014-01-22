@@ -12,7 +12,7 @@ class CastCardAction
     cardHandler = battle.getCardHandler(@cardModel._id)
     player = battle.getPlayer(@cardModel.userId)
     actions = []
-    actions.push new EnergyAction(player, -(@cardModel.energy + @cardModel.energyBuff))
+    actions.push new EnergyAction(player, -@cardModel.getEnergy())
     PAYLOAD =
       type: 'cast-card'
       player: @cardModel.userId

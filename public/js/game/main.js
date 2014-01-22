@@ -15,7 +15,8 @@
       tween: '../lib/tween',
       util: '../lib/util',
       gui: './gfx/gui',
-      eventemitter: '../lib/eventemitter'
+      eventemitter: '../lib/eventemitter',
+      battlehelpers: '../battlehelpers'
     }
   });
 

@@ -9,13 +9,14 @@ class StartTurnDrawCardAbility
     @sourceCard = @model.sourceCard
     @amount = @model.data.amount
 
-  handle: (battle, actions) ->
+  filter: (battle, actions) ->
     player = battle.getPlayerOfCard(@sourceCard)
     for action in actions
       # Only draw if it's our player's end of turn
       if action instanceof StartTurnAction and player is action.player
         for i in [0...@amount]
           actions.push new DrawCardAction(player)
-        break
+        return true
+    return false
 
 module.exports = StartTurnDrawCardAbility

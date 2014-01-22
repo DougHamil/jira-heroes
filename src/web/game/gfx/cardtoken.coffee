@@ -46,8 +46,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.hitArea = new PIXI.Rectangle 0, 0, @width, @height
       @.interactive = true
 
-      @setTaunt ('taunt' in card.status)
-      @setFrozen ('frozen' in card.status)
+      @setTaunt ('taunt' in card.getStatus())
+      @setFrozen ('frozen' in card.getStatus())
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
