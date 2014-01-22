@@ -2,10 +2,10 @@
 	"name":"naicdashboard",
 	"displayName":"NAIC Dashboard",
 	"cost":0,
-	"energy":2,
+	"energy":3,
 	"health":4,
 	"damage":2,
 	"media": {
-		"image": ""
+		"image": "common/naicdashboard.png"
 	}
 }

@@ -1,0 +1,11 @@
+{
+	"name":"naictieouts",
+	"displayName":"NAIC Tieouts",
+	"cost":0,
+	"energy":3,
+	"health":2,
+	"damage":4,
+	"media": {
+		"image": "common/naictieouts.png"
+	}
+}
