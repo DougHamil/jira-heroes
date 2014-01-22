@@ -118,7 +118,7 @@ class CardHandler
       else
         target = @battle.getHero target.hero
     CardCache.get @model.class, (err, cardClass) =>
-      if @playerHandler.player.energy >= cardClass.energy
+      if @playerHandler.player.energy >= (@model.energy + @model.energyBuff)
         @_play target, cardClass, cb
       else
         cb Errors.NOT_ENOUGH_ENERGY

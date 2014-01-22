@@ -10,7 +10,8 @@ class PlayCardAction
     cardHandler.registerPassiveAbilities()
     @cardModel.position = 'field'
     actions = []
-    actions.push new EnergyAction(player, -@cardClass.energy)
+    actions.push new EnergyAction(player, -(@cardModel.energy + @cardModel.energyBuff))
+    # The rush trait indicates a card can be used immediately on the turn of play
     if 'rush' not in @cardClass.traits
       actions.push new CardStatusAddAction(@cardModel, 'sleeping')
     if 'taunt' in @cardClass.traits

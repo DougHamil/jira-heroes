@@ -15,6 +15,8 @@ newCardInstance = (userId) ->
           userId: userId
           position: 'deck'
           class:cardId
+          energy:card.energy
+          energyBuff: 0
           health:card.health
           maxHealth:card.health
           maxHealthBuff: 0
@@ -67,6 +69,8 @@ _cardSchema = new mongoose.Schema
   class: String
   userId: String
   health: Number
+  energy: Number
+  energyBuff: Number
   usedRushAbility: Boolean
   maxHealth: Number
   maxHealthBuff: Number
