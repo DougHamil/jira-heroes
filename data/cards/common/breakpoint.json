@@ -1,20 +1,20 @@
 {
-	"name":"codefreeze",
-	"displayName":"Code Freeze",
+	"name":"breakpoint",
+	"displayName":"Breakpoint",
 	"cost":0,
-	"energy":4,
+	"energy":2,
 	"health":0,
 	"damage":0,
 	"playAbility": {
 		"class":"multi_turn_status",
-		"text":"Freeze target for <turns> turns.",
+		"text":"Freeze target for <turns> turn.",
 		"requiresTarget": true,
 		"data":{
 			"status":"frozen",
-			"turns":3
+			"turns":1
 		}
 	},
 	"media": {
-		"image": "common/codefreeze.png"
+		"image": "common/breakpoint.png"
 	}
 }

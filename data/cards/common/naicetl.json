@@ -1,0 +1,11 @@
+{
+	"name":"naicetl",
+	"displayName":"NAIC ETL",
+	"cost":0,
+	"energy":4,
+	"health":3,
+	"damage":5,
+	"media": {
+		"image": "common/naicetl.png"
+	}
+}
