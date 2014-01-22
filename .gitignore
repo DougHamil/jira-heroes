@@ -2,7 +2,7 @@
 *.swp
 *.swo
 node_modules
-public/js/**/*
-!public/js/lib/**/*
+public/js
+!/public/js/lib/newfile.js
 config.json
 data.json
