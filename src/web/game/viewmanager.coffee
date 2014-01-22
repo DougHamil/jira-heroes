@@ -6,8 +6,7 @@ define ['./views/mainmenu',
         './views/hostbattle',
         './views/joinbattle',
         './views/battle',
-        'jiraheroes', 'engine'],
-        (
+        'jiraheroes', 'engine'], (
           MainMenu,
           Library,
           Decks,

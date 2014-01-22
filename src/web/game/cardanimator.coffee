@@ -112,6 +112,19 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
         tokenSprite.setHealth(@battle.getCard(cardId).health)
 
     onDamageAction: (action) ->
+      sourceSprite = @tokenSprites[action.source]
+      if sourceSprite?
+        targetSprite = @tokenSprites[action.target]
+        if not targetSprite?
+          targetSprite = @heroTokens[action.target]
+        if targetSprite?
+          origPosition = Util.clone(sourceSprite.position)
+          targetPosition = Util.clone(targetSprite.position)
+          tween = Util.spriteTween sourceSprite, sourceSprite.position, targetPosition, 500
+          backTween = Util.spriteTween sourceSprite, targetPosition, origPosition, 500
+          tween.onComplete ->
+            backTween.start()
+          tween.start()
       @updateCardHealth(action.target) # TODO: Show damage FX
       @updateHeroHealth(action.target)
     onHealAction: (action) ->
