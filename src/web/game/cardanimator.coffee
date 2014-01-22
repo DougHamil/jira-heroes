@@ -60,6 +60,7 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @battle.on 'action-cast-card', (action) => @onCastCardAction(action)
       @battle.on 'action-damage', (action) => @onDamageAction(action)
       @battle.on 'action-heal', (action) => @onHealAction(action)
+      @battle.on 'action-overheal', (action) => @onHealAction(action)
       @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
       @battle.on 'action-status-add', (action) => @onStatusAction(action)
       @battle.on 'action-status-remove', (action) => @onStatusAction(action)

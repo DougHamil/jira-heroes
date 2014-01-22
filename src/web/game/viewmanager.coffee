@@ -6,16 +6,17 @@ define ['./views/mainmenu',
         './views/hostbattle',
         './views/joinbattle',
         './views/battle',
-        'jiraheroes', 'engine'], (
-            MainMenu,
-            Library,
-            Decks,
-            CreateDeck,
-            EditDeck,
-            HostBattle,
-            JoinBattle,
-            Battle,
-            JH) ->
+        'jiraheroes', 'engine'],
+        (
+          MainMenu,
+          Library,
+          Decks,
+          CreateDeck,
+          EditDeck,
+          HostBattle,
+          JoinBattle,
+          Battle,
+          JH) ->
   class MenuManager
     constructor: (@stage) ->
       @views =
