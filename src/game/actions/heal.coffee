@@ -5,6 +5,8 @@ class HealAction
     totalHealed = @target.maxHealth - @target.health
     if totalHealed > @amount
       totalHealed = @amount
+    if totalHealed < 0
+      totalHealed = 0
     @target.health += totalHealed
     PAYLOAD =
       type: 'heal'
