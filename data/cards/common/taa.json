@@ -6,6 +6,6 @@
         "health":1,
         "damage":2,
         "media": {
-                "image": ""
+                "image": "common/taa.png"
         }
 }

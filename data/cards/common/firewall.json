@@ -1,18 +1,18 @@
 {
-	"name":"nullpointerexception",
-	"displayName":"Null Ptr Exception",
+	"name":"firewall",
+	"displayName":"Firewall",
 	"cost":0,
-	"energy":1,
+	"energy":2,
 	"health":0,
 	"damage":0,
 	"playAbility": {
-		"class":"damage",
-		"text":"Damage target minion or hero for <amount> health.",
+		"class":"overheal",
+		"text":"Add <amount> health, even above its max.",
 		"data":{
-			"amount":1
+			"amount":4
 		}
 	},
 	"media": {
-		"image": "common/nullpointerexception.png"
+		"image": "common/firewall.png"
 	}
 }
