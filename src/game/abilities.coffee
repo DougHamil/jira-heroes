@@ -33,6 +33,7 @@ class Abilities
   # Restore an ability instance from a model
   @RestoreFromModel: (sourceCard, model) ->
     clazz = require('./abilities/'+model.class)
+    model.sourceCard = sourceCard
     return new clazz(model, true)
 
 module.exports = Abilities
