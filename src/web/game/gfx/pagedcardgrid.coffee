@@ -31,6 +31,8 @@ define ['gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Text
           pageContainer = new PIXI.DisplayObjectContainer
       if cardIndex != 0
         @pages.push pageContainer
+      @.addChild @nextBtn
+      @.addChild @prevBtn
       @setPageIndex(0)
 
     nextPage: -> @setPageIndex (@pageIndex + 1)
@@ -39,6 +41,8 @@ define ['gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Text
       if @pageIndex? and index >= @pages.length or index < 0 or index is @pageIndex
         return
       else
+        if not @pageIndex? and index is 0 and @pages.length > 1
+          @nextBtn.visible = true
         if @pageIndex is 0
           @prevBtn.visible = true
         if @pageIndex is (@pages.length - 1)
