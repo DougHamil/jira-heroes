@@ -28,7 +28,7 @@ class CardHandler
     @cardClass = null
     # Spell cards have a "playAbility" property and do not have an attack ability
     if not @model.playAbility?
-      @attackAbility = Abilities.Attack @model
+      @attackAbility = Abilities.Attack @battle.getNextAbilityId(), @model
     else
       @attackAbility = null
 
@@ -36,7 +36,7 @@ class CardHandler
     return ability.cast @battle, target
 
   _castAbilityFromModel: (abilityModel, target) ->
-    ability = Abilities.New abilityModel.class, @model, abilityModel.data
+    ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
     return @_castAbility ability, target
 
   _useRush: (target, cardClass, cb) ->
@@ -77,8 +77,8 @@ class CardHandler
       else
         # Create passive ability objects, PlayCardAction will register them with the battle
         @passiveAbilities = []
-        for ability in cardClass.passiveAbilities
-          ability = Abilities.New ability.type, @, ability.data
+        for abilityModel in cardClass.passiveAbilities
+          ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
           @passiveAbilities.push ability
         actions.push Actions.PlayCard(@model, cardClass)
       cb null, @battle.processActions(actions)
@@ -118,20 +118,24 @@ class CardHandler
       else
         target = @battle.getHero target.hero
     CardCache.get @model.class, (err, cardClass) =>
-      if @playerHandler.player.energy >= cardClass.energy
+      if @playerHandler.player.energy >= @model.getEnergy()
         @_play target, cardClass, cb
       else
         cb Errors.NOT_ENOUGH_ENERGY
 
   registerPassiveAbilities: ->
+    actions = []
     if @passiveAbilities?
       for ability in @passiveAbilities
-        @battle.registerPassiveAbility ability
+        actions = actions.concat(@battle.registerPassiveAbility(ability))
+    return actions
 
   unregisterPassiveAbilities: ->
+    actions = []
     if @passiveAbilities?
       for ability in @passiveAbilities
-        @battle.unregisterPassiveAbility ability
+        actions = actions.concat(@battle.unregisterPassiveAbility(ability))
+    return actions
 
   discard: ->
     @unregisterPassiveAbilities()
@@ -139,12 +143,6 @@ class CardHandler
   returnToHand: (cb) ->
     @model.position = POSITION.HAND
     @unregisterPassiveAbilities()
-
-  @updateFieldCardsOnTurn: (fieldCards) ->
-    # On the next turn, remove the sleeping trait
-    for card in fieldCards
-      card.status = card.status.filter (t) -> t isnt 'sleeping'
-      card.used = false
 
   _getHeroOrCard: (obj) ->
     if obj.hero?

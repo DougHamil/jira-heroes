@@ -29,7 +29,7 @@ class PlayerHandler extends EventEmitter
           card = cardHandler.model
           # Card must be on field to be used
           if card.position is 'field'
-            if 'frozen' not in card.status
+            if 'frozen' not in card.getStatus()
               # Card use targeting a card
               if target.card?
                 targetCard = @battle.getCard(target.card)
@@ -37,7 +37,7 @@ class PlayerHandler extends EventEmitter
                 if targetCard? and targetCard.position is 'field' and targetCard isnt card
                   # If there is a taunt card on the field, then the target must be taunt
                   fieldCards = @battle.getFieldCards(targetCard.userId)
-                  fieldCards = fieldCards.filter (c) -> 'taunt' in c.status and 'frozen' not in c.status
+                  fieldCards = fieldCards.filter (c) -> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus()
                   if fieldCards.length is 0 or targetCard in fieldCards
                     cardHandler.use targetCard, (err, actions) =>
                       cb err if cb?
@@ -52,7 +52,7 @@ class PlayerHandler extends EventEmitter
                 hero = @battle.getHero(target.hero)
                 if hero?
                   # If a taunt card is deployed, then you must target the taunt first
-                  fieldCards = @battle.getFieldCards(hero.userId).filter (c) -> 'taunt' in c.status and 'frozen' not in c.status
+                  fieldCards = @battle.getFieldCards(hero.userId).filter (c) -> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus()
                   if fieldCards.length is 0
                     cardHandler.use hero, (err, actions) =>
                       cb err if cb?

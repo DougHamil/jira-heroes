@@ -4,10 +4,11 @@ class DiscardCardAction
   enact: (battle)->
     cardHandler = battle.getCardHandler(@cardModel._id)
     @cardModel.position = 'discard'
-    cardHandler.unregisterPassiveAbilities()
+    # Passive abilities, upon unregistration, may generate actions
+    actions = cardHandler.unregisterPassiveAbilities()
     PAYLOAD =
       type:'discard-card'
       card: @cardModel._id
-    return [PAYLOAD]
+    return [PAYLOAD,actions]
 
 module.exports = DiscardCardAction

@@ -1,6 +1,5 @@
-CardStatusAddAction = require '../actions/cardstatusadd'
-CardStatusRemoveAction = require '../actions/cardstatusremove'
-EndTurnAction = require '../actions/endturn'
+StatusAddAction = require '../actions/statusadd'
+RemoveModifierAction = require '../actions/removemodifier'
 
 ###
 # This ability applies a status to a card and then removes it after x turns
@@ -9,22 +8,29 @@ class MultiTurnStatusAbility
   constructor: (@model, isRestored) ->
     @status = @model.data.status
     @cardModel = @model.sourceCard
+    @model.modifierId = @model.modifierId || @model._id
 
-  cast: (battle, @target) ->
+  cast: (battle, target) ->
     battle.registerPassiveAbility @
-    return [new CardStatusAddAction(target, @status)]
+    # Track the target ID, so if this ability is persisted it can restored
+    @model.targetId = target._id
+    return [new StatusAddAction(@model.modifierId, target, @status)]
 
-  handle:(battle, actions) ->
-    player = battle.getPlayerOfCard(@target)
+  respond:(battle, payloads, actions) ->
+    target = battle.getCard(@model.targetId)
+    player = null
+    if not target?
+      target = battle.getHero(@model.targetId)
+    player = battle.getPlayer(target.userId)
+
     if player?
-      # Look for an end turn action
-      for action in actions
-        if action instanceof EndTurnAction and action.player is player
+      for payload in payloads
+        if payload.type is 'end-turn' and payload.player is player.userId
           @model.data.turns -= 1
-          console.log @model.data.turns
           if @model.data.turns <= 0
-            actions.push new CardStatusRemoveAction(@target, @status)
+            actions.push new RemoveModifierAction(@model.modifierId, target)
             battle.unregisterPassiveAbility @
-          break
+          return true
+    return false
 
 module.exports = MultiTurnStatusAbility
