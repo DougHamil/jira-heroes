@@ -61,8 +61,10 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @battle.on 'action-damage', (action) => @onDamageAction(action)
       @battle.on 'action-heal', (action) => @onHealAction(action)
       @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
-      @battle.on 'action-card-status-add', (action) => @onCardStatusAction(action)
-      @battle.on 'action-card-status-remove', (action) => @onCardStatusAction(action)
+      @battle.on 'action-status-add', (action) => @onStatusAction(action)
+      @battle.on 'action-status-remove', (action) => @onStatusAction(action)
+      @battle.on 'action-add-modifier', (action) => @updateToken(action.target)
+      @battle.on 'action-remove-modifier', (action) => @updateToken(action.target)
 
     buildHeroTokens: (hero, enemyHero, heroClasses) ->
       console.log heroClasses
@@ -73,16 +75,27 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       @tokenSpriteLayer.addChild @heroTokens[hero._id]
       @tokenSpriteLayer.addChild @heroTokens[enemyHero._id]
 
-    onCardStatusAction: (action) ->
-      card = @battle.getCard(action.card)
-      tokenSprite = @getTokenSprite(card)
-      tokenSprite.setTaunt(('taunt' in card.status)) if tokenSprite? and card?
-      tokenSprite.setFrozen(('frozen' in card.status)) if tokenSprite? and card?
+    updateToken: (tokenId) ->
+      card = @battle.getCard(tokenId)
+      tokenSprite = null
+      if card?
+        tokenSprite = @getTokenSprite(card)
+      else
+        card = @battle.getHero(tokenId)
+        tokenSprite = @heroTokens[tokenId]
+      if tokenSprite?
+        console.log card
+        tokenSprite.setTaunt(('taunt' in card.getStatus())) if tokenSprite? and card?
+        tokenSprite.setFrozen(('frozen' in card.getStatus())) if tokenSprite? and card?
+
+    onStatusAction: (action) ->
+      @updateToken(action.target)
 
     onDiscardCardAction: (action) ->
       # TODO: Instead handle destroy action and show FX for destroying card
       cardSprite = @getCardSprite @battle.getCard(action.card)
-      @putCardInDiscard @cardSprites[action.card].card
+      console.log cardSprite.card
+      @putCardInDiscard cardSprite.card
 
     updateHeroHealth: (heroId) ->
       heroSprite = @heroTokens[heroId]

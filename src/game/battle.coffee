@@ -33,7 +33,10 @@ class Battle
 
     # Restore passive abilities
     for abilityModel in @model.passiveAbilities
-      @registerPassiveAbility Abilities.FromModel(abilityModel)
+      sourceCard = @cards[abilityModel.sourceCardId]
+      sourceCard = sourceCard.model if sourceCard?
+      # Don't do the onregister callback again, because we're just restoring
+      @registerPassiveAbility Abilities.RestoreFromModel(sourceCard, abilityModel), false
 
     # Start the battle if it's still in initial phase
     if @model.state.phase is 'initial'
@@ -79,14 +82,28 @@ class Battle
       @nextTurn()
 
   # Registers an ability as active and the ability will be passed all events
-  registerPassiveAbility: (ability) ->
+  registerPassiveAbility: (ability, doCallback) ->
+    doCallback = true if not doCallback?
     @model.passiveAbilities.push ability.model
     @abilities.push ability
+    if doCallback
+      actions = []
+      if ability.onRegistered?
+        actions = ability.onRegistered(@)
+      if not actions instanceof Array
+        actions = []
+      return actions
 
   # Removes an ability from registry, this de-activates the ability.
   unregisterPassiveAbility: (ability) ->
     @abilities.splice(@abilities.indexOf(ability), 1)
     @model.passiveAbilities.splice(@model.passiveAbilities.indexOf(ability.model), 1)
+    actions = []
+    if ability.onUnregistered?
+      actions = ability.onUnregistered(@)
+    if not actions instanceof Array
+      actions = []
+    return actions
 
   processActions: (actions) ->
     return ActionProcessor.process(@, actions, @abilities)
@@ -270,5 +287,9 @@ class Battle
         hand: player.getHandCards()
         deckSize: player.getDeckCards().length # Player doesn't get to know what card is in deck
       opponents: @getOpponentsData(user)
+
+  # Used to generate unique ability Ids
+  getNextAbilityId: ->
+    return @model.abilityId++
 
 module.exports = Battle

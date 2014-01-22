@@ -10,16 +10,16 @@ class EndTurnHealFriendly
     @healHero = @model.data.healHero
     @cardModel = @model.sourceCard
 
-  handle: (battle, actions) ->
+  respond: (battle, payloads, actions) ->
     player = battle.getPlayerOfCard(@cardModel)
-    for action in actions
-      # Only heal if this player's turn is over
-      if action instanceof EndTurnAction and player is action.player
+    for payload in payloads
+      if payload.type is 'end-turn' and payload.player is player.userId
         for minion in battle.getFieldCards(player)
           actions.push new HealAction(@cardModel, minion, @amount)
         if @healHero?
           hero = battle.getHero(player)
           actions.push new HealAction(@cardModel, hero, @amount)
-        break
+        return true
+    return false
 
 module.exports = EndTurnHealFriendly

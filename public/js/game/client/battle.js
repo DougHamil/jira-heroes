@@ -3,7 +3,7 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['util', 'engine', 'eventemitter', 'pixi'], function(Util, engine, EventEmitter) {
+  define(['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], function(Util, engine, EventEmitter) {
     /*
     # Handles changes to the battle's state
     */
@@ -20,16 +20,17 @@
         this.socket = socket;
         Battle.__super__.constructor.apply(this, arguments);
         this.cardsById = {};
-        console.log(this.model);
         _ref = this.model.you.hand;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           card = _ref[_i];
           this.cardsById[card._id] = card;
+          BattleHelpers.addCardMethods(card);
         }
         _ref1 = this.model.you.field;
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           card = _ref1[_j];
           this.cardsById[card._id] = card;
+          BattleHelpers.addCardMethods(card);
         }
         _ref2 = this.model.opponents;
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
@@ -43,6 +44,7 @@
           for (_m = 0, _len4 = _ref4.length; _m < _len4; _m++) {
             card = _ref4[_m];
             this.cardsById[card._id] = card;
+            BattleHelpers.addCardMethods(card);
           }
         }
         this.socket.on('player-connected', function(userId) {
@@ -75,24 +77,51 @@
       };
 
       Battle.prototype.process = function(action) {
-        var card, hero;
+        var card, hero, target;
         switch (action.type) {
-          case 'card-status-add':
-            card = this.getCard(action.card);
-            if (card != null) {
-              if (card.status == null) {
-                card.status = [];
-              }
-              card.status.push(action.status);
+          case 'add-modifier':
+            target = this.getCard(action.target);
+            if (target == null) {
+              target = this.getHero(action.target);
+            }
+            if (target != null) {
+              target.modifiers.push(action.modifier);
+              console.log(target.getStatus());
             }
             break;
-          case 'card-status-remove':
-            card = this.getCard(action.card);
-            if (card != null) {
-              if (card.status == null) {
-                card.status = [];
+          case 'remove-modifier':
+            target = this.getCard(action.target);
+            if (target == null) {
+              target = this.getHero(action.target);
+            }
+            if (target != null) {
+              target.modifiers = target.modifiers.filter(function(m) {
+                return m._id !== action.modifier;
+              });
+            }
+            break;
+          case 'status-add':
+            target = this.getCard(action.target);
+            if (target == null) {
+              target = this.getHero(action.target);
+            }
+            if (target != null) {
+              if (target.status == null) {
+                target.status = [];
               }
-              card.status = card.status.filter(function(s) {
+              target.status.push(action.status);
+            }
+            break;
+          case 'status-remove':
+            target = this.getCard(action.target);
+            if (target == null) {
+              target = this.getHero(action.target);
+            }
+            if (target != null) {
+              if (target.status == null) {
+                target.status = [];
+              }
+              target.status = target.status.filter(function(s) {
                 return s !== action.status;
               });
             }
@@ -132,6 +161,7 @@
           case 'draw-card':
             if (action.card._id != null) {
               this.cardsById[action.card._id] = action.card;
+              BattleHelpers.addCardMethods(action.card);
             }
             this.getPlayer(action.player).hand.push(action.card);
             break;
@@ -144,12 +174,14 @@
           case 'play-card':
             if (action.card._id != null) {
               this.cardsById[action.card._id] = action.card;
+              BattleHelpers.addCardMethods(action.card);
             }
             this.getPlayer(action.player).field.push(action.card);
             break;
           case 'cast-card':
             if (action.card._id != null) {
               this.cardsById[action.card._id] = action.card;
+              BattleHelpers.addCardMethods(action.card);
             }
         }
         console.log(action);
@@ -198,6 +230,9 @@
       };
 
       Battle.prototype.getCard = function(id) {
+        if (id._id != null) {
+          return id;
+        }
         return this.cardsById[id];
       };
 

@@ -1,5 +1,5 @@
 EnergyAction = require './energy'
-CardStatusAddAction = require './cardstatusadd'
+PermStatusAddAction = require './permstatusadd'
 
 class PlayCardAction
   constructor: (@cardModel, @cardClass) ->
@@ -7,14 +7,16 @@ class PlayCardAction
   enact: (battle)->
     cardHandler = battle.getCardHandler(@cardModel._id)
     player = battle.getPlayer(@cardModel.userId)
-    cardHandler.registerPassiveAbilities()
     @cardModel.position = 'field'
-    actions = []
-    actions.push new EnergyAction(player, -@cardClass.energy)
+
+    # Passive abilities, when registered, may generate activities
+    actions = cardHandler.registerPassiveAbilities()
+    actions.push new EnergyAction(player, -@cardModel.getEnergy())
+    # The rush trait indicates a card can be used immediately on the turn of play
     if 'rush' not in @cardClass.traits
-      actions.push new CardStatusAddAction(@cardModel, 'sleeping')
+      actions.push new PermStatusAddAction(@cardModel, 'sleeping')
     if 'taunt' in @cardClass.traits
-      actions.push new CardStatusAddAction(@cardModel, 'taunt')
+      actions.push new PermStatusAddAction(@cardModel, 'taunt')
     PAYLOAD =
       type: 'play-card'
       player: @cardModel.userId

@@ -2,9 +2,11 @@ class HealAction
   constructor: (@source, @target, @amount) ->
 
   enact: (battle)->
-    totalHealed = @target.maxHealth - @target.health
+    totalHealed = (@target.maxHealth + @target.maxHealthBuff) - @target.health
     if totalHealed > @amount
       totalHealed = @amount
+    if totalHealed < 0
+      totalHealed = 0
     @target.health += totalHealed
     PAYLOAD =
       type: 'heal'

@@ -1,4 +1,4 @@
-CardStatusRemoveAction = require './cardstatusremove'
+PermStatusRemoveAction = require './permstatusremove'
 
 class EndTurnAction
   constructor: (@player) ->
@@ -7,7 +7,7 @@ class EndTurnAction
     actions = []
     for card in battle.getFieldCards(@player)
       if 'sleeping' in card.status
-        actions.push new CardStatusRemoveAction(card, 'sleeping')
+        actions.push new PermStatusRemoveAction(card, 'sleeping')
       card.used = false
     PAYLOAD =
       type: 'end-turn'

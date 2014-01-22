@@ -67,8 +67,8 @@
         this.addChild(this.damageIcon);
         this.hitArea = new PIXI.Rectangle(0, 0, this.width, this.height);
         this.interactive = true;
-        this.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
-        this.setFrozen((__indexOf.call(card.status, 'frozen') >= 0));
+        this.setTaunt((__indexOf.call(card.getStatus(), 'taunt') >= 0));
+        this.setFrozen((__indexOf.call(card.getStatus(), 'frozen') >= 0));
       }
 
       CardToken.prototype.contains = function(point) {

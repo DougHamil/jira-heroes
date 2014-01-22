@@ -12,6 +12,7 @@ require.config
     util: '../lib/util'
     gui: './gfx/gui'
     eventemitter: '../lib/eventemitter'
+    battlehelpers: '../battlehelpers'
 
 define ['jquery', 'jiraheroes', 'engine', 'gui', './viewmanager'], ($, JH, engine, GUI, ViewManager) ->
   $(document).ready ->

@@ -134,11 +134,17 @@
         this.battle.on('action-discard-card', function(action) {
           return _this.onDiscardCardAction(action);
         });
-        this.battle.on('action-card-status-add', function(action) {
-          return _this.onCardStatusAction(action);
+        this.battle.on('action-status-add', function(action) {
+          return _this.onStatusAction(action);
         });
-        this.battle.on('action-card-status-remove', function(action) {
-          return _this.onCardStatusAction(action);
+        this.battle.on('action-status-remove', function(action) {
+          return _this.onStatusAction(action);
+        });
+        this.battle.on('action-add-modifier', function(action) {
+          return _this.updateToken(action.target);
+        });
+        this.battle.on('action-remove-modifier', function(action) {
+          return _this.updateToken(action.target);
         });
       }
 
@@ -152,22 +158,36 @@
         return this.tokenSpriteLayer.addChild(this.heroTokens[enemyHero._id]);
       };
 
-      CardAnimator.prototype.onCardStatusAction = function(action) {
+      CardAnimator.prototype.updateToken = function(tokenId) {
         var card, tokenSprite;
-        card = this.battle.getCard(action.card);
-        tokenSprite = this.getTokenSprite(card);
-        if ((tokenSprite != null) && (card != null)) {
-          tokenSprite.setTaunt((__indexOf.call(card.status, 'taunt') >= 0));
+        card = this.battle.getCard(tokenId);
+        tokenSprite = null;
+        if (card != null) {
+          tokenSprite = this.getTokenSprite(card);
+        } else {
+          card = this.battle.getHero(tokenId);
+          tokenSprite = this.heroTokens[tokenId];
         }
-        if ((tokenSprite != null) && (card != null)) {
-          return tokenSprite.setFrozen((__indexOf.call(card.status, 'frozen') >= 0));
+        if (tokenSprite != null) {
+          console.log(card);
+          if ((tokenSprite != null) && (card != null)) {
+            tokenSprite.setTaunt((__indexOf.call(card.getStatus(), 'taunt') >= 0));
+          }
+          if ((tokenSprite != null) && (card != null)) {
+            return tokenSprite.setFrozen((__indexOf.call(card.getStatus(), 'frozen') >= 0));
+          }
         }
+      };
+
+      CardAnimator.prototype.onStatusAction = function(action) {
+        return this.updateToken(action.target);
       };
 
       CardAnimator.prototype.onDiscardCardAction = function(action) {
         var cardSprite;
         cardSprite = this.getCardSprite(this.battle.getCard(action.card));
-        return this.putCardInDiscard(this.cardSprites[action.card].card);
+        console.log(cardSprite.card);
+        return this.putCardInDiscard(cardSprite.card);
       };
 
       CardAnimator.prototype.updateHeroHealth = function(heroId) {
