@@ -1,4 +1,4 @@
-define ['gfx/styles','util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine) ->
+define ['battle/row', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Row, STYLES, Util, engine) ->
   ###
   # Presents sprites as a row and allows sprites to be added and removed from the row
   ###

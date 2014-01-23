@@ -5,6 +5,7 @@ define ['jquery', 'pixi', 'tween'], ($) ->
   UTILS =
     clone:copy
     copy:copy
+    pointsEqual: (a, b) -> return a.x is b.x and a.y is b.y
     spriteTween:(sprite, from, to, time, options, onComplete) ->
       tween = new TWEEN.Tween(UTILS.copy(from))
         .to(UTILS.copy(to), time)
@@ -26,6 +27,17 @@ define ['jquery', 'pixi', 'tween'], ($) ->
       if onComplete?
         tween.onComplete(onComplete)
       return tween
+  ###
+  # Chain an array of tweens together
+  ###
+  chainTweens: (tweens) ->
+    if not tweens? or tweens.length is 0
+      return null
+    tween = tweens[0]
+    for i in [1...tweens.length]
+      tween.chain(tweens[i])
+      tween = tweens[i]
+    return tweens[0]
 
   return UTILS
 

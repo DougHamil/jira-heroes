@@ -1,4 +1,4 @@
-define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
+define ['battle/battlecard', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], (BattleCard, PlayerHand, $, GUI, engine, Util) ->
   DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
   ENEMY_DECK_ORIGIN = {x:engine.WIDTH + 200, y: 100}
   DISCARD_ORIGIN = {x:-200, y: 0}
@@ -24,27 +24,28 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
   class CardAnimator extends PIXI.DisplayObjectContainer
     constructor: (@heroClasses, @cardClasses, @userId, @battle) ->
       super
+      @cards = {}
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
+      @playerHand = new PlayerHand HAND_ORIGIN, HAND_PADDING, DEFAULT_TWEEN_TIME
       @flippedCardSprites = {}
-      @cardSprites = {}
-      @tokenSprites = {}
-      @cardTokens = {}
       @heroTokens = {}
       @buildHeroTokens(@battle.getHero(), @battle.getEnemyHero(), @heroClasses)
-      @handSpriteRow = new GUI.OrderedSpriteRow(HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
       @fieldSpriteRow = new GUI.OrderedSpriteRow(FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
       @enemyHandSpriteRow = new GUI.OrderedSpriteRow(ENEMY_HAND_ORIGIN, GUI.Card.Width, HAND_PADDING, HAND_ANIM_TIME)
       @enemyFieldSpriteRow = new GUI.OrderedSpriteRow(ENEMY_FIELD_ORIGIN, GUI.CardToken.Width, FIELD_PADDING, DEFAULT_TWEEN_TIME)
       for card in @battle.getCardsInHand()
+        @addCard(card)
         @putCardInHand card, false
       for card in @battle.getEnemyCardsInHand()
         @putEnemyCardInHand card, false
       for card in @battle.getCardsOnField()
+        @addCard(card)
         @putCardOnField card, false
       for card in @battle.getEnemyCardsOnField()
+        @addCard(card)
         @putEnemyCardOnField card, false
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = =>
@@ -429,3 +430,9 @@ define ['jquery', 'gui', 'engine', 'util', 'pixi'], ($, GUI, engine, Util) ->
       return s
 
     buildSpriteForCard: (card) -> new GUI.Card @cardClasses[card.class], card.damage, card.health, card.status
+
+    addCard: (card) ->
+      battleCard = new BattleCard @cardClasses[card.class], card
+      @cards[battleCard.getCardId()] = battleCard
+      @cardSpriteLayer.addChild battleCard.getCardSprite()
+      @tokenSpriteLayer.addChilid battleCard.getTokenSprite()
