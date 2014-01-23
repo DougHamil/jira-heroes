@@ -7,15 +7,15 @@ define ['./views/mainmenu',
         './views/joinbattle',
         './views/battle',
         'jiraheroes', 'engine'], (
-            MainMenu,
-            Library,
-            Decks,
-            CreateDeck,
-            EditDeck,
-            HostBattle,
-            JoinBattle,
-            Battle,
-            JH) ->
+          MainMenu,
+          Library,
+          Decks,
+          CreateDeck,
+          EditDeck,
+          HostBattle,
+          JoinBattle,
+          Battle,
+          JH) ->
   class MenuManager
     constructor: (@stage) ->
       @views =

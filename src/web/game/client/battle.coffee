@@ -69,6 +69,13 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
             hero = @getHero(action.target)
             if hero?
               hero.health += action.amount
+        when 'overheal'
+          card = @getCard(action.target)
+          if card?
+            card.health += action.amount
+          else
+            hero = @getHero(action.target)
+            hero.health += action.amount if hero?
         when 'damage'
           card = @getCard(action.target)
           if card?
