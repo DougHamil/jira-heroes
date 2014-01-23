@@ -17,9 +17,9 @@ define ['battle/animation', 'battle/row', 'gui', 'engine', 'util', 'pixi'], (Ani
         battleCard.setTokenVisible(false)
         battleCard.setCardPosition(@cardRow.getNextPosition())
       @cardRow.add battleCard
-      return tweens
+      return animation
 
-    buildReorderTweens: ->
+    buildReorderAnimation: ->
       tweens = []
       # Use the row to determine what the new positions should be
       newPositions = @cardRow.getElementPositions()
@@ -32,4 +32,6 @@ define ['battle/animation', 'battle/row', 'gui', 'engine', 'util', 'pixi'], (Ani
         newPosition = newPositionsByCardId[cardId]
         if not Util.pointsEqual(currentPosition, newPosition)
           tweens = tweens.concat(battleCard.moveCardTo(newPosition, @animTime, false))
-      return tweens
+      animation = new Animation()
+      animation.addTweenStep tweens, 'reorder-hand'
+      return animation

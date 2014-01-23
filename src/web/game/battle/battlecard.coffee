@@ -1,14 +1,18 @@
-define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, engine, Util) ->
-  class BattleCard
+define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (EventEmitter, Animation, GUI, engine, Util) ->
+  class BattleCard extends EventEmitter
     constructor: (@cardClass, @card) ->
+      super
       @cardSprite = new GUI.Card cardClass, card.damage, card.health, card.status
       @tokenSprite = new GUI.CardToken card, cardClass
+      @cardSprite.visible = false
+      @tokenSprite.visible = false
 
     makeCardVisible: ->
       if @cardSprite.visible
         return new Animation()
       else
         # TODO: Create some animation for turning the token back into a card
+        @setCardVisible(true)
         return new Animation()
 
     makeTokenVisible: ->
@@ -22,6 +26,13 @@ define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, e
     # enable/disable the interactivity of a card (ie can the player cast/play it?)
     ###
     setCardInteractive: (isInteractive) ->
+      if isInteractive
+        @cardSprite.onHoverStart => @emit 'card-hover-start', @
+        @cardSprite.onHoverEnd => @emit 'card-hover-end', @
+        @cardSprite.onMouseDown => @emit 'card-mouse-down', @
+        @cardSprite.onMouseUp => @emit 'card-mouse-up', @
+      else
+        @cardSprite.removeAllInteractions()
     ###
     # enable/disable the interactivity of a token (ie can the player cast/play it?)
     ###

@@ -26,6 +26,7 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       @socket.on 'action', (actions) => @processAndEmit 'action', actions
 
     processAndEmit: (event, actions) ->
+      @emit 'start-'+event, actions
       for action in actions
         @process(action)
       @emit event, actions
