@@ -8,7 +8,7 @@
         "passiveAbilities":[
                 {
                         "class":"end_turn_heal_friendly",
-                        "text":"Heal player by <amount> at the end of your turn"
+                        "text":"Heal player by <amount> at the end of your turn",
                         "data":{
                                 "amount":1,
                                 "healHero":true

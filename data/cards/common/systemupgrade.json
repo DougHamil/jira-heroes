@@ -1,0 +1,20 @@
+{
+        "name":"systemupgrade",
+        "displayName":"System Upgrade",
+        "cost":0,
+        "energy":2,
+        "health":0,
+        "damage":0,
+        "playAbility": {
+                "class":"damage_all",
+                "text":"Damage all in play minions by <amount>",
+                "requiresTarget": false,
+                "data": {
+                    "amount":1,
+                    "damageMinions":true
+              }
+        },
+        "media": {
+                "image": "common/systemupgrade.png"
+        }
+}
