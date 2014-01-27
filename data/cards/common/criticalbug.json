@@ -1,0 +1,13 @@
+{
+	"name":"criticalbug",
+	"displayName":"Critical Bug",
+	"cost":0,
+	"energy":8,
+	"health":8,
+	"damage":3,
+	"traits":["taunt"],
+	"passiveAbilities":[],
+	"media": {
+		"image": "common/criticalbug.png"
+	}
+}

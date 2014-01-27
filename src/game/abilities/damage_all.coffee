@@ -12,12 +12,12 @@ class DamageAllAbility
 
   cast: (battle, target) ->
     actions = []
-    for player in battle.players
+    for playerid, player of battle.players
       if @damageHero? and @damageHero
         hero = battle.getHero(player)
         actions.push new DamageAction(@cardModel, hero, @amount)
       if @damageMinions? and @damageMinions
-        for minion in battle.getFieldCards(player)
+        for minion in battle.getFieldCards(playerid)
           actions.push new DamageAction(@cardModel, minion, @amount)
     return actions
 
