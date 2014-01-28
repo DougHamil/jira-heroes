@@ -28,6 +28,7 @@ errors =
   CARD_USED: 'Card has already been used this turn'
   MUST_TARGET_TAUNT: 'You must target a taunt card'
   FROZEN: 'You cannot use a frozen card or hero'
+  FULL_FIELD: 'Field is full, you cannot play any more minions on the field'
 
 errorObjs = {}
 for id, message of errors
