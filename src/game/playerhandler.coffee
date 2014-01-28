@@ -5,8 +5,6 @@ CardHandler = require './cardhandler'
 Errors = require './errors'
 Events = require './events'
 
-MAX_FIELD_CARDS = 5
-
 ###
 # Handles a player within a battle by responding and validating client socket events
 # and emitting valid events which the battle can listen to
@@ -89,15 +87,12 @@ class PlayerHandler extends EventEmitter
     (cardId, target, cb) =>
       cardHandler = @getCardHandler(cardId)
       if @model.state.phase is 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
-        if @getFieldCards.length() < MAX_FIELD_CARDS
-          cardHandler.play target, (err, actions) =>
-            if err?
-              cb err
-            else
-              @emit Events.PLAY_CARD, cardHandler.model, actions
-              cb null, cardHandler.model
-        else
-          cb Errors.FULL_FIELD if cb?
+        cardHandler.play target, (err, actions) =>
+          if err?
+            cb err
+          else
+            @emit Events.PLAY_CARD, cardHandler.model, actions
+            cb null, cardHandler.model
       else
         cb Errors.INVALID_ACTION if cb?
 

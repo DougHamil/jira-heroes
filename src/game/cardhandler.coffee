@@ -5,6 +5,8 @@ Errors = require './errors'
 Actions = require './actions'
 Events = require './events'
 
+MAX_FIELD_CARDS = 5
+
 TRAIT =
   RUSH: 'rush'
   TAUNT: 'taunt'
@@ -119,9 +121,12 @@ class CardHandler
         target = @battle.getHero target.hero
     CardCache.get @model.class, (err, cardClass) =>
       if @playerHandler.player.energy >= @model.getEnergy()
-        @_play target, cardClass, cb
+        if cardClass.playAbility.class? or @playerHandler.getFieldCards().length < MAX_FIELD_CARDS
+          @_play target, cardClass, cb
+        else
+          cb Errors.FULL_FIELD if cb?
       else
-        cb Errors.NOT_ENOUGH_ENERGY
+        cb Errors.NOT_ENOUGH_ENERGY if cb?
 
   registerPassiveAbilities: ->
     actions = []
