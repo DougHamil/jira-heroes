@@ -3,6 +3,12 @@ define ['gfx/styles','util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine) 
     constructor: (@origin, @widthPerElement, @padding) ->
       @elements = []
 
+    getPositionOf: (element) ->
+      for el, i in @elements
+        if el is element
+          return @getPositionAt(i)
+      return null
+
     getPositionAt: (idx) -> return {x: @origin.x + (@widthPerElement * idx) + (@padding * idx), y: @origin.y}
     getNextPosition: -> return @getPositionAt(@elements.length)
 
