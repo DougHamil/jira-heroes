@@ -4,7 +4,7 @@
 	"cost":0,
 	"energy":4,
 	"health":5,
-	"damage":1,
+	"damage":2,
 	"traits":["taunt"],
 	"passiveAbilities":[],
 	"media": {
