@@ -40,11 +40,27 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         cardSprite.onMouseUp => @emit 'card-mouse-up', @
       else
         cardSprite.removeAllInteractions()
+        @clearEvent 'card-hover-start'
+        @clearEvent 'card-hover-end'
+        @clearEvent 'card-mouse-down'
+        @clearEvent 'card-mouse-up'
 
     ###
     # enable/disable the interactivity of a token (ie can the player cast/play it?)
     ###
     setTokenInteractive: (isInteractive) ->
+      tokenSprite = @getTokenSprite()
+      if isInteractive
+        tokenSprite.onHoverStart => @emit 'token-hover-start', @
+        tokenSprite.onHoverEnd => @emit 'token-hover-end', @
+        tokenSprite.onMouseDown => @emit 'token-mouse-down', @
+        tokenSprite.onMouseUp => @emit 'token-mouse-up', @
+      else
+        tokenSprite.removeAllInteractions()
+        @clearEvent 'token-hover-start'
+        @clearEvent 'token-hover-end'
+        @clearEvent 'token-mouse-down'
+        @clearEvent 'token-mouse-up'
 
 
     ###
@@ -92,9 +108,12 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     # Getters make me feel better
     isCardVisible: -> return @cardSprite.visible
     isTokenVisible: -> return @tokenSprite.visible
+    isMinionCard: -> return @hasCard and not @cardClass.playAbility?
+    isSpellCard: -> return @hasCard and @cardClass.playAbility?
     getFlippedCardSprite: -> return @flippedCardSprite
     getAvailableCardSprite: -> return if @hasCard then @cardSprite else @flippedCardSprite
     getCardSprite: -> return @cardSprite
+    getCardPosition: -> return @getAvailableCardSprite().position
     getTokenSprite: -> return @tokenSprite
     getCard: -> return @card
     getCardClass: -> return @cardClass

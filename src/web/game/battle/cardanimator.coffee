@@ -4,7 +4,7 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
   DISCARD_ORIGIN = {x:-200, y: 0}
   FIELD_PADDING = 50
   HOVER_ANIM_TIME = 200
-  DEFAULT_TWEEN_TIME = 400
+  DEFAULT_TWEEN_TIME = 200
   TOKEN_CARD_OFFSET = 10
   FIELD_AREA = new PIXI.Rectangle 10, 400, engine.WIDTH - 20, 220
   FIELD_ORIGIN = {x:20, y:FIELD_AREA.y + 10}
@@ -17,10 +17,10 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
     padding: 20
     animationTime: DEFAULT_TWEEN_TIME
   PLAYER_HAND_CONFIG =
-    handHoverOffset: 50
     animationTime: DEFAULT_TWEEN_TIME
     origin: {x:20, y:engine.HEIGHT + 50 - GUI.Card.Height}
     padding: 20
+    hoverOffset: {x: 0, y: -50}
 
   ###
   # Manages all card sprites in the battle by positioning and animating them
@@ -32,10 +32,12 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       @cards = {}
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
+      @uiLayer = new PIXI.DisplayObjectContainer()
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
-      @playerHand = new PlayerHand PLAYER_HAND_CONFIG
-      @enemyHand = new PlayerHand ENEMY_HAND_CONFIG
+      @.addChild @uiLayer
+      @playerHand = new PlayerHand PLAYER_HAND_CONFIG, @uiLayer
+      @enemyHand = new PlayerHand ENEMY_HAND_CONFIG, @uiLayer
       anim = new Animation()
       for card in @battle.getCardsInHand()
         @addCard(card)
@@ -45,8 +47,10 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
         anim.addAnimationStep(@putCardInEnemyHand(cardId, true), 'enemy-card-in-hand-'+cardId)
       anim.play()
       anim.on 'complete-step', (step) -> console.log step
+      @playerHand.on 'card-dropped', (battleCard, position) => @onCardDropped(battleCard, position)
+      @playerHand.on 'card-target', (battleCard, position) => @onCardTarget(battleCard, position)
       engine.updateCallbacks.push => @update()
-      document.body.onmouseup = =>
+      document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @animateActions(actions)
       @battle.on 'your-turn', (actions) => @animateActions(actions)
       ###
@@ -92,14 +96,34 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
     putCardInEnemyHand: (cardId, animate) ->
       animate = true if not animate? # Default to animate
       battleCard = @getBattleCard(cardId)
-      return @enemyHand.addCard battleCard, animate
+      return @enemyHand.addCard battleCard, animate, false
 
     putCardInHand: (card, animate) ->
       animate = true if not animate?  # Default to animate
       battleCard = @getBattleCard(card)
-      return @playerHand.addCard battleCard, animate
+      return @playerHand.addCard battleCard, animate, true
+
+    onCardTarget: (battleCard, position) ->
+      # TODO: Determine the target at the given position
+      @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
+        if err?
+          @playerHand.returnCardToHand(battleCard).play()
+
+    # Called when a card is dropped from the player's hand (ie, player wants to play card)
+    onCardDropped: (battleCard, position) ->
+      if FIELD_AREA.contains(position.x, position.y)
+        @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
+          if err?
+            @playerHand.returnCardToHand(battleCard).play()
 
     update: ->
+      @playerHand.update()
+      @enemyHand.update()
+
+    onMouseUp: ->
+      position = @stage.getMousePosition().clone()
+      @playerHand.onMouseUp(position)
+      @enemyHand.onMouseUp(position)
 
     getBattleCard: (card) ->
       if card._id?

@@ -11,6 +11,10 @@ define [], ->
         @events[event] = []
       @events[event].push cb
 
+    clearEvent: (event) ->
+      if @events[event]?
+        @events[event] = []
+
     emit: (event, args...) ->
       if @events[event]?
         for cb in @events[event]

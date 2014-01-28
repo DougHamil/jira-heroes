@@ -113,3 +113,6 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
             chunk = "[UNKNOWN: #{prop}]"
         string += (chunk + ' ')
       return new PIXI.Text string, styles.CARD_DESCRIPTION
+
+    getCenterPosition: ->
+      return {x:@.position.x + @width/2, y:@.position.y + @height/2}

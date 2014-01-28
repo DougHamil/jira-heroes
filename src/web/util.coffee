@@ -6,6 +6,8 @@ define ['jquery', 'pixi', 'tween'], ($) ->
     clone:copy
     copy:copy
     pointsEqual: (a, b) -> return a.x is b.x and a.y is b.y
+    pointSubtract: (a, b) -> return {x: a.x - b.x, y: a.y - b.y}
+    pointAdd: (a, b) -> return {x: a.x + b.x, y: a.y + b.y}
     spriteTween:(sprite, from, to, time, options, onComplete) ->
       tween = new TWEEN.Tween(UTILS.copy(from))
         .to(UTILS.copy(to), time)
@@ -27,6 +29,12 @@ define ['jquery', 'pixi', 'tween'], ($) ->
       if onComplete?
         tween.onComplete(onComplete)
       return tween
+    drawArrow: (src, tgt) ->
+      graphics = new PIXI.Graphics()
+      graphics.lineStyle 5, 0xFF0000
+      graphics.moveTo src.x, src.y
+      graphics.lineTo tgt.x, tgt.y
+      return graphics
   ###
   # Chain an array of tweens together
   ###
