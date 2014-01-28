@@ -3,11 +3,6 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
   ENEMY_DECK_ORIGIN = {x:engine.WIDTH + 200, y: 100}
   DISCARD_ORIGIN = {x:-200, y: 0}
   FIELD_PADDING = 50
-  ENEMY_HAND_ORIGIN = {x:20, y:-100}
-  HAND_ANIM_TIME = 1000
-  HAND_HOVER_OFFSET = 50
-  HAND_ORIGIN = {x:20, y:engine.HEIGHT + HAND_HOVER_OFFSET - GUI.Card.Height}
-  HAND_PADDING = 20
   HOVER_ANIM_TIME = 200
   DEFAULT_TWEEN_TIME = 400
   TOKEN_CARD_OFFSET = 10
@@ -16,6 +11,16 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
   ENEMY_FIELD_ORIGIN = {x:20, y: 160}
   HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:FIELD_ORIGIN.y}
   ENEMY_HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:ENEMY_FIELD_ORIGIN.y}
+  ENEMY_HAND_CONFIG =
+    handHoverOffset: 50
+    origin: {x:20, y: -100}
+    padding: 20
+    animationTime: DEFAULT_TWEEN_TIME
+  PLAYER_HAND_CONFIG =
+    handHoverOffset: 50
+    animationTime: DEFAULT_TWEEN_TIME
+    origin: {x:20, y:engine.HEIGHT + 50 - GUI.Card.Height}
+    padding: 20
 
   ###
   # Manages all card sprites in the battle by positioning and animating them
@@ -29,11 +34,15 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
-      @playerHand = new PlayerHand HAND_ORIGIN, HAND_PADDING, DEFAULT_TWEEN_TIME
+      @playerHand = new PlayerHand PLAYER_HAND_CONFIG
+      @enemyHand = new PlayerHand ENEMY_HAND_CONFIG
       anim = new Animation()
       for card in @battle.getCardsInHand()
         @addCard(card)
         anim.addAnimationStep(@putCardInHand(card, true), 'card-in-hand-'+card._id)
+      for cardId in @battle.getEnemyCardsInHand()
+        @addCardId cardId
+        anim.addAnimationStep(@putCardInEnemyHand(cardId, true), 'enemy-card-in-hand-'+cardId)
       anim.play()
       anim.on 'complete-step', (step) -> console.log step
       engine.updateCallbacks.push => @update()
@@ -68,7 +77,22 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
             @addCard(action.card)
             battleCard = @getBattleCard(action.card)
             return @playerHand.addCard battleCard, true
+        when 'play-card'
+          if action.player is @userId
+            # TODO: Move card to field
+            @putCardOnField(action.card, true)
+          else
+            # On play card, we'll finally know what the card data is for the enemy
+            @setCard action.card._id, action.card
+            @putCardOnField(action.card, true)
       return null
+
+    putCardOnField: (card, animate) ->
+
+    putCardInEnemyHand: (cardId, animate) ->
+      animate = true if not animate? # Default to animate
+      battleCard = @getBattleCard(cardId)
+      return @enemyHand.addCard battleCard, animate
 
     putCardInHand: (card, animate) ->
       animate = true if not animate?  # Default to animate
@@ -81,8 +105,21 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       if card._id?
         card = card._id
       return @cards[card]
+
+    setCard:(cardId, card) ->
+      battleCard = @cards[cardId]
+      battleCard.setCard(@cardClasses[card.class], card)
+      @cardSpriteLayer.addChild battleCard.getCardSprite()
+      @tokenSpriteLayer.addChild battleCard.getTokenSprite()
+
+    addCardId:(cardId) ->
+      battleCard = new BattleCard(cardId, null,null)
+      @cards[cardId] = battleCard
+      @cardSpriteLayer.addChild battleCard.getFlippedCardSprite()
+
     addCard: (card) ->
-      battleCard = new BattleCard @cardClasses[card.class], card
+      battleCard = new BattleCard card._id, @cardClasses[card.class], card
       @cards[battleCard.getCardId()] = battleCard
+      @cardSpriteLayer.addChild battleCard.getFlippedCardSprite()
       @cardSpriteLayer.addChild battleCard.getCardSprite()
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
