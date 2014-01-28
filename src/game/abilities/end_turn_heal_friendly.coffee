@@ -8,14 +8,16 @@ class EndTurnHealFriendly
   constructor: (@model) ->
     @amount = @model.data.amount
     @healHero = @model.data.healHero
+    @healMinions = @model.data.healMinions
     @cardModel = @model.sourceCard
 
   respond: (battle, payloads, actions) ->
     player = battle.getPlayerOfCard(@cardModel)
     for payload in payloads
       if payload.type is 'end-turn' and payload.player is player.userId
-        for minion in battle.getFieldCards(player)
-          actions.push new HealAction(@cardModel, minion, @amount)
+        if @healMinions?
+          for minion in battle.getFieldCards(player)
+            actions.push new HealAction(@cardModel, minion, @amount)
         if @healHero?
           hero = battle.getHero(player)
           actions.push new HealAction(@cardModel, hero, @amount)
