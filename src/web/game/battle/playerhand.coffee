@@ -1,10 +1,11 @@
 define ['battle/animation', 'battle/row', 'gui', 'engine', 'util', 'pixi'], (Animation, Row, GUI, engine, Util) ->
   class PlayerHand
-    constructor: (origin, padding, @animTime) ->
+    constructor: (config) ->
+      @animTime = config.animationTime
       @cards = {}
-      @cardRow = new Row origin, GUI.Card.Width, padding
+      @cardRow = new Row config.origin, GUI.Card.Width, config.padding
 
-    addCard: (battleCard, doAnimation) ->
+    addCard: (battleCard, doAnimation, enableInteraction) ->
       doAnimation = true if not doAnimation? # default to true
       @cards[battleCard.getId()] = battleCard
       animation = null
@@ -12,10 +13,13 @@ define ['battle/animation', 'battle/row', 'gui', 'engine', 'util', 'pixi'], (Ani
         animation = new Animation()
         animation.addAnimationStep battleCard.makeCardVisible(), 'card-visible'
         animation.addAnimationStep battleCard.moveCardTo(@cardRow.getNextPosition(), @animTime, false), 'card-moved'
+        if enableInteraction
       else
         battleCard.setCardVisible(true)
         battleCard.setTokenVisible(false)
         battleCard.setCardPosition(@cardRow.getNextPosition())
+        if enableInteraction
+          battleCard.setInteractive(true)
       @cardRow.add battleCard
       return animation
 
