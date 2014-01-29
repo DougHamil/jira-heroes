@@ -12,7 +12,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       if cardClass? and card?
         @setCard(cardClass, card)
 
-    makeDamage: (damageAmount) ->
     flipCard: ->
       @cardSprite.position = @flippedCardSprite.position
       @setFlippedCardVisible(false)
