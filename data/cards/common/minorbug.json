@@ -1,0 +1,13 @@
+{
+	"name":"minorbug",
+	"displayName":"Minor Bug",
+	"cost":0,
+	"energy":2,
+	"health":3,
+	"damage":1,
+	"traits":["taunt"],
+	"passiveAbilities":[],
+	"media": {
+		"image": "common/minorbug.png"
+	}
+}
