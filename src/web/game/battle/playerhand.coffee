@@ -30,6 +30,8 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       @cardRow.add battleCard
       return animation
 
+    hasCard: (card) -> return @cards[card.getId()]?
+
     returnCardToHand: (battleCard, disableInteraction) ->
       if @cards[battleCard.getId()]?
         animation = new Animation()
@@ -61,10 +63,10 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
         battleCard.hoverAnimation = battleCard.moveCardTo(handPosition, @animTime, false)
         battleCard.hoverAnimation.play()
       # Minion cards are draggable
-      if battleCard.isMinionCard()
+      if battleCard.isMinionCard() or (battleCard.isSpellCard() and not battleCard.requiresTarget())
         battleCard.on 'card-mouse-down', => @_beginCardDrag(battleCard)
         battleCard.on 'card-mouse-up', => @_endCardDrag(battleCard)
-      else if battleCard.isSpellCard()
+      else if battleCard.isSpellCard() and battleCard.requiresTarget()
         battleCard.on 'card-mouse-down', => @_beginCardTarget(battleCard)
 
     onMouseUp: (position) ->
@@ -109,7 +111,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       for pos in newPositions
         newPositionsByCardId[pos.element.getId()] = pos.position
       for cardId, battleCard of @cards
-        cardSprite = battleCard.getCardSprite()
+        cardSprite = battleCard.getAvailableCardSprite()
         currentPosition = cardSprite.position
         newPosition = newPositionsByCardId[cardId]
         if not Util.pointsEqual(currentPosition, newPosition)

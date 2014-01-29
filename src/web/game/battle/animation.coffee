@@ -16,13 +16,28 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
       @isPlaying = false
       @steps = []
 
-    # Nested animations
-    addAnimationStep: (animation, id) ->
+    addUnchainedAnimationStep:(animation, id) ->
       if not animation?
         return
       step =
         id: id
         animation: animation
+        chained: false
+      @steps.push step
+
+    # Nested animations
+    addAnimationStep: (animation, id) ->
+      if not animation?
+        return
+      animationFunc = null
+      if typeof animation is 'function'
+        animationFunc = animation
+        animation = null
+      step =
+        id: id
+        animation: animation
+        animationFunc: animationFunc
+        chained: true
       @steps.push step
 
     addTweenStep: (tweens, id) ->
@@ -63,6 +78,8 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
     _playNext: (idx) ->
       if idx < @steps.length
         step = @steps[idx]
+        if step.animationFunc?
+          step.animation = step.animationFunc()
         if step.tweens?
           totalSteps = step.tweens.length
           if totalSteps > 0
@@ -77,10 +94,14 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
           else
             @_playNextHandler(step, idx)()
         else if step.animation?
-          @activeAnimation = step.animation
-          # Listen for completion of animation
-          @activeAnimation.on EVENT.COMPLETE, @_playNextHandler(step, idx)
-          @activeAnimation.play()
+          if step.chained
+            @activeAnimation = step.animation
+            # Listen for completion of animation
+            @activeAnimation.on EVENT.COMPLETE, @_playNextHandler(step, idx)
+            @activeAnimation.play()
+          else
+            step.animation.play()
+            @_playNextHandler(step, idx)()
         @emit EVENT.START_STEP, step.id
       else
         @_complete()

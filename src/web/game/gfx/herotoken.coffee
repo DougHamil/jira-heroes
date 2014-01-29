@@ -47,7 +47,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
-      return @hitArea.contains(point.x, point.y)
+      return @visible and @hitArea.contains(point.x, point.y)
 
     createImageMask: ->
       mask = new PIXI.Graphics()

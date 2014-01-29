@@ -12,6 +12,12 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       if cardClass? and card?
         @setCard(cardClass, card)
 
+    flipCard: ->
+      @cardSprite.position = @flippedCardSprite.position
+      @setFlippedCardVisible(false)
+      @setCardVisible(true)
+      return new Animation()
+
     makeCardVisible: ->
       cardSprite = @getAvailableCardSprite()
       if cardSprite.visible
@@ -19,6 +25,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       else
         # TODO: Create some animation for turning the token back into a card
         @setCardVisible(true)
+        @setTokenVisible(false)
         return new Animation()
 
     makeTokenVisible: ->
@@ -26,6 +33,9 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         return new Animation()
       else
         # TODO: Create some animation for turning the card into a token
+        @setTokenVisible(true)
+        @setCardVisible(false)
+        @setFlippedCardVisible(false)
         return new Animation()
 
     ###
@@ -85,6 +95,25 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.addTweenStep tween, 'token-move'
       return animation
 
+    buildCastAnimation: (target) ->
+      console.log target
+      animation = new Animation()
+      tween = null
+      # TODO: Figure out good cast animation system with particles and stuff
+      if not target?
+        tween = Util.spriteTween @tokenSprite, {rotation:@tokenSprite.rotation}, {rotation:@tokenSprite.rotation * 3}, 1000
+      else
+        tween = Util.spriteTween @tokenSprite, @tokenSprite.position, target.getPosition(), 500
+      animation.addTweenStep tween, 'cast'
+      return animation
+
+    containsPoint: (point) ->
+      if @isTokenVisible()
+        return @getTokenSprite().contains(point)
+      else if @isCardVisible()
+        return @getAvailableCardSprite().contains(point)
+      return false
+
     # Setters make me feel better
     setCardPosition: (position) ->
       cardSprite = @getAvailableCardSprite()
@@ -94,7 +123,9 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     setCardVisible: (vis) ->
       cardSprite = @getAvailableCardSprite()
       cardSprite.visible = vis
-    setTokenVisible: (vis) -> @tokenSprite.visible = vis
+      if cardSprite isnt @getFlippedCardSprite()
+        @getFlippedCardSprite.visible = !vis
+    setTokenVisible: (vis) -> @tokenSprite.visible = vis if @tokenSprite?
 
     setCard:(cardClass, card) ->
       @card = card
@@ -106,6 +137,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @tokenSprite.visible = false
 
     # Getters make me feel better
+    requiresTarget: -> return @hasCard and @cardClass.playAbility? and (not @cardClass.playAbility.requiresTarget? or @cardClass.playAbility.requiresTarget)
     isCardVisible: -> return @cardSprite.visible
     isTokenVisible: -> return @tokenSprite.visible
     isMinionCard: -> return @hasCard and not @cardClass.playAbility?
