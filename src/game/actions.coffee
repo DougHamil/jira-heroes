@@ -4,8 +4,8 @@ DiscardCardAction = require './actions/discardcard'
 DamageAction = require './actions/damage'
 
 class Actions
-  @CastCard: (cardModel, cardClass) ->
-    return new CastCardAction(cardModel, cardClass)
+  @CastCard: (cardModel, cardClass, target) ->
+    return new CastCardAction(cardModel, cardClass, target)
   @PlayCard: (cardModel, cardClass) ->
     return new PlayCardAction(cardModel, cardClass)
   @DiscardCard: (cardModel) ->

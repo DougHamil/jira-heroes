@@ -72,6 +72,10 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     onMouseDown: (cb) -> @.mousedown = => cb @ if cb?
     onMouseUp: (cb) -> @.mouseup = =>cb @ if cb?
 
+    contains: (point) ->
+      point = {x:point.x - @position.x, y:point.y - @position.y}
+      return @visible and @hitArea.contains(point.x, point.y)
+
     removeAllInteractions: ->
       @.mouseover = null
       @.mouseout = null

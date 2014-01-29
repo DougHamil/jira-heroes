@@ -1,16 +1,20 @@
-define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], (Animation, BattleCard, PlayerHand, $, GUI, engine, Util) ->
-  DECK_ORIGIN = {x:engine.WIDTH + 200, y: engine.HEIGHT}
-  ENEMY_DECK_ORIGIN = {x:engine.WIDTH + 200, y: 100}
+define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], (BasicTargetFx, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
   DISCARD_ORIGIN = {x:-200, y: 0}
-  FIELD_PADDING = 50
-  HOVER_ANIM_TIME = 200
   DEFAULT_TWEEN_TIME = 200
-  TOKEN_CARD_OFFSET = 10
-  FIELD_AREA = new PIXI.Rectangle 10, 400, engine.WIDTH - 20, 220
-  FIELD_ORIGIN = {x:20, y:FIELD_AREA.y + 10}
-  ENEMY_FIELD_ORIGIN = {x:20, y: 160}
-  HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:FIELD_ORIGIN.y}
-  ENEMY_HERO_ORIGIN = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y:ENEMY_FIELD_ORIGIN.y}
+  PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y: 400}
+  ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y: 160}
+  PLAYER_FIELD_CONFIG =
+    animationTime: 500
+    hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
+    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
+    origin: {x:20, y:400}
+    padding: 20
+  ENEMY_FIELD_CONFIG =
+    animationTime: 500
+    hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
+    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
+    origin: {x:20, y:160}
+    padding: 20
   ENEMY_HAND_CONFIG =
     handHoverOffset: 50
     origin: {x:20, y: -100}
@@ -38,60 +42,125 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       @.addChild @uiLayer
       @playerHand = new PlayerHand PLAYER_HAND_CONFIG, @uiLayer
       @enemyHand = new PlayerHand ENEMY_HAND_CONFIG, @uiLayer
+      @playerField = new PlayerField PLAYER_FIELD_CONFIG, @uiLayer
+      @enemyField = new PlayerField ENEMY_FIELD_CONFIG, @uiLayer
+      @setPlayerHero(@battle.getHero())
+      @setEnemyHero(@battle.getEnemyHero())
       anim = new Animation()
       for card in @battle.getCardsInHand()
         @addCard(card)
-        anim.addAnimationStep(@putCardInHand(card, true), 'card-in-hand-'+card._id)
+        anim.addAnimationStep(@putCardInHand(card, false), 'card-in-hand-'+card._id)
       for cardId in @battle.getEnemyCardsInHand()
         @addCardId cardId
-        anim.addAnimationStep(@putCardInEnemyHand(cardId, true), 'enemy-card-in-hand-'+cardId)
+        anim.addAnimationStep(@putCardInEnemyHand(cardId, false), 'enemy-card-in-hand-'+cardId)
+      for card in @battle.getCardsOnField()
+        @addCard(card)
+        anim.addAnimationStep(@putCardOnField(card, false), 'card-on-field-'+card._id)
+      for card in @battle.getEnemyCardsOnField()
+        @addCard(card)
+        anim.addAnimationStep(@putCardOnEnemyField(card, false), 'enemy-card-on-field'+card._id)
       anim.play()
-      anim.on 'complete-step', (step) -> console.log step
       @playerHand.on 'card-dropped', (battleCard, position) => @onCardDropped(battleCard, position)
       @playerHand.on 'card-target', (battleCard, position) => @onCardTarget(battleCard, position)
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @animateActions(actions)
       @battle.on 'your-turn', (actions) => @animateActions(actions)
-      ###
-      @battle.on 'action-draw-card', (action) => @onDrawCardAction(action)
-      @battle.on 'action-end-turn', (action) => @onEndTurnAction(action)
-      @battle.on 'action-play-card', (action) => @onPlayCardAction(action)
-      @battle.on 'action-cast-card', (action) => @onCastCardAction(action)
-      @battle.on 'action-damage', (action) => @onDamageAction(action)
-      @battle.on 'action-heal', (action) => @onHealAction(action)
-      @battle.on 'action-overheal', (action) => @onHealAction(action)
-      @battle.on 'action-discard-card', (action) => @onDiscardCardAction(action)
-      @battle.on 'action-status-add', (action) => @onStatusAction(action)
-      @battle.on 'action-status-remove', (action) => @onStatusAction(action)
-      @battle.on 'action-add-modifier', (action) => @updateToken(action.target)
-      @battle.on 'action-remove-modifier', (action) => @updateToken(action.target)
-      ###
+      @battle.on 'opponent-turn', (actions) => @animateActions(actions)
 
     animateActions: (actions) ->
       animation = new Animation()
       for action in actions
-        animation.addAnimationStep @buildAnimationForAction(action), 'action-'+action.type
+        @animateAction(action, animation)
       animation.play()
 
-    buildAnimationForAction: (action) ->
+    animateAction: (action, animation) ->
       switch action.type
         when 'draw-card'
           if action.player is @userId
             @addCard(action.card)
-            battleCard = @getBattleCard(action.card)
-            return @playerHand.addCard battleCard, true
+            animation.addAnimationStep @putCardInHand(action.card, true), 'draw-card'
+          else
+            @addCardId action.card
+            animation.addAnimationStep @putCardInEnemyHand(action.card, true), 'enemy-draw-card'
         when 'play-card'
           if action.player is @userId
-            # TODO: Move card to field
-            @putCardOnField(action.card, true)
+            animation.addAnimationStep @putCardOnField(action.card, true), 'play-card'
+            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
           else
             # On play card, we'll finally know what the card data is for the enemy
             @setCard action.card._id, action.card
-            @putCardOnField(action.card, true)
+            animation.addAnimationStep @putCardOnEnemyField(action.card, true), 'enemy-play-card'
+            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
+        when 'discard-card'
+          animation.addAnimationStep @discardCard(@battle.getCard(action.card)), 'discard-card'
+          if action.player is @userId
+            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
+          else
+            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
+        when 'cast-card'
+          # Enemy casting a card will finally reveal the card data
+          if action.player isnt @userId
+            @setCard action.card._id, action.card
+          animation.addAnimationStep @castCard(action.card, action.targets), 'cast-card'
+          if action.player is @userId
+            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
+          else
+            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
+
+    castCard: (card, targets) ->
+      battleCard = @getBattleCard(card)
+      battleCard.setCardInteractive(false)
+      battleCard.setTokenInteractive(false)
+      animation = new Animation()
+      if @enemyHand.hasCard(battleCard)
+        @enemyHand.removeCard(battleCard)
+        animation.addAnimationStep battleCard.flipCard(true)
+      else if @playerHand.hasCard(battleCard)
+        @playerHand.removeCard(battleCard)
+      # TODO: Build spell FX classes to create animations for spells
+      if targets.length > 0
+        castFx = new BasicTargetFx(card, targets)
+        animation.addAnimationStep castFx.buildAnimation(@), 'cast-spell'
+      animation.addAnimationStep ->
+        battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+      return animation
+
+    discardCard: (card) ->
+      # TODO: Fancy discard graphic
+      battleCard = @getBattleCard(card)
+      battleCard.setCardInteractive(false)
+      battleCard.setTokenInteractive(false)
+      if @playerHand.hasCard(battleCard)
+        @playerHand.removeCard(battleCard)
+        return battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+      else if @enemyHand.hasCard(battleCard)
+        @enemyHand.removeCard(battleCard)
+        return battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+      # Ideally cards are already removed from the field via the destroy-card action
+      else if @playerField.hasCard(battleCard)
+        @playerField.removeCard(battleCard)
+        return battleCard.moveTokenTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+      else if @enemyField.hasCard(battleCard)
+        @enemyField.removeCard(battleCard)
+        return battleCard.moveTokenTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
       return null
 
+    putCardOnEnemyField: (card, animate) ->
+      animate = true if not animate?
+      battleCard = @getBattleCard(card)
+      if @enemyHand.hasCard(battleCard)
+        @enemyHand.removeCard(battleCard)
+        battleCard.setTokenPosition(battleCard.getFlippedCardSprite().position)
+      return @enemyField.addCard battleCard, animate, false
+
     putCardOnField: (card, animate) ->
+      animate = true if not animate?
+      battleCard = @getBattleCard(card)
+      if @playerHand.hasCard(battleCard)
+        @playerHand.removeCard(battleCard)
+        battleCard.setTokenPosition(battleCard.getCardSprite().position)
+      return @playerField.addCard battleCard, animate, true
 
     putCardInEnemyHand: (cardId, animate) ->
       animate = true if not animate? # Default to animate
@@ -104,26 +173,46 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       return @playerHand.addCard battleCard, animate, true
 
     onCardTarget: (battleCard, position) ->
-      # TODO: Determine the target at the given position
-      @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
-        if err?
-          @playerHand.returnCardToHand(battleCard).play()
+      if battleCard.requiresTarget()
+        for targetCard in @getBattleCardsOnField()
+          if targetCard.containsPoint(position)
+            @battle.emitPlayCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
+              if err?
+                console.log err
+            return
+        # TODO: Check for targeting hero
+        if @playerHero.containsPoint(position)
+          @battle.emitPlayCardEvent battleCard.getId(), {hero:@playerHero.getId()}, (err) =>
+            if err?
+              console.log err
+          return
+        if @enemyHero.containsPoint(position)
+          @battle.emitPlayCardEvent battleCard.getId(), {hero:@enemyHero.getId()}, (err) =>
+            if err?
+              console.log err
+          return
 
     # Called when a card is dropped from the player's hand (ie, player wants to play card)
     onCardDropped: (battleCard, position) ->
-      if FIELD_AREA.contains(position.x, position.y)
+      if @playerField.containsPoint(position)
         @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
           if err?
+            console.log err
             @playerHand.returnCardToHand(battleCard).play()
+      else
+        @playerHand.returnCardToHand(battleCard).play()
 
     update: ->
       @playerHand.update()
       @enemyHand.update()
+      @playerField.update()
 
     onMouseUp: ->
       position = @stage.getMousePosition().clone()
       @playerHand.onMouseUp(position)
       @enemyHand.onMouseUp(position)
+
+    getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 
     getBattleCard: (card) ->
       if card._id?
@@ -136,6 +225,18 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       @cardSpriteLayer.addChild battleCard.getCardSprite()
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
 
+    setPlayerHero: (heroModel) ->
+      @playerHero = new BattleHero(heroModel, @heroClasses[heroModel.class], true)
+      sprite = @playerHero.getTokenSprite()
+      sprite.position = PLAYER_HERO_POSITION
+      @tokenSpriteLayer.addChild sprite
+
+    setEnemyHero: (heroModel) ->
+      @enemyHero = new BattleHero(heroModel, @heroClasses[heroModel.class], false)
+      sprite = @enemyHero.getTokenSprite()
+      sprite.position = ENEMY_HERO_POSITION
+      @tokenSpriteLayer.addChild sprite
+
     addCardId:(cardId) ->
       battleCard = new BattleCard(cardId, null,null)
       @cards[cardId] = battleCard
@@ -147,3 +248,17 @@ define ['battle/animation', 'battle/battlecard', 'battle/playerhand', 'jquery', 
       @cardSpriteLayer.addChild battleCard.getFlippedCardSprite()
       @cardSpriteLayer.addChild battleCard.getCardSprite()
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
+
+    getSprite: (obj) ->
+      if obj._id?
+        if @cards[obj._id]
+          card = @cards[obj._id]
+          if card.isTokenVisible()
+            return card.getTokenSprite()
+          else
+            return card.getAvailableCardSprite()
+        if @playerHero.getId() is obj._id
+          return @playerHero.getTokenSprite()
+        if @enemyHero.getId() is obj._id
+          return @enemyHero.getTokenSprite()
+      return null

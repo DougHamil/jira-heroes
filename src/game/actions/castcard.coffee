@@ -6,7 +6,7 @@ EnergyAction = require './energy'
 # as reduces the casting player's energy
 ###
 class CastCardAction
-  constructor: (@cardModel, @cardClass) ->
+  constructor: (@cardModel, @cardClass, @targets) ->
 
   enact: (battle)->
     cardHandler = battle.getCardHandler(@cardModel._id)
@@ -17,6 +17,7 @@ class CastCardAction
       type: 'cast-card'
       player: @cardModel.userId
       card: @cardModel
+      targets: @targets
     return [PAYLOAD, actions]
 
 module.exports = CastCardAction

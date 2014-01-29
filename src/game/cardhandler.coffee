@@ -72,8 +72,11 @@ class CardHandler
       @model.usedRushAbility = false
       actions = []
       if cardClass.playAbility.class?
-        actions.push Actions.CastCard(@model, cardClass)
-        actions = actions.concat(@_castAbilityFromModel(cardClass.playAbility, target))
+        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, cardClass.playAbility
+        targets = if target? then [target] else []
+        targets = ability.getTargets(@battle, target) if ability.getTargets?
+        actions.push Actions.CastCard(@model, cardClass, targets)
+        actions = actions.concat(ability.cast(@battle, target))
         # Spell cards are always discarded
         actions.push Actions.DiscardCard @model
       else
@@ -85,6 +88,7 @@ class CardHandler
         actions.push Actions.PlayCard(@model, cardClass)
       cb null, @battle.processActions(actions)
     catch err
+      console.log "Ability Cast Error: "
       console.log err
       cb err
       if not err.jiraHeroesError?
