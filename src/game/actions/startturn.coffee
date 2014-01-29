@@ -4,7 +4,6 @@ MaxEnergyAction = require './maxenergy'
 CARDS_DRAWN_PER_TURN = 1
 ENERGY_INCREASE_PER_TURN = 1
 MAX_ENERGY = 10
-MAX_HAND_CARDS = 6
 
 class StartTurnAction
   constructor: (@player) ->
@@ -13,7 +12,7 @@ class StartTurnAction
     playerHandler = battle.getPlayerHandler(@player)
     actions = []
     # Cap the number of cards in a player's hand
-    numCardsToDraw = MAX_HAND_CARDS - playerHandler.getHandCards().length
+    numCardsToDraw = playerHandler.getMaxHandSize() - playerHandler.getHandCards().length
     if numCardsToDraw < 0
       numCardsToDraw = 0
     if numCardsToDraw > CARDS_DRAWN_PER_TURN

@@ -5,6 +5,8 @@ CardHandler = require './cardhandler'
 Errors = require './errors'
 Events = require './events'
 
+MAX_HAND_SIZE = 6
+
 ###
 # Handles a player within a battle by responding and validating client socket events
 # and emitting valid events which the battle can listen to
@@ -146,6 +148,7 @@ class PlayerHandler extends EventEmitter
   getDeck: -> return @player.deck
   getHero: -> return @player.deck.hero
   getModel: -> return @player
+  getMaxHandSize: -> return MAX_HAND_SIZE
 
   hasCard: (cardId) ->
     return (@player.deck.cards.filter (c) -> c._id is cardId).length > 0

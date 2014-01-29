@@ -21,6 +21,7 @@ class DestroyAction
     PAYLOAD =
       type: 'destroy'
       source: @source._id
+      target: @target._id
     if card?
       PAYLOAD.card = @target._id
     else if hero?

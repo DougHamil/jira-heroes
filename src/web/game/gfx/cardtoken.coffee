@@ -65,6 +65,9 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @tauntFrameSprite.visible = isTaunting
       @frameSprite.visible = !isTaunting
 
+    getCenterPosition: ->
+      return {x:@.position.x + @width/2, y:@.position.y + @height/2}
+
     onHoverStart: (cb) -> @.mouseover = => cb @
     onHoverEnd: (cb) -> @.mouseout = => cb @
     onMouseUp: (cb) -> @.mouseup = => cb @

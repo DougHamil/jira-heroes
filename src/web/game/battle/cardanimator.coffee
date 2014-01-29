@@ -62,6 +62,7 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       anim.play()
       @playerHand.on 'card-dropped', (battleCard, position) => @onCardDropped(battleCard, position)
       @playerHand.on 'card-target', (battleCard, position) => @onCardTarget(battleCard, position)
+      @playerField.on 'token-target', (battleCard, position) => @onTokenTarget(battleCard, position)
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @animateActions(actions)
@@ -73,6 +74,16 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       for action in actions
         @animateAction(action, animation)
       animation.play()
+
+    processActions: (actions) ->
+      payload = {}
+      for action in actions
+        @processAction(action, payload)
+      return payload
+
+    processAction: (payload, action) ->
+      switch action.type
+        when 'draw-card'
 
     animateAction: (action, animation) ->
       switch action.type
@@ -98,6 +109,8 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
             animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
           else
             animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
+        when 'attack'
+          animation.addAnimationStep @attack(@battle.getCard(action.source), @battle.getCard(action.target))
         when 'cast-card'
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
@@ -107,6 +120,10 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
             animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
           else
             animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
+
+    attack: (source, target) ->
+      battleCardSource = @getBattleCard(source)
+      battleCardTarget = @getBattleCard(target)
 
     castCard: (card, targets) ->
       battleCard = @getBattleCard(card)
@@ -172,6 +189,24 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       battleCard = @getBattleCard(card)
       return @playerHand.addCard battleCard, animate, true
 
+    onTokenTarget: (battleCard, position) ->
+      for targetCard in @getBattleCardsOnField()
+        if targetCard.containsPoint(position)
+          @battle.emitUseCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
+            if err?
+              console.log err
+          return
+      if @playerHero.containsPoint(position)
+        @battle.emitUseCardEvent battleCard.getId(), {hero:@playerHero.getId()}, (err) =>
+          if err?
+            console.log err
+        return
+      if @enemyHero.containsPoint(position)
+        @battle.emitUseCardEvent battleCard.getId(), {hero:@enemyHero.getId()}, (err) =>
+          if err?
+            console.log err
+        return
+
     onCardTarget: (battleCard, position) ->
       if battleCard.requiresTarget()
         for targetCard in @getBattleCardsOnField()
@@ -180,7 +215,6 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
               if err?
                 console.log err
             return
-        # TODO: Check for targeting hero
         if @playerHero.containsPoint(position)
           @battle.emitPlayCardEvent battleCard.getId(), {hero:@playerHero.getId()}, (err) =>
             if err?
@@ -211,6 +245,8 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       position = @stage.getMousePosition().clone()
       @playerHand.onMouseUp(position)
       @enemyHand.onMouseUp(position)
+      @playerField.onMouseUp(position)
+      @enemyField.onMouseUp(position)
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 

@@ -49,6 +49,9 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       point = {x:point.x - @position.x, y:point.y - @position.y}
       return @visible and @hitArea.contains(point.x, point.y)
 
+    getCenterPosition: ->
+      return {x:@.position.x + @width/2, y:@.position.y + @height/2}
+
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
