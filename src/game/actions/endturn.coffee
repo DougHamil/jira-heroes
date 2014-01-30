@@ -8,7 +8,8 @@ class EndTurnAction
     for card in battle.getFieldCards(@player)
       if 'sleeping' in card.status
         actions.push new PermStatusRemoveAction(card, 'sleeping')
-      card.used = false
+      if 'used' in card.status
+        actions.push new PermStatusRemoveAction(card, 'used')
     PAYLOAD =
       type: 'end-turn'
       player: @player.userId

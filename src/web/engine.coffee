@@ -1,4 +1,5 @@
-define ['jquery', 'tween', 'pixi'], ($) ->
+define ['jquery', 'pixi', 'tween'], ($, PIXI) ->
+  window.PIXI = PIXI
   stage = new PIXI.Stage 0xEDC951, true
   renderer = new PIXI.autoDetectRenderer 1024, 768, $('#mainCanvas').get(0)
   engine =

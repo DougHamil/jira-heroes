@@ -60,7 +60,6 @@ class CardHandler
       try
         actions = @_castAbility @attackAbility, target
         cb null, @battle.processActions(actions)
-        @model.used = true
       catch ex
         cb ex
     else
@@ -68,7 +67,6 @@ class CardHandler
 
   _play: (target, cardClass, cb) ->
     try
-      @model.used = false
       @model.usedRushAbility = false
       actions = []
       if cardClass.playAbility.class?
@@ -107,9 +105,9 @@ class CardHandler
   use: (target, cb) ->
     if target?
       # Sleeping cards cannot be used, and cards cannot be used twice in a turn
-      if STATUS.SLEEPING in @model.status
+      if STATUS.SLEEPING in @model.getStatus()
         cb Errors.CARD_SLEEPING
-      else if @model.used
+      else if 'used' in @model.getStatus()
         cb Errors.CARD_USED
       else
         CardCache.get @model.class, (err, cardClass) =>

@@ -57,11 +57,17 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @setTaunt ('taunt' in card.getStatus())
       @setFrozen ('frozen' in card.getStatus())
       @setSleeping ('sleeping' in card.getStatus())
+      @setUsed ('used' in card.getStatus())
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
       return @visible and @hitArea.contains(point.x, point.y)
 
+    setUsed:(isUsed) ->
+      if isUsed
+        @imageSprite.tint = 0x555555
+      else
+        @imageSprite.tint = 0xFFFFFF
     setHealth: (health) ->
       @healthIcon.setHealth(health)
 

@@ -8,6 +8,7 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
       @targetDamage = 0
       @sourceDestroyed = false
       @targetDestroyed = false
+      @actions = []
 
     onAction: (action) ->
       if action.type is 'damage'
@@ -20,6 +21,7 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
           @sourceDestroyed = true
         else if action.target is @target
           @targetDestroyed = true
+      @actions.push action
 
     animate: (animator, battle) ->
       fxData =
@@ -43,5 +45,17 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
         sourceDamageAnimation.addAnimationStep animator.discardCard(@source)
       animation.addUnchainedAnimationStep targetDamageAnimation
       animation.addUnchainedAnimationStep sourceDamageAnimation
+
+      for action in @actions
+        switch action.type
+          when 'status-add'
+            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateStatusAdd(action.status)
+          when 'status-remove'
+            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateStatusRemove(action.status)
+          when 'add-modifier'
+            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateModifierAdd(action.modifier)
+          when 'remove-modifier'
+            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateModifierRemove(action.modifier)
+
       return animation
 

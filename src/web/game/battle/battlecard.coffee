@@ -41,6 +41,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getTokenSprite().setFrozen('frozen' in @card.getStatus())
         @getTokenSprite().setTaunt('taunt' in @card.getStatus())
         @getTokenSprite().setSleeping('sleeping' in @card.getStatus())
+        @getTokenSprite().setUsed('used' in @card.getStatus())
       return animation
 
     animateStatusRemove: (status) ->
@@ -50,6 +51,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getTokenSprite().setFrozen('frozen' in @card.getStatus())
         @getTokenSprite().setTaunt('taunt' in @card.getStatus())
         @getTokenSprite().setSleeping('sleeping' in @card.getStatus())
+        @getTokenSprite().setUsed('used' in @card.getStatus())
       return animation
 
     animateCasted: ->

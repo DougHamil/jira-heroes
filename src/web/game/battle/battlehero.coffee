@@ -42,6 +42,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
         @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
         @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
+        @getTokenSprite().setUsed('used' in @hero.getStatus())
       return animation
 
     animateStatusRemove: (status) ->
@@ -51,6 +52,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
         @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
         @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
+        @getTokenSprite().setUsed('used' in @hero.getStatus())
       return animation
 
     animateHealed: ->
