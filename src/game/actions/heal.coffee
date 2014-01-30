@@ -2,7 +2,7 @@ class HealAction
   constructor: (@source, @target, @amount) ->
 
   enact: (battle)->
-    totalHealed = (@target.maxHealth ) - @target.health
+    totalHealed = @target.getMaxHealth()  - @target.health
     if totalHealed > @amount
       totalHealed = @amount
     if totalHealed < 0
