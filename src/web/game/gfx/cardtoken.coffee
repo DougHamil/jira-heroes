@@ -4,6 +4,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
   IMAGE_PATH = '/media/images/cards/'
   FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame.png'
   TAUNT_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame_taunt.png'
+  FROZEN_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame_frozen.png'
+  SLEEPING_OVERLAY_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_overlay_sleeping.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
 
   ###
@@ -17,7 +19,12 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
       @width = TOKEN_WIDTH
       @height = TOKEN_HEIGHT
-      @frozenSprite = new PIXI.Text "FROZEN", STYLES.TEXT
+      @sleepingSprite = new PIXI.Sprite SLEEPING_OVERLAY_TEXTURE
+      @sleepingSprite.width = TOKEN_WIDTH
+      @sleepingSprite.height = TOKEN_HEIGHT
+      @frozenSprite = new PIXI.Sprite FROZEN_FRAME_TEXTURE
+      @frozenSprite.width = TOKEN_WIDTH
+      @frozenSprite.height = TOKEN_HEIGHT
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = TOKEN_WIDTH
       @imageSprite.height = TOKEN_HEIGHT
@@ -40,6 +47,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
       @.addChild @frozenSprite
+      @.addChild @sleepingSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
 
@@ -48,6 +56,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
 
       @setTaunt ('taunt' in card.getStatus())
       @setFrozen ('frozen' in card.getStatus())
+      @setSleeping ('sleeping' in card.getStatus())
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
@@ -59,11 +68,11 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
 
-    setFrozen: (isFrozen) ->
-      @frozenSprite.visible = isFrozen
     setTaunt: (isTaunting) ->
       @tauntFrameSprite.visible = isTaunting
       @frameSprite.visible = !isTaunting
+    setFrozen: (isFrozen) -> @frozenSprite.visible = isFrozen
+    setSleeping: (isSleeping) -> @sleepingSprite.visible = isSleeping
 
     getCenterPosition: ->
       return {x:@.position.x + @width/2, y:@.position.y + @height/2}

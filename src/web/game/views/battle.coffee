@@ -37,7 +37,7 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
         @energySprite = new PIXI.Text @battle.getEnergy() + " energy",  GUI.STYLES.TEXT
         @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
         @cardAnimator = new CardAnimator(JH.heroes, JH.cards, JH.user._id, @battle)
-        @uiLayer.addChild @energySprite
+        #@uiLayer.addChild @energySprite
         @gfxLayer.addChild @cardAnimator
         @uiLayer.addChild @endTurnButton
 
@@ -67,7 +67,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
 
     onBattleJoined: (@battle) ->
       updateStatus = =>
-        @setStatusText @battle.getConnectedPlayers().length + ' players connected.'
       @battle.on 'player-connected', => updateStatus()
       @battle.on 'player-disconnected', => updateStatus()
       @battle.on 'your-turn', => @setYourTurn(true)

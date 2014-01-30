@@ -39,7 +39,6 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
             target = @getHero action.target
           if target?
             target.modifiers.push action.modifier
-            console.log target.getStatus()
         when 'remove-modifier'
           target = @getCard action.target
           if not target?
@@ -47,17 +46,13 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
           if target?
             target.modifiers = target.modifiers.filter (m) -> m._id isnt action.modifier
         when 'status-add'
-          target = @getCard action.target
-          if not target?
-            target = @getHero action.target
+          target = @getCardOrHero action.target
           if target?
             if not target.status?
               target.status = []
             target.status.push action.status
         when 'status-remove'
-          target = @getCard action.target
-          if not target?
-            target = @getHero action.target
+          target = @getCardOrHero action.target
           if target?
             if not target.status?
               target.status = []
@@ -102,12 +97,12 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
         when 'energy'
           @getPlayer(action.player).energy += action.amount
         when 'play-card'
-          if action.card._id?
+          if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
           @getPlayer(action.player).field.push action.card
         when 'cast-card'
-          if action.card._id?
+          if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
       console.log action
@@ -125,6 +120,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       @model.connectedPlayers = @model.connectedPlayers.filter (p) -> p isnt userId
       @emit 'player-disconnected', userId
 
+    getPlayerId: -> return @userId
+    getEnemyId: -> return @model.opponents[0].userId
     getPlayer: (id) ->
       if id is @userId
         return @model.you
@@ -136,6 +133,12 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
 
     getConnectedPlayers: -> return @model.connectedPlayers
     getPhase: -> return @model.state.phase
+    getCardOrHero: (id) ->
+      hero = @getHeroById(id)
+      if hero?
+        return hero
+      else
+        return @getCard(id)
     getCard: (id) ->
       if id._id?
         return id

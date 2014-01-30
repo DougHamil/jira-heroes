@@ -8,6 +8,26 @@ define ['jquery', 'pixi', 'tween'], ($) ->
     pointsEqual: (a, b) -> return a.x is b.x and a.y is b.y
     pointSubtract: (a, b) -> return {x: a.x - b.x, y: a.y - b.y}
     pointAdd: (a, b) -> return {x: a.x + b.x, y: a.y + b.y}
+    pointJitter: (pt, amount) ->
+      out = copy(pt)
+      out.x += (amount * (Math.random() - 0.5))
+      out.y += (amount * (Math.random() - 0.5))
+      return out
+    fadeSpriteTween: (sprite, alpha, time) ->
+      tween = new TWEEN.Tween({alpha:sprite.alpha}).to({alpha:alpha}, time).onUpdate ->
+        sprite.alpha = @alpha
+      return tween
+    scaleSpriteTween: (sprite, factor, time) ->
+      destScale = UTILS.copy(sprite.scale)
+      destScale.x *= factor
+      destScale.y *= factor
+      tween = new TWEEN.Tween(UTILS.copy(sprite.scale)).to(destScale, time).onUpdate ->
+        for key, value of @
+          if key is 'x'
+            sprite.scale.x = value
+          else if key is 'y'
+            sprite.scale.y = value
+      return tween
     spriteTween:(sprite, from, to, time, options, onComplete) ->
       tween = new TWEEN.Tween(UTILS.copy(from))
         .to(UTILS.copy(to), time)

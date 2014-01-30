@@ -8,7 +8,6 @@ class AddModifierAction
       data:@data
 
   enact: (battle) ->
-    console.log @target
     @target.modifiers.push @modifier
 
     PAYLOAD =

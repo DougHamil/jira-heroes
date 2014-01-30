@@ -41,13 +41,18 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
       @steps.push step
 
     addTweenStep: (tweens, id) ->
-      if tweens not instanceof Array
+      tweenFunc = null
+      if typeof tweens is 'function'
+        tweenFunc = tweens
+        tweens = null
+      if not tweenFunc? and tweens not instanceof Array
         tweens = [tweens]
       if not id?
         id = @steps.length
       step =
         id: id
         tweens: tweens
+        tweenFunc: tweenFunc
       @steps.push step
 
     stop: ->
@@ -80,6 +85,10 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
         step = @steps[idx]
         if step.animationFunc?
           step.animation = step.animationFunc()
+        if step.tweenFunc?
+          step.tweens = step.tweenFunc()
+          if step.tweens not instanceof Array
+            step.tweens = [step.tweens]
         if step.tweens?
           totalSteps = step.tweens.length
           if totalSteps > 0

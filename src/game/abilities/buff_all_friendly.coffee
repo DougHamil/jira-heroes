@@ -1,5 +1,6 @@
-AddModifierAction = require './addmodifier'
-PlayCardAction = require './playcard'
+AddModifierAction = require '../actions/addmodifier'
+CastPassiveAction = require '../actions/castpassive'
+PlayCardAction = require '../actions/playcard'
 
 class BuffAllFriendly
   constructor: (@model) ->
@@ -20,7 +21,9 @@ class BuffAllFriendly
     player = battle.getPlayerOfCard(@source)
     for payload in payloads
       if payload.type is 'play-card' and payload.player is player.userId and payload.card isnt @source
-        actions.push new AddModifierAction(@model.modifierId, action.card, @data)
+        subActions = []
+        subActions.push new AddModifierAction(@model.modifierId, action.card, @data)
+        actions.push new CastPassiveAction(@source, action.card, subActions, 'buff')
         return true
     return false
 

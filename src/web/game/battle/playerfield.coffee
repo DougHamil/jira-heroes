@@ -6,6 +6,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       @hoverOffset = config.hoverOffset
       @fieldArea = config.fieldArea
       @origin = config.origin
+      @interactionEnabled = config.interactionEnabled
       @tokens = {}
       @tokenRow = new Row config.origin, GUI.CardToken.Width, config.padding
 
@@ -61,14 +62,20 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       newPositionsByCardId = {}
       for pos in newPositions
         newPositionsByCardId[pos.element.getId()] = pos.position
+      updateBattleCard = (bCard) =>
+        =>
+          bCard.setCardPosition(Util.pointAdd(bCard.getTokenSprite().position, @hoverOffset))
+          if @interactionEnabled
+            @_addTokenInteraction(bCard)
       for cardId, battleCard of @tokens
         cardSprite = battleCard.getTokenSprite()
         currentPosition = cardSprite.position
         newPosition = newPositionsByCardId[cardId]
         if not Util.pointsEqual(currentPosition, newPosition)
-          animation.addAnimationStep battleCard.moveTokenTo(newPosition, @animTime, true), 'token-reorder'
-          animation.on 'complete', =>
-            battleCard.setCardPosition(Util.pointAdd(battleCard.getTokenSprite().position, @hoverOffset))
+          subAnim = new Animation()
+          subAnim.addAnimationStep battleCard.moveTokenTo(newPosition, @animTime, true), 'token-reorder'
+          subAnim.on 'complete', updateBattleCard(battleCard)
+          animation.addAnimationStep subAnim
       return animation
 
     containsPoint: (point) ->

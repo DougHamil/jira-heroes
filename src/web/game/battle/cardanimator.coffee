@@ -1,4 +1,4 @@
-define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], (BasicTargetFx, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
+define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], ( BasicTargetFx, PayloadFactory, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
   DISCARD_ORIGIN = {x:-200, y: 0}
   DEFAULT_TWEEN_TIME = 200
   PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y: 400}
@@ -9,12 +9,14 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
     fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
     origin: {x:20, y:400}
     padding: 20
+    interactionEnabled:true
   ENEMY_FIELD_CONFIG =
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
     fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
     origin: {x:20, y:160}
     padding: 20
+    interactionEnabled:false
   ENEMY_HAND_CONFIG =
     handHoverOffset: 50
     origin: {x:20, y: -100}
@@ -40,6 +42,10 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
       @.addChild @uiLayer
+      @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
+      @playerEnergyIcon.anchor = {x:1,y:0}
+      @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:0}
+      @uiLayer.addChild @playerEnergyIcon
       @playerHand = new PlayerHand PLAYER_HAND_CONFIG, @uiLayer
       @enemyHand = new PlayerHand ENEMY_HAND_CONFIG, @uiLayer
       @playerField = new PlayerField PLAYER_FIELD_CONFIG, @uiLayer
@@ -70,60 +76,33 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       @battle.on 'opponent-turn', (actions) => @animateActions(actions)
 
     animateActions: (actions) ->
-      animation = new Animation()
       for action in actions
-        @animateAction(action, animation)
+        @processAction(action)
+      animation = new Animation()
+      payloads = PayloadFactory.processActions(@battle, actions)
+      for payload in payloads
+        if payload.animate?
+          animation.addAnimationStep payload.animate(@, @battle)
       animation.play()
 
-    processActions: (actions) ->
-      payload = {}
-      for action in actions
-        @processAction(action, payload)
-      return payload
-
-    processAction: (payload, action) ->
+    processAction:(action) ->
       switch action.type
-        when 'draw-card'
-
-    animateAction: (action, animation) ->
-      switch action.type
+        when 'energy'
+          if action.player is @battle.getPlayerId()
+            @playerEnergyIcon.setEnergy(@battle.getEnergy())
         when 'draw-card'
           if action.player is @userId
             @addCard(action.card)
-            animation.addAnimationStep @putCardInHand(action.card, true), 'draw-card'
           else
             @addCardId action.card
-            animation.addAnimationStep @putCardInEnemyHand(action.card, true), 'enemy-draw-card'
         when 'play-card'
-          if action.player is @userId
-            animation.addAnimationStep @putCardOnField(action.card, true), 'play-card'
-            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
-          else
+          if action.player isnt @userId
             # On play card, we'll finally know what the card data is for the enemy
             @setCard action.card._id, action.card
-            animation.addAnimationStep @putCardOnEnemyField(action.card, true), 'enemy-play-card'
-            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
-        when 'discard-card'
-          animation.addAnimationStep @discardCard(@battle.getCard(action.card)), 'discard-card'
-          if action.player is @userId
-            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
-          else
-            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
-        when 'attack'
-          animation.addAnimationStep @attack(@battle.getCard(action.source), @battle.getCard(action.target))
         when 'cast-card'
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
             @setCard action.card._id, action.card
-          animation.addAnimationStep @castCard(action.card, action.targets), 'cast-card'
-          if action.player is @userId
-            animation.addAnimationStep @playerHand.buildReorderAnimation(), 'hand-reorder'
-          else
-            animation.addAnimationStep @enemyHand.buildReorderAnimation(), 'enemy-hand-reorder'
-
-    attack: (source, target) ->
-      battleCardSource = @getBattleCard(source)
-      battleCardTarget = @getBattleCard(target)
 
     castCard: (card, targets) ->
       battleCard = @getBattleCard(card)
@@ -143,41 +122,69 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
         battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
       return animation
 
-    discardCard: (card) ->
-      # TODO: Fancy discard graphic
+    discardCard: (card, animation) ->
+      animation = new Animation() if not animation?
       battleCard = @getBattleCard(card)
+      if not battleCard?
+        return null
       battleCard.setCardInteractive(false)
       battleCard.setTokenInteractive(false)
       if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
-        return battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+        animation.addAnimationStep @playerHand.buildReorderAnimation()
       else if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
-        return battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
-      # Ideally cards are already removed from the field via the destroy-card action
+        animation.addAnimationStep @enemyHand.buildReorderAnimation()
       else if @playerField.hasCard(battleCard)
         @playerField.removeCard(battleCard)
-        return battleCard.moveTokenTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+        animation.addAnimationStep @playerField.buildReorderAnimation()
       else if @enemyField.hasCard(battleCard)
         @enemyField.removeCard(battleCard)
-        return battleCard.moveTokenTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+        animation.addAnimationStep @enemyField.buildReorderAnimation()
+      return animation
+
+    animateAction: (action) ->
+      switch action.type
+        when 'energy'
+          if action.player is @battle.getPlayerId()
+            tween = Util.scaleSpriteTween @playerEnergyIcon, 2, 200
+            animation = new Animation()
+            animation.addTweenStep tween
+            animation.addAnimationStep =>
+              tween = Util.scaleSpriteTween @playerEnergyIcon, 0.5, 200
+              anim = new Animation()
+              anim.addTweenStep tween
+              return anim
+            return animation
       return null
 
     putCardOnEnemyField: (card, animate) ->
       animate = true if not animate?
       battleCard = @getBattleCard(card)
+      reorder = false
       if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
         battleCard.setTokenPosition(battleCard.getFlippedCardSprite().position)
-      return @enemyField.addCard battleCard, animate, false
+        reorder = true
+      animation = new Animation()
+      animation.addAnimationStep @enemyField.addCard(battleCard, animate, false)
+      if reorder and animate
+        animation.addUnchainedAnimationStep @enemyHand.buildReorderAnimation()
+      return animation
 
     putCardOnField: (card, animate) ->
       animate = true if not animate?
       battleCard = @getBattleCard(card)
+      reorder = false
       if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
         battleCard.setTokenPosition(battleCard.getCardSprite().position)
-      return @playerField.addCard battleCard, animate, true
+        reorder = true
+      animation = new Animation()
+      animation.addAnimationStep @playerField.addCard(battleCard, animate, true)
+      if animate and reorder
+        animation.addUnchainedAnimationStep @playerHand.buildReorderAnimation()
+      return animation
 
     putCardInEnemyHand: (cardId, animate) ->
       animate = true if not animate? # Default to animate
@@ -250,6 +257,15 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 
+    getBattleObject: (id) ->
+      if id._id?
+        id = id._id
+      if @playerHero.getId() is id
+        return @playerHero
+      else if @enemyHero.getId() is id
+        return @enemyHero
+      else
+        return @getBattleCard(id)
     getBattleCard: (card) ->
       if card._id?
         card = card._id
@@ -285,6 +301,7 @@ define ['battle/fx/basic_target', 'battle/animation', 'battle/battlehero', 'batt
       @cardSpriteLayer.addChild battleCard.getCardSprite()
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
 
+    getCardClass: (card) -> return @cardClasses[card.class]
     getSprite: (obj) ->
       if obj._id?
         if @cards[obj._id]
