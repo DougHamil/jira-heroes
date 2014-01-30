@@ -1,6 +1,5 @@
 AddModifierAction = require '../actions/addmodifier'
 CastPassiveAction = require '../actions/castpassive'
-PlayCardAction = require '../actions/playcard'
 
 class BuffAllFriendly
   constructor: (@model) ->

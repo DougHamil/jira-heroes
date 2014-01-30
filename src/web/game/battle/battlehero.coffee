@@ -8,9 +8,13 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation = new Animation()
       jitterSteps = 5
       sprite = @getTokenSprite()
+      initialPosition = Util.clone(sprite.position)
       for i in [0...5]
         animation.addTweenStep ->
-          return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 100
+          return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 50
+      animation.addTweenStep =>
+        @getTokenSprite().setHealth(@hero.health)
+        return Util.spriteTween sprite, sprite.position, initialPosition, 50
       return animation
 
     animateModifierAdd: (status) ->
