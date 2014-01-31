@@ -9,9 +9,10 @@
 	"damage":0,
 	"playAbility": {
 		"class":"buff_target",
-		"text":"Increase target's damage by <damage>",
+		"text":"Increase minion's damage by <damage>",
 		"requiresTarget":true,
 		"data":{
+			"applyToHero":false,
 			"damage":1
 		}
 	},

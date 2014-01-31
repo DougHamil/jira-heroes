@@ -2,8 +2,7 @@
 	"name":"breakpoint",
 	"displayName":"Breakpoint",
 	"cost":{
-		"storyPoints":5,
-		"bugsClosed":2
+		"storyPoints":2
 	},
 	"energy":2,
 	"health":0,

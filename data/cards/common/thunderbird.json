@@ -2,7 +2,7 @@
         "name":"thunderbird",
         "displayName":"Thunderbird",
 				"cost":{
-					"storyPoints":0
+					"bugsClosed":1
 				},
         "energy":3,
         "health":1,

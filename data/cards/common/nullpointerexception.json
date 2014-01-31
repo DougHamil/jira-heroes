@@ -2,7 +2,7 @@
 	"name":"nullpointerexception",
 	"displayName":"Null Ptr Exception",
 	"cost":{
-		"storyPoints":0
+		"storyPoints":1
 	},
 	"energy":1,
 	"health":0,

@@ -2,7 +2,7 @@
 	"name":"minorbug",
 	"displayName":"Minor Bug",
 	"cost":{
-		"storyPoints":0
+		"bugsReported":1
 	},
 	"energy":2,
 	"health":3,

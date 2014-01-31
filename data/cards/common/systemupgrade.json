@@ -2,7 +2,7 @@
         "name":"systemupgrade",
         "displayName":"System Upgrade",
 				"cost":{
-					"storyPoints":0
+					"bugsClosed":1
 				},
         "energy":2,
         "health":0,

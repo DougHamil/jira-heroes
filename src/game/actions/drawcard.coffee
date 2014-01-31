@@ -1,10 +1,12 @@
 class DrawCardAction
-  constructor: (@player) ->
+  constructor: (@player, @handCountModifier) ->
+    # Modify the hand count (for instance, if a card is discarded upon casting this action)
+    @handCountModifier = 0 if not @handCountModifier?
 
   enact: (battle) ->
     playerHandler = battle.getPlayerHandler(@player)
     PAYLOAD = null
-    if playerHandler.getMaxHandSize() > playerHandler.getHandCards().length
+    if playerHandler.getMaxHandSize() > (playerHandler.getHandCards().length + @handCountModifier)
       card = playerHandler.drawCard()
       if card?
         PAYLOAD =

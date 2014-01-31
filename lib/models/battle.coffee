@@ -12,6 +12,8 @@ newCardInstance = (userId) ->
         cb err
       else
         out =
+          isCard: true
+          isHero: false
           usedRushAbility: false
           userId: userId
           position: 'deck'
@@ -32,6 +34,8 @@ newHeroInstance = (userId, hero, cb) ->
       cb err
     else
       out =
+        isHero:true
+        isCard:false
         _id:userId
         userId: userId
         class: heroClass._id
@@ -72,6 +76,8 @@ _modifierSchema = new mongoose.Schema
 _cardSchema = new mongoose.Schema
   class: String
   userId: String
+  isCard: {type:Boolean, default:true}
+  isHero: {type:Boolean, default:false}
   health: Number
   energy: Number
   usedRushAbility: Boolean
@@ -91,6 +97,8 @@ _playerSchema = new mongoose.Schema
   maxEnergy: Number
   deck:
     hero:
+      isHero: {type:Boolean, default:true}
+      isCard: {type:Boolean, default:false}
       userId: String
       _id: String
       class: String

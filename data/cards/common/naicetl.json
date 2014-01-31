@@ -2,7 +2,7 @@
 	"name":"naicetl",
 	"displayName":"NAIC ETL",
 	"cost":{
-		"storyPoints":0
+		"storyPoints":2
 	},
 	"energy":4,
 	"health":3,

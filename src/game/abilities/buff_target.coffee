@@ -8,6 +8,8 @@ class BuffTargetAbility
 
   cast: (battle, target) ->
     throw Errors.INVALID_TARGET if not target?
+    if target.isHero and @data.applyToHero? and not @data.applyToHero
+      throw Errors.INVALID_TARGET
     return [new AddModifierAction(@model.modifierId, target, @data)]
 
 module.exports = BuffTargetAbility

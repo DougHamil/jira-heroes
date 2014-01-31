@@ -2,8 +2,8 @@
 	"name":"escalate",
 	"displayName":"Escalate",
 	"cost":{
-		"storyPoints":0,
-		"bugsClosed":1
+		"storyPoints":5,
+		"bugsReported":2
 	},
 	"energy":1,
 	"health":0,

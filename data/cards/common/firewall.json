@@ -2,7 +2,7 @@
 	"name":"firewall",
 	"displayName":"Firewall",
 	"cost":{
-		"storyPoints":0
+		"bugsClosed": 2
 	},
 	"energy":2,
 	"health":0,

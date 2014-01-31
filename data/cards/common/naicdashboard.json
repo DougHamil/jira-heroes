@@ -2,7 +2,7 @@
 	"name":"naicdashboard",
 	"displayName":"NAIC Dashboard",
 	"cost":{
-		"storyPoints":0
+		"storyPoints":1
 	},
 	"energy":3,
 	"health":4,

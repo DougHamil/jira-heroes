@@ -1,7 +1,9 @@
 {
 	"name":"codefreeze",
 	"displayName":"Code Freeze",
-	"cost":0,
+	"cost": {
+		"storyPoints":2
+	},
 	"energy":4,
 	"health":0,
 	"damage":0,
