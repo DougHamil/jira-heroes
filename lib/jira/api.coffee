@@ -19,10 +19,10 @@ closedIssuesQuery = (username, time) ->
   return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT IN ("Closed", "Resolved") BEFORE "'+time+'" AND Status IN ("Closed", "Resolved")')
 
 bugsClosedQuery = (username, time) ->
-  return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT IN ("Closed", "Resolved") BEFORE "'+time+'" AND Status IN ("Closed", "Resolved") AND type = Bug')
+  return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT IN ("Closed", "Resolved") BEFORE "'+time+'" AND Status IN ("Closed", "Resolved") AND type in (Bug, "Sub-Bug")')
 
 bugsCreatedQuery = (username, time) ->
-  return encodeURIComponent('reporter="'+username+'" AND type = Bug AND created > "'+time+'"')
+  return encodeURIComponent('reporter="'+username+'" AND type IN (Bug, "Sub-Bug") AND created > "'+time+'"')
 
 module.exports = (config) ->
   buildRequest = (username, password)->
