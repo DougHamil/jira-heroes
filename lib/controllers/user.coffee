@@ -50,7 +50,6 @@ module.exports = (app, Users) ->
     else
       res.send 400, "Expected 'users'"
 
-
   app.get '/secure/user', (req, res) ->
     Users.fromSession req.session.user, (err, user) ->
       if err?

@@ -1,5 +1,6 @@
 mongoose = require 'mongoose'
 moment = require 'moment'
+
 Schema = mongoose.Schema
 ObjectId = Schema.ObjectId
 _schema = new Schema
@@ -7,8 +8,6 @@ _schema = new Schema
   email: String
   activeBattles: [String]
   lastLoginTime: {type: Date, default: Date.now}
-  lastLoginTimeJira: String
-  lastLoginIssueKeys: [String]
   library: [{type:String}] # All available cards
   decks: [{type:String}]
   lastLoginWallet:
@@ -51,7 +50,8 @@ User = (jira)->
   _model = mongoose.model('User', _schema)
 
   _create = (name, email, cb) ->
-    user = new _model {name:name, email:email, lastLogin: jira.getDateTime()}
+    lastLoginTime = moment().startOf('year')
+    user = new _model {name:name, email:email, lastLoginTime: lastLoginTime}
     user.decks = []
     user.save (err) ->
       cb err, user
@@ -77,34 +77,27 @@ User = (jira)->
       cb null, user
     else
       currentTime = moment()
-      currentTimeJira = jira.getDateTime()
-      lastLoginTimeJira = user.lastLoginTimeJira || currentTimeJira
-      lastLoginIssueKeys = user.lastLoginIssueKeys || []
-      foundIssueKeys = []
-      jira.getTotalStoryPointsSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+      lastLoginTimeJira = jira.getDateTime(lastLoginTime)
+      console.log " issues from #{lastLoginTimeJira}"
+      jira.getTotalStoryPointsSince lastLoginTimeJira, username, password, (err, points) ->
         if err?
           cb err
         else
           user.wallet.storyPoints += points
           user.lastLoginWallet.storyPoints = points
-          foundIssueKeys = foundIssueKeys.concat(keys)
-          jira.getBugsCreatedSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+          jira.getBugsCreatedSince lastLoginTimeJira, username, password, (err, points) ->
             if err?
               cb err
             else
               user.wallet.bugsReported += points
               user.lastLoginWallet.bugsReported = points
-              foundIssueKeys = foundIssueKeys.concat(keys)
-              jira.getBugsClosedSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+              jira.getBugsClosedSince lastLoginTimeJira, username, password, (err, points) ->
                 if err?
                   cb err
                 else
                   user.wallet.bugsClosed += points
                   user.lastLoginWallet.bugsClosed = points
-                  foundIssueKeys = foundIssueKeys.concat(keys)
-                  user.lastLoginIssueKeys = foundIssueKeys
                   user.lastLoginTime = currentTime
-                  user.lastLoginTimeJira = currentTimeJira
                   user.markModified('lastLoginTime')
                   user.save (err) ->
                     cb err, user

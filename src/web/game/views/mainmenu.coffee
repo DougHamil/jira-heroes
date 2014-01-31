@@ -9,21 +9,25 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @joinBtn = new GUI.TextButton 'Join Battle'
       @decksBtn = new GUI.TextButton 'Decks'
       @libraryBtn = new GUI.TextButton 'Library'
+      @logoutBtn = new GUI.TextButton 'Logout'
       @hostBtn.position = {x:(engine.WIDTH/2) - @hostBtn.width/2, y:(engine.HEIGHT/2)}
       @joinBtn.position = {x:(engine.WIDTH/2) - @joinBtn.width/2, y:@hostBtn.position.y + 2 * @joinBtn.height}
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
       @libraryBtn.position = {x:(engine.WIDTH/2) - @libraryBtn.width/2, y:@decksBtn.position.y + 2 * @libraryBtn.height}
+      @logoutBtn.position = {x:20, y:engine.HEIGHT - @logoutBtn.height - 20}
 
       @libraryBtn.onClick => @manager.activateView 'Library'
       @decksBtn.onClick => @manager.activateView 'Decks'
       @hostBtn.onClick => @manager.activateView 'HostBattle'
       @joinBtn.onClick => @manager.activateView 'JoinBattle'
+      @logoutBtn.onClick => window.location = 'user/logout'
 
       @.addChild @menuText
       @.addChild @hostBtn
       @.addChild @joinBtn
       @.addChild @decksBtn
       @.addChild @libraryBtn
+      @.addChild @logoutBtn
 
     onActiveBattlePicked: (battleId) ->
       JH.GetBattle battleId, (battle) =>
