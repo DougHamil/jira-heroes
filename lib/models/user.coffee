@@ -1,16 +1,24 @@
 mongoose = require 'mongoose'
+moment = require 'moment'
 Schema = mongoose.Schema
 ObjectId = Schema.ObjectId
 _schema = new Schema
   name: String
   email: String
   activeBattles: [String]
-  lastLogin: String
-  lastLoginPoints: {type:Number, default:0}
+  lastLoginTime: {type: Date, default: Date.now}
+  lastLoginTimeJira: String
   lastLoginIssueKeys: [String]
   library: [{type:String}] # All available cards
   decks: [{type:String}]
-  points: {type:Number, default:0}
+  lastLoginWallet:
+    storyPoints: {type:Number, default:0}
+    bugsClosed: {type:Number, default:0}
+    bugsReported: {type:Number, default:0}
+  wallet:
+    storyPoints: {type:Number, default:0}
+    bugsClosed: {type:Number, default:0}
+    bugsReported: {type:Number, default:0}
 
 _schema.methods.getPublicData = ->
   out =
@@ -24,6 +32,20 @@ _schema.methods.ownsCards = (cardIds) ->
     if cardId not in @library
       return false
   return true
+
+_schema.methods.canAfford = (cardCost) ->
+  if cardCost.storyPoints? and @wallet.storyPoints < cardCost.storyPoints
+    return false
+  if cardCost.bugsClosed? and @wallet.bugsClosed < cardCost.bugsClosed
+    return false
+  if cardCost.bugsReported? and @wallet.bugsReported < cardCost.bugsReported
+    return false
+  return true
+
+_schema.methods.deduct = (cardCost) ->
+  @wallet.storyPoints -= cardCost.storyPoints if cardCost.storyPoints?
+  @wallet.bugsClosed -= cardCost.bugsClosed if cardCost.bugsClosed?
+  @wallet.bugsReported -= cardCost.bugsReported if cardCost.bugsReported?
 
 User = (jira)->
   _model = mongoose.model('User', _schema)
@@ -47,20 +69,45 @@ User = (jira)->
           else
             _create jiraUser.name, jiraUser.emailAddress, cb
 
-  _updateStoryPoints = (username, password, user, cb) ->
-    currentTime = jira.getDateTime()
-    lastLogin = user.lastLogin ? currentTime
-    lastLoginIssueKeys = user.lastLoginIssueKeys ? []
-    jira.getTotalStoryPointsSince lastLogin, lastLoginIssueKeys, username, password, (err, points, keys) ->
-      if err?
-        cb err
-      else
-        user.points += points
-        user.lastLoginPoints = points
-        user.lastLoginIssueKeys = keys
-        user.lastLogin = currentTime
-        user.save (err) ->
-          cb err, user
+  _updateWallet = (username, password, user, cb) ->
+    lastLoginTime = moment(user.lastLoginTime)
+    currentTime = moment()
+    # Do nothing if the last login was less than a minute ago
+    if currentTime.diff(lastLoginTime, 'minutes') <= 1
+      cb null, user
+    else
+      currentTime = moment()
+      currentTimeJira = jira.getDateTime()
+      lastLoginTimeJira = user.lastLoginTimeJira || currentTimeJira
+      lastLoginIssueKeys = user.lastLoginIssueKeys || []
+      foundIssueKeys = []
+      jira.getTotalStoryPointsSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+        if err?
+          cb err
+        else
+          user.wallet.storyPoints += points
+          user.lastLoginWallet.storyPoints = points
+          foundIssueKeys = foundIssueKeys.concat(keys)
+          jira.getBugsCreatedSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+            if err?
+              cb err
+            else
+              user.wallet.bugsReported += points
+              user.lastLoginWallet.bugsReported = points
+              foundIssueKeys = foundIssueKeys.concat(keys)
+              jira.getBugsClosedSince lastLoginTimeJira, lastLoginIssueKeys, username, password, (err, points, keys) ->
+                if err?
+                  cb err
+                else
+                  user.wallet.bugsClosed += points
+                  user.lastLoginWallet.bugsClosed = points
+                  foundIssueKeys = foundIssueKeys.concat(keys)
+                  user.lastLoginIssueKeys = foundIssueKeys
+                  user.lastLoginTime = currentTime
+                  user.lastLoginTimeJira = currentTimeJira
+                  user.markModified('lastLoginTime')
+                  user.save (err) ->
+                    cb err, user
 
   _get = (id, cb) ->
     if id instanceof Array
@@ -84,7 +131,7 @@ User = (jira)->
     schema:_schema
     model:_model
     login:_login
-    updateStoryPoints: _updateStoryPoints
+    updateWallet: _updateWallet
     get:_get
     fromSession:_fromSession
 

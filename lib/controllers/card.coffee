@@ -1,7 +1,7 @@
 Cards = require '../models/card'
 
 module.exports = (app, Users) ->
-
+  FREE_CARDS = app.isTest? and app.isTest
   # Add a card to user's library
   app.post '/secure/user/library', (req, res) ->
     card = req.body.card
@@ -20,8 +20,9 @@ module.exports = (app, Users) ->
               if err?
                 res.send 500, err
               else
-                if user.points >= card.cost
-                  user.points -= card.cost
+                if FREE_CARDS or user.canAfford(card.cost)
+                  if not FREE_CARDS
+                    user.deduct(card.cost)
                   user.library.push card._id
                   user.save (err) ->
                     if err?
@@ -29,7 +30,7 @@ module.exports = (app, Users) ->
                     else
                       res.json card
                 else
-                  res.send 400, "User cannot afford card #{card._id}. Cost is #{card.cost} and user has #{user.points} points available"
+                  res.send 400, "User cannot afford card #{card._id}. Cost is #{card.cost} and user has #{user.wallet} available"
 
   # Get User's card library
   app.get '/secure/user/library', (req, res) ->

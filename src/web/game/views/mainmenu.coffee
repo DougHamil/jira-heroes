@@ -31,8 +31,8 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
 
     deactivate: ->
       @myStage.removeChild @
-      if JH.pointsText?
-        @.removeChild JH.pointsText
+      if JH.walletGraphic?
+        @.removeChild JH.walletGraphic
       if JH.nameText?
         @.removeChild JH.nameText
       if @activeBattlePicker?
@@ -45,9 +45,12 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
         @myStage.addChild @
         JH.nameText = new PIXI.Text "#{user.name}", GUI.STYLES.TEXT
         JH.nameText.position = {x: engine.WIDTH - JH.nameText.width, y:0}
-        JH.pointsText = new GUI.GlyphText "#{user.points} <coin>"
-        JH.pointsText.position = {x: engine.WIDTH - JH.pointsText.width - 20, y: engine.HEIGHT - JH.pointsText.height - 20}
-        @.addChild JH.pointsText
+        if not JH.walletGraphic?
+          JH.walletGraphic = new GUI.Wallet user.wallet
+        else
+          JH.walletGraphic.update(user.wallet)
+        JH.walletGraphic.position = {x: engine.WIDTH - JH.walletGraphic.width - 20, y: engine.HEIGHT - JH.walletGraphic.height - 20}
+        @.addChild JH.walletGraphic
         @.addChild JH.nameText
         if battles? and battles.length > 0
           @activeBattlePicker = new GUI.BattlePicker battles, usersById

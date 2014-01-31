@@ -1,7 +1,9 @@
 {
 	"name":"majorbug",
 	"displayName":"Major Bug",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":4,
 	"health":5,
 	"damage":2,

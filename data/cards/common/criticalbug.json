@@ -1,7 +1,9 @@
 {
 	"name":"criticalbug",
 	"displayName":"Critical Bug",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":8,
 	"health":8,
 	"damage":3,

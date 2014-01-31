@@ -15,7 +15,13 @@ authHeader = (username, password) ->
   return "Basic "+new Buffer(username + ":" + password).toString('base64')
 
 closedIssuesQuery = (username, time) ->
-  return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT "Closed" BEFORE "'+time+'" AND Status = "Closed"')
+  return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT IN ("Closed", "Resolved") BEFORE "'+time+'" AND Status IN ("Closed", "Resolved")')
+
+bugsClosedQuery = (username, time) ->
+  return encodeURIComponent('assignee="'+username+'" AND Status WAS NOT IN ("Closed", "Resolved") BEFORE "'+time+'" AND Status IN ("Closed", "Resolved") AND type = Bug')
+
+bugsCreatedQuery = (username, time) ->
+  return encodeURIComponent('reporter="'+username+'" AND type = Bug AND created > "'+time+'"')
 
 module.exports = (config) ->
   buildRequest = (username, password)->
@@ -34,21 +40,47 @@ module.exports = (config) ->
       opts.path = path
       http.request(opts, tryParseResponse(cb)).end()
 
-    getClosedIssuesSince: (time, username, password, cb) ->
+    search: (query, username, password, cb) ->
       opts = buildRequest(username, password)
-      opts.path = '/rest/api/2/search?fields='+config.storyPointsField+'&jql='+closedIssuesQuery(username, time)
+      opts.path = '/rest/api/2/search?'+query
       http.request(opts, tryParseResponse(cb)).end()
 
+    getBugsCreatedSince: (time, ignoreIssueKeys, username, password, cb) ->
+      # Get closed bugs
+      @search 'jql='+bugsCreatedQuery(username, time), username, password, (err, json) ->
+        if err?
+          cb err, json
+        else
+          keys = []
+          json.issues = json.issues.filter (i) -> i.key not in ignoreIssueKeys
+          count = json.issues.length
+          for issue in json.issues
+            keys.push issue.key
+          cb null, count, keys
+
+    getBugsClosedSince: (time, ignoreIssueKeys, username, password, cb) ->
+      # Get closed bugs
+      @search 'jql='+bugsClosedQuery(username, time), username, password, (err, json) ->
+        if err?
+          cb err, json
+        else
+          keys = []
+          json.issues = json.issues.filter (i) -> i.key not in ignoreIssueKeys
+          count = json.issues.length
+          for issue in json.issues
+            keys.push issue.key
+          cb null, count, keys
+
     getTotalStoryPointsSince: (time, ignoreIssueKeys, username, password, cb) ->
-      # Get Closed issues
-      @getClosedIssuesSince time, username, password, (err, json) ->
+      @search 'fields='+encodeURIComponent(config.jiraStoryPointsField)+'&jql='+closedIssuesQuery(username, time), username, password, (err, json) ->
         if err?
           cb err, json
         else
           keys = []
           points = 0
+          json.issues = json.issues.filter (i) -> i.key not in ignoreIssueKeys
           for issue in json.issues
-            if issue.key not in ignoreIssueKeys
+            if issue.fields?
               points += issue.fields[config.jiraStoryPointsField] ? 0
             keys.push(issue.key)
           cb null, points, keys

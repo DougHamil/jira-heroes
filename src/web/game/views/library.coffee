@@ -21,8 +21,8 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
 
     deactivate: ->
       @myStage.removeChild @
-      if JH.pointsText?
-        @.removeChild JH.pointsText
+      if JH.walletGraphic?
+        @.removeChild JH.walletGraphic
       if JH.nameText?
         @.removeChild JH.nameText
       if @cardPicker?
@@ -53,7 +53,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
             card.scale.y -= 0.1
         @addCostSprites JH.user, @library, @cardSprites, @cardsById
         @.addChild @cardPicker
-        @.addChild JH.pointsText
+        @.addChild JH.walletGraphic
         @.addChild JH.nameText
         @myStage.addChild @
 
@@ -78,40 +78,29 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
           JH.user = user
           @updateLibrary user.library
           @addCostSprites()
-          JH.pointsText.setText "#{user.points} <coin>"
+          JH.walletGraphic.update user.wallet
           @cardSprites[cardId].onClick ->
 
     updateCostSprite: (cardId) ->
       card = @cardsById[cardId]
       cardSprite = @cardSprites[cardId]
-      costSprite = @createCostSprite(cardSprite, card.cost, JH.user.points >= card.cost, @library[cardId]?)
-      costSprite.position = {x:cardSprite.width/2, y:cardSprite.height/2 - costSprite.height}
       if cardSprite.costSprite?
-        cardSprite.removeChild cardSprite.costSprite
-      cardSprite.costSprite = costSprite
-      cardSprite.addChild costSprite
+        cardSprite.costSprite.update(@canAfford(card.cost, JH.user.wallet), @library[cardId]?)
+      else
+        costSprite = @createCostSprite(cardSprite, card.cost, @canAfford(card.cost, JH.user.wallet), @library[cardId]?)
+        costSprite.position = {x:cardSprite.width/2, y:cardSprite.height/2 - costSprite.height}
+        cardSprite.costSprite = costSprite
+        cardSprite.addChild costSprite
 
     addCostSprites: ->
       for cardId, card of @cardsById
         @updateCostSprite cardId
 
+    canAfford: (cost, wallet) ->
+      for currency, amount of cost
+        if wallet[currency] < amount
+          return false
+      return true
+
     createCostSprite: (cardSprite, cost, canAfford, isOwned) ->
-      container = new PIXI.DisplayObjectContainer
-      bgcolor = if canAfford or isOwned then 0x00BB00 else 0xBB0000
-      text = null
-      if isOwned
-        text = new PIXI.Text "Purchased", GUI.STYLES.TEXT
-      else
-        text = new GUI.GlyphText "#{cost} <coin>"
-        text.position = {x:-text.width/2,y:-text.height/2}
-      bg = new PIXI.Graphics()
-      bg.beginFill bgcolor
-      bg.width = cardSprite.width
-      bg.height = text.height + COST_SPRITE_PADDING
-      bg.drawRect -bg.width/2, -bg.height/2, bg.width, bg.height
-      text.anchor = {x:0.5, y:0.5}
-      container.addChild bg
-      container.addChild text
-      container.width = bg.width
-      container.height = bg.height
-      return container
+      return new GUI.CardCost cost, canAfford, isOwned

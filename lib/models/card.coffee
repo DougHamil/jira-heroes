@@ -13,9 +13,11 @@ _abilitySchema = new mongoose.Schema _abilitySchemaOpts
 
 _schema = new mongoose.Schema
   name:{type:String}
-  type: {type:String, default:'minion'}
-  cost: {type:Number}
-  type: {type:String}
+  heroRequirement: [{type:String}]
+  cost:
+    storyPoints:Number
+    bugsClosed:Number
+    bugsReported:Number
   energy: {type:Number}
   displayName:{type:String}
   health:{type:Number}
@@ -28,6 +30,9 @@ _schema = new mongoose.Schema
   flags:[{type:String}]
   media:
     image: {type:String}
+    fx:
+      class:String
+      data: {type:mongoose.Schema.Types.Mixed}
     audio:
       attack:{type:String}
       hurt:{type:String}

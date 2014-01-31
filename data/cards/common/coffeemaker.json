@@ -1,7 +1,9 @@
 {
         "name":"coffeemaker",
         "displayName":"Coffee Maker",
-        "cost":0,
+				"cost":{
+					"storyPoints":0
+				},
         "energy":1,
         "health":1,
         "damage":0,

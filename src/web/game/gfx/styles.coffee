@@ -2,6 +2,8 @@ define [], ->
   styles =
     BUTTON_COLOR_DISABLED: 0xBBBBBB
     BUTTON_COLOR: 0xEB6841
+    CARD_PURCHASED_COLOR: 0x00BB00
+    CARD_CANT_AFFORD_COLOR: 0xBB0000
     HEADING:
       stroke: 'black'
       fill:'#EB6841'

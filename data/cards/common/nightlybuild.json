@@ -1,7 +1,9 @@
 {
         "name":"nightlybuild",
         "displayName":"Nightly Build",
-        "cost":0,
+				"cost":{
+					"storyPoints":0
+				},
         "energy":3,
         "health":1,
         "damage":0,

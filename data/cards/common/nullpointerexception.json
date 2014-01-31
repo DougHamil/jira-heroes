@@ -1,7 +1,9 @@
 {
 	"name":"nullpointerexception",
 	"displayName":"Null Ptr Exception",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":1,
 	"health":0,
 	"damage":0,

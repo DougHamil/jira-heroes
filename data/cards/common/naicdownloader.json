@@ -1,7 +1,9 @@
 {
 	"name":"naicdownloader",
 	"displayName":"NAIC Downloader",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":1,
 	"health":1,
 	"damage":1,

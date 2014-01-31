@@ -1,7 +1,9 @@
 {
 	"name":"unittest",
 	"displayName":"Unit Test",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":1,
 	"health":3,
 	"damage":0,

@@ -6,6 +6,7 @@ module.exports = (app, Users) ->
     onLoginSuccess = (user) ->
       req.session.user = user
       redir = if req.session.redir? then req.session.redir else '/'
+      req.session.justLoggedIn = true
       delete req.session.redir
       res.redirect redir
     if FAKE_LOGIN
@@ -23,14 +24,11 @@ module.exports = (app, Users) ->
           res.redirect '/login'
         else
           # Update and save story points since last login
-          ###
-          Users.updateStoryPoints username, password, user, (err, user) ->
+          Users.updateWallet username, password, user, (err, user) ->
             if err?
-              res.send 500, err
+              res.redirect '/login'
             else
               onLoginSuccess(user)
-          ###
-          onLoginSuccess(user)
 
   app.post '/user/find', (req, res) ->
     userIds = req.body.users
@@ -62,6 +60,7 @@ module.exports = (app, Users) ->
 
   app.get '/user/logout', (req, res) ->
     req.session.user = null
+    req.session.justLoggedIn = false
     res.redirect '/'
 
   console.log 'Initialized user controller.'

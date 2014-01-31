@@ -1,7 +1,9 @@
 {
 	"name":"groombacklog",
 	"displayName":"Groom Backlog",
-	"cost":0,
+	"cost":{
+		"storyPoints":0
+	},
 	"energy":3,
 	"health":0,
 	"damage":0,
