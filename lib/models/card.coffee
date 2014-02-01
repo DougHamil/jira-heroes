@@ -23,9 +23,9 @@ _schema = new mongoose.Schema
   health:{type:Number}
   damage:{type:Number}
   traits:[{type:String}]
-  rushAbility: _abilitySchemaOpts             # A minions's rush ability (battlecry)
-  useAbility: _abilitySchemaOpts              # A minions's attack ability
-  playAbility: _abilitySchemaOpts             # A spell card's ability
+  rushAbility: {}             # A minions's rush ability (battlecry)
+  useAbility: {}              # A minions's attack ability
+  playAbility: {}             # A spell card's ability
   passiveAbilities: [_abilitySchema]          # A card's passive abilities
   flags:[{type:String}]
   media:
@@ -54,8 +54,22 @@ _load = (cb) ->
       cb null
     else
       data = JSON.parse(fs.readFileSync(file, 'utf8'))
-      _model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->
-        cb err
+      _model.findOne {name:data.name}, (err, stored) ->
+        if err?
+          cb err
+        else
+          if stored?
+            if not data.passiveAbilities?
+              stored.passiveAbilities = []
+            for key, value of data
+              stored[key] = value
+              stored.markModified(key)
+          else
+            stored = new _model(data)
+          stored.save (err) ->
+            cb err
+      #_model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->
+      #  cb err
 
   files = []
   filestream = readdirp {root: dir, fileFilter: '*.json'}

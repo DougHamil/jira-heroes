@@ -7,16 +7,16 @@
         "energy":3,
         "health":1,
         "damage":0,
-        "passiveAbilities":[
-                {
-                        "class":"end_turn_heal_friendly",
-                        "text":"Heal in play cards by <amount> at the end of your turn",
-                        "data":{
-                                "amount":2,
-                                "healMinions":true
-                        }
-                }
-        ],
+				"passiveAbilities":[
+								{
+												"class":"end_turn_heal_friendly",
+												"text":"Heal in play cards by <amount> at the end of your turn",
+												"data":{
+																"amount":2,
+																"healMinions":true
+												}
+								}
+				],
         "media": {
                 "image": "common/nightlybuild.png"
         }

@@ -11,7 +11,7 @@ class CardHandler
   constructor: (@battle, @playerHandler, @model) ->
     @cardClass = null
     # Spell cards have a "playAbility" property and do not have an attack ability
-    if not @model.playAbility?
+    if not @model.playAbility? or not @model.playAbility.class?
       @attackAbility = Abilities.Attack @battle.getNextAbilityId(), @model
     else
       @attackAbility = null
