@@ -6,5 +6,7 @@ EVENTS =
   CAST_RUSH_ABILITY: 'cast-rush-ability'
   CAST_ABILITY: 'cast-ability'
   TEST: 'test'
+  USE_HERO: 'use-hero'
+  HERO_ATTACK: 'hero-attack'
 
 module.exports = EVENTS

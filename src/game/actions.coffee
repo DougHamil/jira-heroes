@@ -1,4 +1,5 @@
 PlayCardAction = require './actions/playcard'
+PlayHeroAction = require './actions/playhero'
 CastCardAction = require './actions/castcard'
 CastRushAction = require './actions/castrush'
 DiscardCardAction = require './actions/discardcard'
@@ -14,6 +15,8 @@ class Actions
     return new CastRushAction(cardModel, cardClass, target)
   @PlayCard: (cardModel, cardClass) ->
     return new PlayCardAction(cardModel, cardClass)
+  @PlayHero: (heroModel, heroClass) ->
+    return new PlayHeroAction(heroModel, heroClass)
   @DiscardCard: (cardModel) ->
     return new DiscardCardAction(cardModel)
   @Damage: (source, target, damage) ->

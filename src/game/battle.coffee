@@ -146,6 +146,7 @@ class Battle
     @model.state.phase = 'game'
     @assignNextActivePlayer()
     initActions = []
+
     for i in [0..INITIAL_CARD_COUNT]
       initActions.push new DrawCardAction(@getActivePlayer())
     for p in @getNonActivePlayers()
@@ -247,8 +248,21 @@ class Battle
         return p.getModel()
     return null
 
+  getPlayerOfHero: (heroId) ->
+    if heroId._id?
+      heroId = heroId._id
+    for _, p of @players
+      hero = p.getHero()
+      if hero._id.toString() is heroId.toString()
+        return hero
+    return null
+
   getCardHandler: (cardId) ->
     return @cards[cardId]
+
+  getHeroHandler: (heroId) ->
+    player = @getPlayerOfHero(heroId)
+    return player.getHeroHandler()
 
   getCard: (cardId) ->
     for _, p of @players

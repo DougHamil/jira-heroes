@@ -10,6 +10,8 @@ _schema = new Schema
   displayName:{type:String}
   health: Number
   damage: Number
+  energy: Number # Cost to play ability
+  ability: {}
   media:
     icon: {type:String}
     image: {type:String}

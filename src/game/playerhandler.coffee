@@ -2,6 +2,7 @@
 EndTurnAction = require './actions/endturn'
 CardCache = require '../../lib/models/cardcache'
 CardHandler = require './cardhandler'
+HeroHandler = require './herohandler'
 Errors = require './errors'
 Events = require './events'
 
@@ -13,19 +14,34 @@ MAX_HAND_SIZE = 6
 ###
 class PlayerHandler extends EventEmitter
   constructor: (@battle, @player) ->
+    super
     @model = @battle.model
     @userId = @player.userId
+    @heroHandler = new HeroHandler(@battle, @, @player.deck.hero)
 
   disconnect: ->
+
   connect: (@socket) ->
-      @socket.on Events.PLAY_CARD, @onPlayCard()
-      @socket.on Events.END_TURN, @onEndTurn()
-      @socket.on Events.USE_CARD, @onUseCard()
-      @socket.on Events.TEST, @onTest()
+    @socket.on Events.USE_HERO, @onUseHero()
+    @socket.on Events.HERO_ATTACK, @onHeroAttack()
+    @socket.on Events.PLAY_CARD, @onPlayCard()
+    @socket.on Events.END_TURN, @onEndTurn()
+    @socket.on Events.USE_CARD, @onUseCard()
+    @socket.on Events.TEST, @onTest()
 
   validatePlayCard: (cardId, target) ->
     cardHandler = @getCardHandler(cardId)
     if @model.state.phase isnt 'game' or not cardHandler? or not @isActive() or cardHandler.model.position isnt 'hand'
+      return Errors.INVALID_ACTION
+    return null
+
+  validateHeroAttack: (target) ->
+    if not target?
+      return Errors.INVALID_TARGET
+    return null
+
+  validateUseHero: (target) ->
+    if @model.state.phase isnt 'game' or not @isActive()
       return Errors.INVALID_ACTION
     return null
 
@@ -55,11 +71,42 @@ class PlayerHandler extends EventEmitter
         return Errors.INVALID_TARGET
 
     tauntCards = @battle.getFieldCards(targetUserId).filter (c)-> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus() # Get non-frozen taunt cards
-    if tauntCards.length isnt 0 and targetCard not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
+    if targetHero? and tauntCards.length isnt 0
+      return Errors.MUST_TARGET_TAUNT
+    if targetCard? and tauntCards.length isnt 0 and targetCard not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
       return Errors.MUST_TARGET_TAUNT
 
     # Valid move
     return null
+
+  onHeroAttack: ->
+    (target, cb) =>
+      err = @validateHeroAttack(target)
+      cb err if err? and cb?
+      if not err?
+        if target.card?
+          target = @battle.getCard(target.card)
+        else
+          target = @battle.getHero(target.hero)
+        @heroHandler.attack target, (err, actions) =>
+          cb err if err? and cb?
+          if not err?
+            @emit Events.HERO_ATTACK, target, actions
+
+  onUseHero: ->
+    (target, cb) =>
+      err = @validateUseHero(target)
+      cb err if err? and cb?
+      if not err?
+        if target?
+          if target.card?
+            target = @battle.getCard(target.card)
+          else
+            target = @battle.getHero(target.hero)
+        @heroHandler.use target, (err, actions) =>
+          cb err if err? and cb?
+          if not err?
+            @emit Events.USE_HERO, target, actions
 
   onUseCard: ->
     (source, target, cb) =>
@@ -144,6 +191,7 @@ class PlayerHandler extends EventEmitter
     else
       return null
 
+  getHeroHandler: -> return @heroHandler
   getMaxEnergy: -> return @player.maxEnergy
   getEnergy: -> return @player.energy
   getUserId: -> return @player.userId

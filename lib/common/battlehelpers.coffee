@@ -66,6 +66,8 @@ else
       return @maxHealth + @sumModifierProperty('maxHealth')
     model.getDamage = ->
       return @damage + @sumModifierProperty('damage')
+    model.getEnergy = ->
+      return @energy + @sumModifierProperty('energy')
     model.getStatus = ->
       status = []
       status = status.concat(@status)

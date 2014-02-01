@@ -39,6 +39,7 @@ newHeroInstance = (userId, hero, cb) ->
         _id:userId
         userId: userId
         class: heroClass._id
+        energy: heroClass.energy
         health: heroClass.health
         maxHealth: heroClass.health
         damage: heroClass.damage
@@ -105,6 +106,7 @@ _playerSchema = new mongoose.Schema
       health: Number
       maxHealth: Number
       damage: Number
+      energy: Number
       status: [String]
       modifiers: [_modifierSchema]
       used: Boolean

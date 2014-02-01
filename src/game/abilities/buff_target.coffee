@@ -1,4 +1,5 @@
 AddModifierAction = require '../actions/addmodifier'
+Errors = require '../errors'
 
 class BuffTargetAbility
   constructor: (@model) ->
