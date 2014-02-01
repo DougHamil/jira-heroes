@@ -72,8 +72,6 @@ class PlayerHandler extends EventEmitter
         else
           target = @battle.getHero(target.hero)
         cardHandler.use target, (useError, actions) =>
-          console.log "USE ERROR:"
-          console.log useError
           if useError? and cb?
             cb useError
           if not useError?
