@@ -14,6 +14,7 @@ _abilitySchema = new mongoose.Schema _abilitySchemaOpts
 _schema = new mongoose.Schema
   name:{type:String}
   heroRequirement: [{type:String}]
+  deckLimit: {type:Number, default: 2}
   cost:
     storyPoints:Number
     bugsClosed:Number

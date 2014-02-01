@@ -1,5 +1,32 @@
 Heroes = require '../models/hero'
 Decks = require '../models/deck'
+Cards = require '../models/card'
+
+# Make sure the cards chosen are valid for this deck
+validateCardsForDeck = (deck, cardIds, cb) ->
+  Heroes.get deck.hero.class, (err, hero) ->
+    if err?
+      cb err
+    else
+      Cards.get cardIds, (err, cards) ->
+        if err?
+          cb err
+        else
+          cardLimits = {}
+          cardCounts = {}
+          for cardId in cardIds
+            if not cardCounts[cardId]?
+              cardCounts[cardId] = 1
+            else
+              cardCounts[cardId]++
+          for card in cards
+            if card.deckLimit? and cardCounts[card._id]? and cardCounts[card._id] > card.deckLimit
+              cb "Limit of #{card.deckLimit} instances of #{card.name} per deck."
+              return
+            if card.heroRequirement? and card.heroRequirement.length > 0 and hero.name not in card.heroRequirement
+              cb "Card #{card.name} is only valid for heroes: #{card.heroRequirement}"
+              return
+          cb null
 
 module.exports = (app, Users) ->
   # Add a card to a deck
@@ -20,17 +47,20 @@ module.exports = (app, Users) ->
           else if cards.length > Decks.MAX_DECK_SIZE
             res.send 400, "Too many cards, maximum number of cards is #{Decks.MAX_DECK_SIZE}"
           else
-            # TODO: Validate cards (number of cards, availability to player)
             Decks.get id, (err, deck) ->
               if err?
                 res.send 500, err
               else
-                deck.cards = cards
-                deck.save (err) ->
-                  if err?
-                    res.send 500, err
+                validateCardsForDeck deck, cards, (validationError) ->
+                  if validationError? and not global.isTest?
+                    res.send 400, validationError
                   else
-                    res.send 200, id
+                    deck.cards = cards
+                    deck.save (err) ->
+                      if err?
+                        res.send 500, err
+                      else
+                        res.send 200, id
 
   # Create a new deck
   app.post '/secure/deck', (req, res) ->
