@@ -5,9 +5,6 @@ class RemoveModifierAction
   constructor: (@id, @target) ->
 
   enact: (battle) ->
-    console.log "TARGET:"
-    console.flag()
-    console.log @target
     preLength = @target.modifiers.length
     @target.modifiers = @target.modifiers.filter (m) => m._id is @id
     postLength = @target.modifiers.length

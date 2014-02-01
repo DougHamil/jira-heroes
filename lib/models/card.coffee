@@ -38,6 +38,9 @@ _schema = new mongoose.Schema
       hurt:{type:String}
       death:{type:String}
 
+_schema.methods.isSpellCard = ->
+  return @playAbility? and @playAbility.class?
+
 _model = mongoose.model 'Card', _schema
 
 _load = (cb) ->

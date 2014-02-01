@@ -7,24 +7,6 @@ Events = require './events'
 
 MAX_FIELD_CARDS = 5
 
-TRAIT =
-  RUSH: 'rush'
-  TAUNT: 'taunt'
-
-STATUS =
-  SLEEPING: 'sleeping'
-  TAUNT: 'taunt'
-
-TYPE =
-  SPELL: 'spell'
-  MINION: 'minion'
-
-POSITION =
-  DECK: 'deck'
-  HAND: 'hand'
-  FIELD: 'field'
-  DISCARD: 'discard'
-
 class CardHandler
   constructor: (@battle, @playerHandler, @model) ->
     @cardClass = null
@@ -42,9 +24,9 @@ class CardHandler
     return @_castAbility ability, target
 
   _useRush: (target, cardClass, cb) ->
-    @model.usedRushAbility = true
-    if cardClass.rushAbility?
-      cb null, @_castAbilityFromModel cardClass.rushAbility, target
+    if cardClass.rushAbility? and cardClass.rushAbility.class?
+      actions = @_castAbilityFromModel cardClass.rushAbility, target
+      cb null, @battle.processAction(actions)
     else
       cb Errors.INVALID_ACTION
 
@@ -53,23 +35,26 @@ class CardHandler
       try
         actions = @_castAbilityFromModel cardClass.useAbility, target
         cb null, @battle.processActions(actions)
-        @model.used = true
       catch ex
-        cb ex
+        cb ex if cb?
+        if not ex.jiraHeroesError?
+          throw ex
     else if @attackAbility?
       try
         actions = @_castAbility @attackAbility, target
         cb null, @battle.processActions(actions)
       catch ex
-        cb ex
+        cb ex if cb?
+        if not ex.jiraHeroesError?
+          throw ex
     else
-      cb Errors.INVALID_ACTION
+      cb Errors.INVALID_ACTION if cb?
 
   _play: (target, cardClass, cb) ->
     try
-      @model.usedRushAbility = false
       actions = []
-      if cardClass.playAbility.class?
+      # If this is a spell card, cast the spell
+      if cardClass.isSpellCard()
         ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, cardClass.playAbility
         targets = if target? then [target] else []
         targets = ability.getTargets(@battle, target) if ability.getTargets?
@@ -85,35 +70,43 @@ class CardHandler
           @passiveAbilities.push ability
         actions.push Actions.PlayCard(@model, cardClass)
       cb null, @battle.processActions(actions)
-    catch err
+    catch err # Abilities can throw errors if their target is invalid
       console.log "Ability Cast Error: "
       console.log err
-      cb err
+      cb err if cb?
+      # Throw error higher if this is an actual program error
       if not err.jiraHeroesError?
         throw err
 
   useRush: (target, cb) ->
+    # Rush abilities require a target
     if target?
-      if not @model.usedRushAbility
+      if 'used' in @model.getStatus()
+        cb Errors.CARD_USED if cb?
+      else
         CardCache.get @model.class, (err, cardClass) =>
           @_useRush target, cardClass, cb
-      else
-        cb Errors.INVALID_ACTION
     else
-      cb Errors.INVALID_TARGET
+      cb Errors.INVALID_TARGET if cb?
 
   use: (target, cb) ->
     if target?
       # Sleeping cards cannot be used, and cards cannot be used twice in a turn
-      if STATUS.SLEEPING in @model.getStatus()
-        cb Errors.CARD_SLEEPING
+      if 'sleeping' in @model.getStatus()
+        cb Errors.CARD_SLEEPING if cb?
       else if 'used' in @model.getStatus()
-        cb Errors.CARD_USED
+        cb Errors.CARD_USED if cb?
       else
         CardCache.get @model.class, (err, cardClass) =>
           @_use target, cardClass, cb
     else
-      cb Errors.INVALID_TARGET
+      cb Errors.INVALID_TARGET if cb?
+
+  validatePlay: (target, cardClass) ->
+    if @playerHandler.player.energy < @model.getEnergy()
+      return Errors.NOT_ENOUGH_ENERGY
+    if not cardClass.isSpellCard() and @playerHandler.getFieldCards().length >= MAX_FIELD_CARDS
+      return Errors.FULL_FIELD
 
   play: (target, cb) ->
     if target?
@@ -122,13 +115,10 @@ class CardHandler
       else
         target = @battle.getHero target.hero
     CardCache.get @model.class, (err, cardClass) =>
-      if @playerHandler.player.energy >= @model.getEnergy()
-        if cardClass.playAbility.class? or @playerHandler.getFieldCards().length < MAX_FIELD_CARDS
-          @_play target, cardClass, cb
-        else
-          cb Errors.FULL_FIELD if cb?
-      else
-        cb Errors.NOT_ENOUGH_ENERGY if cb?
+      validationError = @validatePlay(target, cardClass)
+      cb validationError if cb? and validationError?
+      if not validationError?
+        @_play target, cardClass, cb
 
   registerPassiveAbilities: ->
     actions = []
@@ -148,7 +138,7 @@ class CardHandler
     @unregisterPassiveAbilities()
 
   returnToHand: (cb) ->
-    @model.position = POSITION.HAND
+    @model.position = 'hand'
     @unregisterPassiveAbilities()
 
   _getHeroOrCard: (obj) ->

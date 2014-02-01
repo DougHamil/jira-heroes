@@ -160,8 +160,9 @@ class Battle
     actions = initActions || []
     actions.push new StartTurnAction(@getActivePlayer())
     payloads = @processActions(actions)
-    @emitActionsActive 'your-turn', payloads
-    @emitActionsAllButActive 'opponent-turn', payloads
+    @emitActive 'your-turn'
+    @emitAllButActive 'opponent-turn'
+    @emitActionsAll 'action', payloads
 
   sanitizePayloads: (userId, payloads) ->
     out = []
@@ -222,6 +223,15 @@ class Battle
       return player.getHero()
     else
       return null
+
+  # Given an ID, get the hero or card that correspond to it
+  getCardOrHero: (id) ->
+    if id._id?
+      id = id._id
+    hero = @getHero(id)
+    if hero?
+      return hero
+    return @getCard(id)
 
   getPlayerOfCard: (cardId) ->
     if cardId._id?

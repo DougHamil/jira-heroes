@@ -20,8 +20,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
           BattleHelpers.addCardMethods(card)
       @socket.on 'player-connected', (userId) => @onPlayerConnected(userId)
       @socket.on 'player-disconnected', (userId) => @onPlayerDisconnected(userId)
-      @socket.on 'your-turn', (actions) => @processAndEmit('your-turn', actions)
-      @socket.on 'opponent-turn', (actions) => @processAndEmit('opponent-turn', actions)
+      @socket.on 'your-turn', => @emit 'your-turn'
+      @socket.on 'opponent-turn', (id) => @emit 'opponent-turn'
       @socket.on 'phase', (oldPhase, newPhase) => @onPhaseChanged(oldPhase, newPhase)
       @socket.on 'action', (actions) => @processAndEmit 'action', actions
 

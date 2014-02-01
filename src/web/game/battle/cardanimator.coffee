@@ -72,8 +72,6 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @animateActions(actions)
-      @battle.on 'your-turn', (actions) => @animateActions(actions)
-      @battle.on 'opponent-turn', (actions) => @animateActions(actions)
 
     animateActions: (actions) ->
       for action in actions

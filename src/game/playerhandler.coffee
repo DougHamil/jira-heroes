@@ -23,57 +23,61 @@ class PlayerHandler extends EventEmitter
       @socket.on Events.USE_CARD, @onUseCard()
       @socket.on Events.TEST, @onTest()
 
+  validatePlayCard: (cardId, target) ->
+    cardHandler = @getCardHandler(cardId)
+    if @model.state.phase isnt 'game' or not cardHandler? or not @isActive() or cardHandler.model.position isnt 'hand'
+      return Errors.INVALID_ACTION
+    return null
+
+  # Validate the use of a card (card attacking some target)
+  validateUseCard: (source, target) ->
+    if not source? or not target?
+      return Errors.INVALID_ACTION
+    if @model.state.phase isnt 'game' or not @isActive()
+      return Errors.INVALID_ACTION
+    cardHandler = @getCardHandler(source)
+    if not cardHandler?
+      return Errors.INVALID_CARD
+
+    sourceCard = cardHandler.model
+    if sourceCard.position isnt 'field' # Only deployed cards can be used
+      return Errors.INVALID_ACTION
+    if 'frozen' in sourceCard.getStatus() # Frozen cards cannot be used
+      return Errors.FROZEN
+    targetCard = @battle.getCard(target.card) if target.card?
+    targetHero = @battle.getHero(target.hero) if target.hero?
+    if not targetCard? and not targetHero? # Player must target something
+      return Errors.INVALID_TARGET
+
+    targetUserId = if targetCard? then targetCard.userId else targetHero.userId
+
+    if targetCard? and (targetCard.position isnt 'field' or targetCard is sourceCard) # Target card must be on the field and not the source card
+        return Errors.INVALID_TARGET
+
+    tauntCards = @battle.getFieldCards(targetUserId).filter (c)-> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus() # Get non-frozen taunt cards
+    if tauntCards.length isnt 0 and targetCard not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
+      return Errors.MUST_TARGET_TAUNT
+
+    # Valid move
+    return null
+
   onUseCard: ->
     (source, target, cb) =>
-      if @model.state.phase == 'game' and @isActive()
+      err = @validateUseCard(source, target)
+      cb err if err? and cb?
+      if not err?
         cardHandler = @getCardHandler(source)
-        if cardHandler?
-          card = cardHandler.model
-          # Card must be on field to be used
-          if card.position is 'field'
-            if 'frozen' not in card.getStatus()
-              # Card use targeting a card
-              if target.card?
-                targetCard = @battle.getCard(target.card)
-                # Can only target cards on the field and cannot target self
-                if targetCard? and targetCard.position is 'field' and targetCard isnt card
-                  # If there is a taunt card on the field, then the target must be taunt
-                  fieldCards = @battle.getFieldCards(targetCard.userId)
-                  fieldCards = fieldCards.filter (c) -> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus()
-                  if fieldCards.length is 0 or targetCard in fieldCards
-                    cardHandler.use targetCard, (err, actions) =>
-                      cb err if cb?
-                      if not err?
-                        @emit Events.USE_CARD, card, targetCard, actions
-                  else
-                    cb Errors.MUST_TARGET_TAUNT if cb?
-                else
-                  cb Errors.INVALID_TARGET if cb?
-              # Card use targeting a hero
-              else if target.hero?
-                hero = @battle.getHero(target.hero)
-                if hero?
-                  # If a taunt card is deployed, then you must target the taunt first
-                  fieldCards = @battle.getFieldCards(hero.userId).filter (c) -> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus()
-                  if fieldCards.length is 0
-                    cardHandler.use hero, (err, actions) =>
-                      cb err if cb?
-                      if not err?
-                        @emit Events.USE_CARD, card, hero, actions
-                  else
-                    cb Errors.MUST_TARGET_TAUNT if cb?
-                else
-                  cb Errors.INVALID_TARGET if cb?
-              else
-                cb Errors.INVALID_ACTION if cb?
-            else
-              cb Errors.FROZEN if cb?
-          else
-            cb Errors.INVALID_ACTION if cb?
+        if target.card?
+          target = @battle.getCard(target.card)
         else
-          cb Errors.INVALID_CARD if cb?
-      else
-        cb Errors.INVALID_ACTION if cb?
+          target = @battle.getHero(target.hero)
+        cardHandler.use target, (useError, actions) =>
+          console.log "USE ERROR:"
+          console.log useError
+          if useError? and cb?
+            cb useError
+          if not useError?
+            @emit Events.USE_CARD, source, target, actions
 
   onEndTurn: ->
     (cb) =>
@@ -87,16 +91,16 @@ class PlayerHandler extends EventEmitter
 
   onPlayCard: ->
     (cardId, target, cb) =>
-      cardHandler = @getCardHandler(cardId)
-      if @model.state.phase is 'game' and cardHandler? and @isActive() and cardHandler.model.position is 'hand'
+      validationError = @validatePlayCard(cardId, target)
+      cb validationError if validationError? and cb?
+      if not validationError?
+        cardHandler = @getCardHandler(cardId)
         cardHandler.play target, (err, actions) =>
           if err?
             cb err
           else
             @emit Events.PLAY_CARD, cardHandler.model, actions
             cb null, cardHandler.model
-      else
-        cb Errors.INVALID_ACTION if cb?
 
   ###
   # Override properties for automated tests
