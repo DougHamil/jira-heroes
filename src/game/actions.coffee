@@ -1,9 +1,12 @@
 PlayCardAction = require './actions/playcard'
 CastCardAction = require './actions/castcard'
 DiscardCardAction = require './actions/discardcard'
+PermAddStatusAction = require './actions/permstatusadd'
 DamageAction = require './actions/damage'
 
 class Actions
+  @AddStatus: (cardModel, status) ->
+    return new PermAddStatusAction(cardModel, status)
   @CastCard: (cardModel, cardClass, target) ->
     return new CastCardAction(cardModel, cardClass, target)
   @PlayCard: (cardModel, cardClass) ->

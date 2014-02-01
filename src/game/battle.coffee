@@ -154,6 +154,7 @@ class Battle
     @nextTurn(initActions)
 
   nextTurn: (initActions)->
+    @model.turnNumber++
     # Pick the next player and set to active
     if not initAction?
       @assignNextActivePlayer()
@@ -287,6 +288,7 @@ class Battle
     out =
       connectedPlayers: (playerId for playerId, socket of @sockets)
       activePlayer: @model.state.activePlayer
+      turnNumber: @model.turnNumber
       state:
         phase:@model.state.phase
       you:
@@ -298,6 +300,7 @@ class Battle
         deckSize: player.getDeckCards().length # Player doesn't get to know what card is in deck
       opponents: @getOpponentsData(user)
 
+  getTurnNumber: -> return @model.turnNumber
   # Used to generate unique ability Ids
   getNextAbilityId: ->
     return @model.abilityId++

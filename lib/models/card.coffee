@@ -66,6 +66,9 @@ _load = (cb) ->
               stored.markModified(key)
           else
             stored = new _model(data)
+          # It is invalid for a card to be a rush card and have a rush ability
+          if data.traits? and 'rush' in data.traits and data.rushAbility? and data.rushAbility.class?
+              throw new Error("Card #{data.name} has a rush trait and a rush ability, they are mutually exclusive. Please remove one.")
           stored.save (err) ->
             cb err
       #_model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->

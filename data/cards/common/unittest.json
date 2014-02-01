@@ -7,7 +7,7 @@
 	"energy":1,
 	"health":2,
 	"damage":1,
-	"traits":["taunt"],
+	"traits":["taunt", "rush"],
 	"passiveAbilities":[],
 	"media": {
 		"image": "common/unittest.png"

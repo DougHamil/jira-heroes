@@ -14,7 +14,7 @@ newCardInstance = (userId) ->
         out =
           isCard: true
           isHero: false
-          usedRushAbility: false
+          turnPlayed: null
           userId: userId
           position: 'deck'
           class:cardId
@@ -76,11 +76,11 @@ _modifierSchema = new mongoose.Schema
 _cardSchema = new mongoose.Schema
   class: String
   userId: String
+  turnPlayed: Number
   isCard: {type:Boolean, default:true}
   isHero: {type:Boolean, default:false}
   health: Number
   energy: Number
-  usedRushAbility: Boolean
   maxHealth: Number
   damage: Number
   modifiers: [_modifierSchema]
@@ -116,6 +116,7 @@ _schema = new mongoose.Schema
   players: [_playerSchema]
   passiveAbilities: [mongoose.Schema.Types.Mixed]
   abilityId: {type:Number, default:0}
+  turnNumber: {type:Number, default:0}
   state:
     phase: {type:String, default:'initial'}
     activePlayer: String

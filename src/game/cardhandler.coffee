@@ -25,13 +25,19 @@ class CardHandler
 
   _useRush: (target, cardClass, cb) ->
     if cardClass.rushAbility? and cardClass.rushAbility.class?
-      actions = @_castAbilityFromModel cardClass.rushAbility, target
-      cb null, @battle.processAction(actions)
+      try
+        actions = [Actions.AddStatus(@model, 'used')]
+        actions = actions.concat(@_castAbilityFromModel(cardClass.rushAbility, target))
+        cb null, @battle.processActions(actions)
+      catch ex
+        cb ex if cb?
+        if not ex.jiraHeroesError?
+          throw ex
     else
       cb Errors.INVALID_ACTION
 
   _use: (target, cardClass, cb) ->
-    if cardClass.useAbility.class?
+    if cardClass.useAbility? and cardClass.useAbility.class?
       try
         actions = @_castAbilityFromModel cardClass.useAbility, target
         cb null, @battle.processActions(actions)
@@ -69,6 +75,7 @@ class CardHandler
           ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
           @passiveAbilities.push ability
         actions.push Actions.PlayCard(@model, cardClass)
+      @model.turnPlayed = @battle.getTurnNumber()
       cb null, @battle.processActions(actions)
     catch err # Abilities can throw errors if their target is invalid
       console.log "Ability Cast Error: "
@@ -78,29 +85,29 @@ class CardHandler
       if not err.jiraHeroesError?
         throw err
 
-  useRush: (target, cb) ->
-    # Rush abilities require a target
+  use: (target, cb) ->
     if target?
-      if 'used' in @model.getStatus()
-        cb Errors.CARD_USED if cb?
-      else
-        CardCache.get @model.class, (err, cardClass) =>
-          @_useRush target, cardClass, cb
+      CardCache.get @model.class, (err, cardClass) =>
+        validationError = @validateUse target, cardClass
+        if validationError? and cb?
+          cb validationError
+        if not validationError?
+          if cardClass.rushAbility? and cardClass.rushAbility.class? and @model.turnPlayed is @battle.getTurnNumber()
+            @_useRush target, cardClass, cb
+          else
+            @_use target, cardClass, cb
     else
       cb Errors.INVALID_TARGET if cb?
 
-  use: (target, cb) ->
-    if target?
-      # Sleeping cards cannot be used, and cards cannot be used twice in a turn
-      if 'sleeping' in @model.getStatus()
-        cb Errors.CARD_SLEEPING if cb?
-      else if 'used' in @model.getStatus()
-        cb Errors.CARD_USED if cb?
-      else
-        CardCache.get @model.class, (err, cardClass) =>
-          @_use target, cardClass, cb
-    else
-      cb Errors.INVALID_TARGET if cb?
+  validateUse: (target, cardClass) ->
+    if 'used' in @model.getStatus()
+      return Errors.CARD_USED
+    if 'sleeping' in @model.getStatus()
+      if not cardClass.rushAbility? or not cardClass.rushAbility.class?
+        return Errors.CARD_SLEEPING
+      else if @model.turnPlayed < @battle.getTurnNumber()
+        return Errors.CARD_SLEEPING
+    return null
 
   validatePlay: (target, cardClass) ->
     if @playerHandler.player.energy < @model.getEnergy()

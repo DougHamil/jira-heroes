@@ -7,6 +7,13 @@
 	"energy":1,
 	"health":1,
 	"damage":1,
+	"rushAbility": {
+		"class":"damage",
+		"text":"Damage target minion or hero for <amount> health.",
+		"data":{
+			"amount":1
+		}
+	},
 	"media": {
 		"image": "common/naicdownloader.png"
 	}
