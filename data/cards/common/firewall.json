@@ -9,6 +9,7 @@
 	"damage":0,
 	"playAbility": {
 		"class":"overheal",
+		"requiresTarget": true,
 		"text":"Add <amount> health, even above its max.",
 		"data":{
 			"amount":4

@@ -9,6 +9,7 @@
 	"damage":0,
 	"playAbility": {
 		"class":"heal",
+		"requiresTarget": true,
 		"text":"Heal target minion or hero for <amount> health.",
 		"data":{
 			"amount":1

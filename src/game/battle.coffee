@@ -225,6 +225,10 @@ class Battle
     else
       return null
 
+  getHeroOfPlayer: (playerId) ->
+    playerId = playerId._id if playerId._id?
+    return @getHero(playerId)
+
   # Given an ID, get the hero or card that correspond to it
   getCardOrHero: (id) ->
     if id._id?

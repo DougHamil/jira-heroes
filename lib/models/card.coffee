@@ -44,6 +44,21 @@ _schema.methods.isSpellCard = ->
 
 _model = mongoose.model 'Card', _schema
 
+_validateCardData = (data) ->
+  # It is invalid for a card to be a rush card and have a rush ability
+  if data.traits? and 'rush' in data.traits and data.rushAbility? and data.rushAbility.class?
+    return new Error("Card #{data.name} has a rush trait and a rush ability, they are mutually exclusive. Please remove one.")
+  checkAbilityProps = (abil) ->
+    if abil? and abil.class? and not abil.requiresTarget?
+      return new Error("Card #{data.name} is missing a 'requiresTarget' property on ability #{abil.class}")
+  err = checkAbilityProps(data.playAbility)
+  if err?
+    return err
+  err = checkAbilityProps(data.rushAbility)
+  if err?
+    return err
+  return null
+
 _load = (cb) ->
   process.stdout.write 'Loading cards...'
   dir = path.join process.cwd(), 'data/cards'
@@ -67,9 +82,9 @@ _load = (cb) ->
               stored.markModified(key)
           else
             stored = new _model(data)
-          # It is invalid for a card to be a rush card and have a rush ability
-          if data.traits? and 'rush' in data.traits and data.rushAbility? and data.rushAbility.class?
-              throw new Error("Card #{data.name} has a rush trait and a rush ability, they are mutually exclusive. Please remove one.")
+          validationError = _validateCardData(data)
+          if validationError?
+            throw validationError
           stored.save (err) ->
             cb err
       #_model.findOneAndUpdate {name:data.name}, data, {upsert:true}, (err) ->

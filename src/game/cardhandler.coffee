@@ -26,7 +26,7 @@ class CardHandler
   _useRush: (target, cardClass, cb) ->
     if cardClass.rushAbility? and cardClass.rushAbility.class?
       try
-        actions = [Actions.AddStatus(@model, 'used')]
+        actions = [Actions.CastRush(@model, cardClass, target), Actions.AddStatus(@model, 'used')]
         actions = actions.concat(@_castAbilityFromModel(cardClass.rushAbility, target))
         cb null, @battle.processActions(actions)
       catch ex
@@ -75,6 +75,11 @@ class CardHandler
           ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
           @passiveAbilities.push ability
         actions.push Actions.PlayCard(@model, cardClass)
+        # Auto-cast rush ability if it doesn't require a target
+        if @model.hasRushAbility(cardClass) and not cardClass.rushAbility.requiresTarget
+          actions.push Actions.CastRush(@model, cardClass, null)
+          actions.push Actions.AddStatus(@model, 'used')
+          actions = actions.concat(@_castAbilityFromModel(cardClass.rushAbility, null))
       @model.turnPlayed = @battle.getTurnNumber()
       cb null, @battle.processActions(actions)
     catch err # Abilities can throw errors if their target is invalid

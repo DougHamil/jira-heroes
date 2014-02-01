@@ -22,6 +22,8 @@ else
         if modifier.data? and modifier.data[prop]?
           sum += modifier.data[prop]
       return sum
+    model.hasRushAbility = (cardClass) ->
+      return cardClass.rushAbility? and cardClass.rushAbility.class?
     model.getMaxHealth = ->
       return @maxHealth + @sumModifierProperty('maxHealth')
     model.getDamage = ->

@@ -8,8 +8,9 @@
 	"health":1,
 	"damage":1,
 	"rushAbility": {
-		"class":"damage",
-		"text":"Damage target minion or hero for <amount> health.",
+		"class":"heal_hero",
+		"requiresTarget":false,
+		"text":"Heal hero for <amount> health",
 		"data":{
 			"amount":1
 		}

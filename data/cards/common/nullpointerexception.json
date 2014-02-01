@@ -10,6 +10,7 @@
 	"damage":0,
 	"playAbility": {
 		"class":"damage",
+		"requiresTarget":true,
 		"text":"Damage target minion or hero for <amount> health.",
 		"data":{
 			"amount":1
