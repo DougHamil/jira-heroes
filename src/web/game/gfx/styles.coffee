@@ -1,34 +1,45 @@
 define [], ->
   styles =
-    BUTTON_COLOR_DISABLED: 0xBBBBBB
-    BUTTON_COLOR: 0xEB6841
+    DARK_BACKGROUND_COLOR: 0x112233
+    BUTTON_COLOR_DISABLED: 0x889999
+    BUTTON_COLOR: 0x3399BB
     CARD_PURCHASED_COLOR: 0x00BB00
     CARD_CANT_AFFORD_COLOR: 0xBB0000
     HEADING:
       stroke: 'black'
-      fill:'#EB6841'
+      fill:'#77DDEE'
       strokeThickness:5
-      font:'40px silly'
+      font:'40px pixel'
+    BUTTON_TEXT:
+      stroke:'#000000'
+      fill:'#FFFFFF'
+      strokeThickness:2
+      font:'20px pixel'
+    TEXT_WARN:
+      stroke:'#000000'
+      fill:'#B22222'
+      strokeThickness:2
+      font:'20px pixel'
     TEXT:
       stroke:'#000000'
       fill:'#FFFFFF'
       strokeThickness:2
-      font:'20px silly'
+      font:'20px pixel'
     CARD_TITLE:
-      stroke: '#000000'
-      fill:'#000000'
+      stroke: '#002244'
+      fill:'#ddeeee'
       strokeThickness:0
-      font:'20px silly'
+      font:'20px pixel'
     CARD_STAT:
       stroke: '#000000'
       fill:'#FFFFFF'
       strokeThickness:2
-      font:'24px silly'
+      font:'24px pixel'
     CARD_DESCRIPTION:
-      stroke: '#FFFFFF'
+      stroke: '#00000'
       fill:'#FFFFFF'
       strokeThickness:0
-      font:'12px silly'
+      font:'13px pixel'
       wordWrap: true
-      wordWrapWidth:140
+      wordWrapWidth:123
   return styles

@@ -17,6 +17,7 @@ define ['./gfx/herobutton',
         './gfx/energyicon',
         './gfx/wallet',
         './gfx/cardcost',
+        './gfx/spritebutton',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -38,6 +39,7 @@ define ['./gfx/herobutton',
         EnergyIcon,
         Wallet,
         CardCost,
+        SpriteButton,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -59,6 +61,7 @@ define ['./gfx/herobutton',
     EnergyIcon:EnergyIcon
     Wallet: Wallet
     CardCost: CardCost
+    SpriteButton: SpriteButton
     STYLES: styles
 
   return GUI

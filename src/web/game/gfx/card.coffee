@@ -2,17 +2,28 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
   CARD_SIZE =
     width: 150
     height: 225
-  IMAGE_POS =
-    x: 3
-    y: 3
+  CARD_SCALE =
+    x: (CARD_SIZE.width / 512)
+    y: (CARD_SIZE.height / 768)
+  IMAGE_SCALE =
+    x: 0.8
+    y: 0.8
   IMAGE_SIZE =
-    width: 498 * (CARD_SIZE.width / 512)
-    height: 498 * (CARD_SIZE.height / 768)
+    width: 512 * (CARD_SIZE.width / 512) * IMAGE_SCALE.x
+    height: 512 * (CARD_SIZE.height / 768) * IMAGE_SCALE.y
   IMAGE_MASK =
     width: IMAGE_SIZE.width
-    height: 336 * (CARD_SIZE.height / 768)
+    height: IMAGE_SIZE.height - 60
+  IMAGE_POS =
+    x: (CARD_SIZE.width - IMAGE_SIZE.width)/2
+    y: 10
+  SHADOW_OFFSET =
+    x: 5
+    y: 5
   IMAGE_PATH = '/media/images/cards/'
-  BACKGROUND_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'background.png'
+  BACKGROUND_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_front.png'
+  OVERLAY_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_overlay.png'
+  SHADOW_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_shadow.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
 
   ###
@@ -26,25 +37,34 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     constructor: (cardClass, damage, health, status) ->
       super()
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
+      @shadowSprite = new PIXI.Sprite SHADOW_TEXTURE
+      @shadowSprite.width = CARD_SIZE.width
+      @shadowSprite.height = CARD_SIZE.height
+      @shadowSprite.position = SHADOW_OFFSET
       @backgroundSprite = new PIXI.Sprite BACKGROUND_TEXTURE
       @backgroundSprite.width = CARD_SIZE.width
       @backgroundSprite.height = CARD_SIZE.height
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = IMAGE_SIZE.width
       @imageSprite.height = IMAGE_SIZE.height
+      @overlaySprite = new PIXI.Sprite OVERLAY_TEXTURE
+      @overlaySprite.width = CARD_SIZE.width
+      @overlaySprite.height = CARD_SIZE.height
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
       if @titleText.width >= @backgroundSprite.width - 20
         @titleText.width = @backgroundSprite.width - 20
       @energyIcon = new EnergyIcon cardClass.energy
       @description = @buildAbilityText cardClass
-      @description.position = {x:5, y: @backgroundSprite.height / 2 + 25}
-      @titleText.anchor = {x: 0.5, y:0.5}
-      @titleText.position = {x:@backgroundSprite.width / 2, y: @backgroundSprite.height/2+4}
+      @description.position = {x:15, y: @backgroundSprite.height / 2 + 30}
+      @titleText.anchor = {x: 0.5, y:0}
+      @titleText.position = {x:@backgroundSprite.width / 2, y: 395 * CARD_SCALE.y}
       @energyIcon.position = {x:0, y:0}
       @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
 
-      @.addChild @imageSprite
+      @.addChild @shadowSprite
       @.addChild @backgroundSprite
+      @.addChild @imageSprite
+      @.addChild @overlaySprite
       @.addChild @titleText
       @.addChild @description
       @.addChild @energyIcon

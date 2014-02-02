@@ -1,20 +1,20 @@
 define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], ( BasicTargetFx, PayloadFactory, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
   DISCARD_ORIGIN = {x:-200, y: 0}
   DEFAULT_TWEEN_TIME = 200
-  PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y: 400}
-  ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 20, y: 160}
+  PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400}
+  ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240}
   PLAYER_FIELD_CONFIG =
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
-    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
-    origin: {x:20, y:400}
+    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 160)
+    origin: {x:20, y:engine.HEIGHT/2}
     padding: 20
     interactionEnabled:true
   ENEMY_FIELD_CONFIG =
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
-    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 220)
-    origin: {x:20, y:160}
+    fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 160)
+    origin: {x:20, y:engine.HEIGHT/2 - 160}
     padding: 20
     interactionEnabled:false
   ENEMY_HAND_CONFIG =

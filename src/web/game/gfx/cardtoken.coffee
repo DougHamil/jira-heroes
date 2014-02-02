@@ -1,10 +1,14 @@
 define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, STYLES, Util) ->
+  FROZEN_TINT = 0xFF0000
+  DEFAULT_TINT = 0x77DDEE
+
   TOKEN_WIDTH = 128
   TOKEN_HEIGHT = 128
   IMAGE_PATH = '/media/images/cards/'
-  FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame.png'
-  TAUNT_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame_taunt.png'
-  FROZEN_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_frame_frozen.png'
+  FRAME_HIGHLIGHT_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_highlight.png'
+  FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token.png'
+  TAUNT_FRAME_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_taunt.png'
+  TAUNT_FRAME_HIGHLIGHT_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_taunt_highlight.png'
   SLEEPING_OVERLAY_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'token_overlay_sleeping.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
 
@@ -22,19 +26,25 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @sleepingSprite = new PIXI.Sprite SLEEPING_OVERLAY_TEXTURE
       @sleepingSprite.width = TOKEN_WIDTH
       @sleepingSprite.height = TOKEN_HEIGHT
-      @frozenSprite = new PIXI.Sprite FROZEN_FRAME_TEXTURE
-      @frozenSprite.width = TOKEN_WIDTH
-      @frozenSprite.height = TOKEN_HEIGHT
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = TOKEN_WIDTH
       @imageSprite.height = TOKEN_HEIGHT
       @imageSprite.mask = @createImageMask()
+      @frameHighlightSprite = new PIXI.Sprite FRAME_HIGHLIGHT_TEXTURE
+      @frameHighlightSprite.width = TOKEN_WIDTH
+      @frameHighlightSprite.height = TOKEN_HEIGHT
+      @frameHighlightSprite.visible = false
       @frameSprite = new PIXI.Sprite FRAME_TEXTURE
       @frameSprite.width = TOKEN_WIDTH
       @frameSprite.height = TOKEN_HEIGHT
       @tauntFrameSprite = new PIXI.Sprite TAUNT_FRAME_TEXTURE
       @tauntFrameSprite.width = TOKEN_WIDTH
       @tauntFrameSprite.height = TOKEN_HEIGHT
+      @tauntFrameSprite.visible = false
+      @tauntHighlightSprite = new PIXI.Sprite TAUNT_FRAME_HIGHLIGHT_TEXTURE
+      @tauntHighlightSprite.width = TOKEN_WIDTH
+      @tauntHighlightSprite.height = TOKEN_HEIGHT
+      @tauntHighlightSprite.visible = false
       @damageIcon = new DamageIcon card.damage
       @healthIcon = new HealthIcon card.health
       @damageIcon.anchor = {x:0.5, y:0.5}
@@ -42,11 +52,12 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @damageIcon.position = {x:0, y:@height - @damageIcon.height}
       @healthIcon.position = {x:@width - @healthIcon.width, y:@height - @healthIcon.height}
 
-      @.addChild @frameSprite
-      @.addChild @tauntFrameSprite
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
-      @.addChild @frozenSprite
+      @.addChild @frameSprite
+      @.addChild @frameHighlightSprite
+      @.addChild @tauntFrameSprite
+      @.addChild @tauntHighlightSprite
       @.addChild @sleepingSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
@@ -64,10 +75,13 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       return @visible and @hitArea.contains(point.x, point.y)
 
     setUsed:(isUsed) ->
-      if isUsed
-        @imageSprite.tint = 0x555555
+      if @frameSprite.visible or @frameHighlightSprite.visible
+        @frameSprite.visible = isUsed
+        @frameHighlightSprite.visible = !isUsed
       else
-        @imageSprite.tint = 0xFFFFFF
+        @tauntFrameSprite.visible = isUsed
+        @tauntHighlightSprite.visible = !isUsed
+
     setHealth: (health) ->
       @healthIcon.setHealth(health)
 
@@ -75,9 +89,20 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @damageIcon.setDamage(damage)
 
     setTaunt: (isTaunting) ->
-      @tauntFrameSprite.visible = isTaunting
-      @frameSprite.visible = !isTaunting
-    setFrozen: (isFrozen) -> @frozenSprite.visible = isFrozen
+      if @frameSprite.visible or @tauntFrameSprite.visible
+        @tauntFrameSprite.visible = isTaunting
+        @frameSprite.visible = !isTaunting
+      else
+        @frameHighlightSprite.visible = !isTaunting
+        @tauntHighlightSprite.visible = isTaunting
+
+    setFrozen: (isFrozen) ->
+      tint = if isFrozen then FROZEN_TINT else DEFAULT_TINT
+      @frameSprite.tint = tint
+      @tauntFrameSprite.tint = tint
+      @frameHighlightSprite.tint = tint
+      @tauntHighlightSprite.tint = tint
+
     setSleeping: (isSleeping) -> @sleepingSprite.visible = isSleeping
 
     getCenterPosition: ->
@@ -98,6 +123,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
-      mask.drawCircle(TOKEN_WIDTH/2, TOKEN_HEIGHT/2, TOKEN_WIDTH/2-5)
+      mask.drawCircle(TOKEN_WIDTH/2, TOKEN_HEIGHT/2, TOKEN_WIDTH/2-10)
       mask.endFill()
       return mask

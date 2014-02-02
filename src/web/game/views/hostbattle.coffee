@@ -31,7 +31,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
           @deckList.onDeckPicked (deckId) => @hostBattleWithDeck(deckId)
           @.addChild @deckList
         else
-          @deckList = new PIXI.Text 'You do not own any full decks', GUI.STYLES.WARNING
+          @deckList = new PIXI.Text 'You do not own any full decks', GUI.STYLES.TEXT_WARN
           @deckList.position = {x:0, y:100}
           @.addChild @deckList
         @myStage.addChild @

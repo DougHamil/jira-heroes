@@ -1,5 +1,5 @@
 define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemanager', 'engine', 'pixi'], ($, JH, GUI, CardAnimator, BattleManager, engine) ->
-  BACKDROP_TEXTURE = PIXI.Texture.fromImage '/media/images/backdrop.png'
+  BACKDROP_TEXTURE = PIXI.Texture.fromImage '/media/images/battlefield.png'
   ###
   # This view displays the actual battle part of the game to the player
   ###

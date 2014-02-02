@@ -2,9 +2,9 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
   STYLE = styles.TEXT
   GLYPHS =
     'coin': '/media/images/icons/coin.png'
-    'storypoint': '/media/images/icons/story_point.png'
-    'bugsclosed': '/media/images/icons/bugs_closed.png'
-    'bugsreported': '/media/images/icons/bugs_reported.png'
+    'storypoint': '/media/images/icons/currency_story_points.png'
+    'bugsclosed': '/media/images/icons/currency_bugs_closed.png'
+    'bugsreported': '/media/images/icons/currency_bugs_reported.png'
 
   class GlyphText extends PIXI.DisplayObjectContainer
     constructor: (text) ->

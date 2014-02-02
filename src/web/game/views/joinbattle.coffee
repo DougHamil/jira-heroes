@@ -45,7 +45,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
           @deckList.position = {x: 0, y: 100}
           @deckList.onDeckPicked (deckId) => @joinBattleWithDeck(@pickedBattleId, deckId)
         else
-          @deckList = new PIXI.Text 'You do not own any full decks', GUI.STYLES.WARNING
+          @deckList = new PIXI.Text 'You do not own any full decks', GUI.STYLES.TEXT_WARN
           @deckList.position = {x:0, y:100}
         @deckPick.addChild @deckList
         @deckPick.visible = false

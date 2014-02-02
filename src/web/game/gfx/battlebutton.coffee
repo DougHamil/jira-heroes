@@ -5,7 +5,10 @@ define ['gfx/styles', 'util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine)
   class BattleButton extends PIXI.DisplayObjectContainer
     constructor: (battle, users) ->
       super
-      if battle.users.length > 0
+      console.log users
+      if battle.users.length is 2 and users[battle.users[1]]?
+        @name = new PIXI.Text users[battle.users[0]].name + "vs "+users[battle.users[1]].name, STYLES.TEXT
+      else if battle.users.length >= 1
         @name = new PIXI.Text users[battle.users[0]].name, STYLES.TEXT
       else
         @name = new PIXI.Text 'Unknown', STYLES.TEXT

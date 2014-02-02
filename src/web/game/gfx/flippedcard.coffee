@@ -3,7 +3,7 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (STYLES, Util) ->
     width: 150
     height: 214
   IMAGE_PATH = "/media/images/cards/"
-  FACE_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_reverse.png'
+  FACE_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_back.png'
 
   ###
   # Draws a flipped card, basically just the backside of the card

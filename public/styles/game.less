@@ -1,5 +1,16 @@
 @import "defines.less";
 
+body {
+background: #1c3554;
+background: -moz-radial-gradient(center, ellipse cover,  #1c3554 0%, #112233 100%);
+background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#1c3554), color-stop(100%,#112233));
+background: -webkit-radial-gradient(center, ellipse cover,  #1c3554 0%,#112233 100%);
+background: -o-radial-gradient(center, ellipse cover,  #1c3554 0%,#112233 100%);
+background: -ms-radial-gradient(center, ellipse cover,  #1c3554 0%,#112233 100%);
+background: radial-gradient(ellipse at center,  #1c3554 0%,#112233 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1c3554', endColorstr='#112233',GradientType=1 );
+}
+
 #heroName
 {
 	background-color: @background;
@@ -22,13 +33,11 @@
 	margin:0;
 	padding:0;
 	position:relative;
-	background-color:@background-content;
 	width:@canvas-width;
 	height:@canvas-height;
 	margin-left:auto;
 	margin-right:auto;
-	box-shadow: inset 2px 2px 2px darken(@background-darker, 0%),
-							inset -2px -2px 2px darken(@background-darker, 0%);
+	box-shadow: 0px 0px 20px #000;
 }
 
 .menuButton {
@@ -53,4 +62,15 @@
 	height:100%;
 	box-shadow: inset 2px 2px 2px darken(@background-darker, 0%),
 							inset -2px -2px 2px darken(@background-darker, 0%);
+}
+
+#fontPixel {
+	font-family: "pixel";
+	color:#CCC;
+}
+
+@font-face
+{
+	font-family: "pixel";
+	src: url("@{pixel-font}");
 }

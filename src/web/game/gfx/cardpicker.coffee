@@ -22,7 +22,7 @@ define ['gfx/styles', 'gfx/card', 'gfx/pagedcardgrid', 'util', 'engine', 'pixi',
       @bg = new PIXI.Graphics()
       @bg.width = WIDTH
       @bg.height = HEIGHT
-      @bg.beginFill STYLES.BUTTON_COLOR
+      @bg.beginFill STYLES.DARK_BACKGROUND_COLOR
       @bg.drawRect 0, 0, @bg.width, @bg.height
       @width = @bg.width
       @height = @bg.height

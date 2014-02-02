@@ -1,15 +1,19 @@
 define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
+  BACKGROUND_TEXTURE = PIXI.Texture.fromImage '/media/images/background.png'
+  LOGO_TEXTURE = PIXI.Texture.fromImage '/media/images/logo.png'
+  LOGOUT_TEXTURE = PIXI.Texture.fromImage '/media/images/icons/logout.png'
 
   class MainMenu extends PIXI.DisplayObjectContainer
     constructor: (@manager, stage) ->
       super
       @myStage = stage
-      @menuText = new PIXI.Text 'JIRA Heroes', GUI.STYLES.HEADING
+      @myStage.addChild new PIXI.Sprite BACKGROUND_TEXTURE
       @hostBtn = new GUI.TextButton 'Host Battle'
       @joinBtn = new GUI.TextButton 'Join Battle'
       @decksBtn = new GUI.TextButton 'Decks'
       @libraryBtn = new GUI.TextButton 'Library'
-      @logoutBtn = new GUI.TextButton 'Logout'
+      @logoutBtn = new GUI.SpriteButton LOGOUT_TEXTURE
+      @logoSprite = new PIXI.Sprite LOGO_TEXTURE
       @hostBtn.position = {x:(engine.WIDTH/2) - @hostBtn.width/2, y:(engine.HEIGHT/2)}
       @joinBtn.position = {x:(engine.WIDTH/2) - @joinBtn.width/2, y:@hostBtn.position.y + 2 * @joinBtn.height}
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
@@ -22,7 +26,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @joinBtn.onClick => @manager.activateView 'JoinBattle'
       @logoutBtn.onClick => window.location = 'user/logout'
 
-      @.addChild @menuText
+      @.addChild @logoSprite
       @.addChild @hostBtn
       @.addChild @joinBtn
       @.addChild @decksBtn
@@ -59,7 +63,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
         if battles? and battles.length > 0
           @activeBattlePicker = new GUI.BattlePicker battles, usersById
           @activeBattlePicker.onBattlePicked (battleId) => @onActiveBattlePicked(battleId)
-          @activeBattlePicker.position = {x:0, y:100}
+          @activeBattlePicker.position = {x:0, y:260}
           @.addChild @activeBattlePicker
       JH.GetUser (user) =>
         JH.GetActiveBattles (battles) =>
