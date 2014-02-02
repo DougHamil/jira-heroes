@@ -27,7 +27,7 @@ define [], ->
       font:'20px pixel'
     CARD_TITLE:
       stroke: '#002244'
-      fill:'#ddeeee'
+      fill:'#FFFFFF'
       strokeThickness:0
       font:'20px pixel'
     CARD_STAT:
