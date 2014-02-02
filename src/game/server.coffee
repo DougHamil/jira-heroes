@@ -27,7 +27,7 @@ module.exports = (expressServer, sessionStore, cookieParser, Users) ->
         console.log "Error getting user: #{session.user}"
         socket.disconnect()
       else
-        userManagers[user._id] = new UserManager user, socket
+        userManagers[user._id] = new UserManager user, socket, Users
         socket.emit 'connected'
 
 

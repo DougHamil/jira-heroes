@@ -1,4 +1,5 @@
 Errors = require './errors'
+{EventEmitter} = require 'events'
 Abilities = require './abilities'
 DrawCardAction = require './actions/drawcard'
 StartTurnAction = require './actions/startturn'
@@ -13,8 +14,9 @@ CARDS_DRAWN_PER_TURN = 1 # Number of cards to draw each turn
 INITIAL_CARD_COUNT = 3 # Second turn player gets 3 cards to start
 ENERGY_INCREASE_PER_TURN = 1
 
-class Battle
+class Battle extends EventEmitter
   constructor: (@model) ->
+    super
     @players = {}
     @sockets = {}
     @field = {}
@@ -28,7 +30,7 @@ class Battle
         @cards[card._id] = new CardHandler(@, @players[player.userId], card)
       player.cards = cardsById
       # TEMP
-      #player.deck.hero.health = 10
+      player.deck.hero.health = 1
       @registerPlayer(player.userId, @players[player.userId])
 
     # Restore passive abilities
@@ -109,12 +111,12 @@ class Battle
     return ActionProcessor.process(@, actions, @abilities)
 
   emitActive: (action, data...) ->
-    @emit @model.state.activePlayer, action, data...
+    @emitSocket @model.state.activePlayer, action, data...
 
   emitActionsActive: (event, actions) ->
-    @emit @model.state.activePlayer, event, @sanitizePayloads(@model.state.activePlayer, actions)
+    @emitSocket @model.state.activePlayer, event, @sanitizePayloads(@model.state.activePlayer, actions)
 
-  emit: (userId, action, data...) ->
+  emitSocket: (userId, action, data...) ->
     if @sockets[userId]?
       @sockets[userId].emit action, data...
 
@@ -141,6 +143,13 @@ class Battle
   emitAll: (action, data...) ->
     for userId, socket of @sockets
       socket.emit action, data...
+
+  # Called when the game is over and a player has won
+  declareWinner: (userId) ->
+    console.log "WINNER IS #{userId}"
+    @model.state.phase = 'over'
+    losers = (userId for userId, socket of @sockets).filter (u)-> u isnt userId
+    @emit 'battle-over', userId, losers
 
   startGame: ->
     @model.state.phase = 'game'

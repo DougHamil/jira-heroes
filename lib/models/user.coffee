@@ -10,6 +10,8 @@ _schema = new Schema
   lastLoginTime: {type: Date, default: Date.now}
   library: [{type:String}] # All available cards
   decks: [{type:String}]
+  battlesWon: {type:Number, default:0}
+  battlesLost: {type:Number, default:0}
   lastLoginWallet:
     storyPoints: {type:Number, default:0}
     bugsClosed: {type:Number, default:0}

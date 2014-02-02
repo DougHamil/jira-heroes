@@ -6,7 +6,7 @@ ConnectionManager handles initial socket connections by routing battle hosting a
 to the proper Battle instance
 ###
 class UserManager
-  constructor: (@user, @socket) ->
+  constructor: (@user, @socket, @Users) ->
     @socket.on 'join', (battleId, cb) => @onJoin(battleId, cb)
     @socket.on 'battle-status', (battleId, cb) => @onBattleStatus battleId, cb
 
@@ -37,6 +37,14 @@ class UserManager
         else
           @battle = battle
           @battle.onConnect @user, @socket
+          @battle.on 'battle-over', (winnerId, loserIds) => @onBattleOver(winnerId, loserIds)
           cb null, @battle.getData(@user)
+
+  onBattleOver: (winnerId, loserIds) ->
+    @Users.model.update {_id:@user._id}, {$pull: activeBattles: @battle.model._id.toString()}, (err) =>
+      if winnerId is @user._id.toString()
+        @Users.model.update {_id:@user._id}, {$inc: {battlesWon: 1}}, (err) =>
+      else
+        @Users.model.update {_id:@user._id}, {$inc: {battlesLost: 1}}, (err) =>
 
 module.exports = UserManager

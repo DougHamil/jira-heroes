@@ -42,10 +42,13 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @cardCount.setText "#{@deck.cards.length}/#{MAX_DECK_SIZE}"
 
     activate: (@deck) ->
+      heroClass = JH.heroes[@deck.hero.class]
       @cardList = new GUI.DeckCardList @deck, JH.cards
       @cardList.position = {x:engine.WIDTH - @cardList.width,y:50}
       @cardList.onCardEntryClicked (cardId) => @removeCard(cardId)
-      @cardPicker = new GUI.CardPicker JH.user.library, JH.cards
+      # Filter out cards that are not valid for this deck's hero
+      validCards = JH.user.library.filter (c) => return not JH.cards[c].heroRequirement? or JH.cards[c].heroRequirement.length is 0 or heroClass.name in JH.cards[c].heroRequirement
+      @cardPicker = new GUI.CardPicker validCards, JH.cards
       @cardPicker.onCardPicked (cardId) => @onCardPicked(cardId)
       @cardPicker.position = {x: 20, y: 50}
       @deckTitle = new PIXI.Text @deck.name, GUI.STYLES.TEXT
@@ -57,6 +60,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       @.addChild @deckTitle
       @.addChild @cardCount
       @myStage.addChild @
+
 
     deactivate: ->
       @myStage.removeChild @

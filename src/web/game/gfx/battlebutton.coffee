@@ -6,7 +6,7 @@ define ['gfx/styles', 'util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine)
     constructor: (battle, users) ->
       super
       if battle.users.length is 2 and users[battle.users[1]]?
-        @name = new PIXI.Text users[battle.users[0]].name + "vs "+users[battle.users[1]].name, STYLES.TEXT
+        @name = new PIXI.Text users[battle.users[0]].name + " vs "+users[battle.users[1]].name, STYLES.TEXT
       else if battle.users.length >= 1
         @name = new PIXI.Text users[battle.users[0]].name, STYLES.TEXT
       else
