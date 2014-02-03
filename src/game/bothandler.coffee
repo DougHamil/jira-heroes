@@ -16,12 +16,11 @@ class BotHandler extends PlayerHandler
 
   # Called by the battle when it's our turn to act
   doTurn: ->
-    console.flag()
-    console.log "DO TURN"
     virtualBattle = @battle.clone()
     AIFactory.getAI(@player.botType).calculateAction @, virtualBattle, (err, aiAction) =>
-      console.log "AI Hand Cards:"
-      console.log @getHandCards().length
+      #console.log "AI Hand Cards:"
+      #console.log @getHandCards().length
+      console.flag()
       console.log "AI Picked:"
       console.log aiAction
       if aiAction?
