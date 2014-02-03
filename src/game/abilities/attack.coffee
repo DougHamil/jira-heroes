@@ -5,6 +5,14 @@ class AttackAbility
   constructor: (@model) ->
     @source = @model.sourceCard
 
+  getValidTargets: (battle) ->
+    targets = []
+    for fieldCard in battle.getFieldCards()
+      targets.push fieldCard
+    for hero in battle.getHeroes()
+      targets.push hero
+    return targets
+
   cast: (battle, target) ->
     actions = []
     actions.push new AttackAction(@source, target)

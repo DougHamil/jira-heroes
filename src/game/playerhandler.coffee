@@ -1,10 +1,12 @@
 {EventEmitter} = require 'events'
+AIActions = require './ai/actions'
 EndTurnAction = require './actions/endturn'
 CardCache = require '../../lib/models/cardcache'
 CardHandler = require './cardhandler'
 HeroHandler = require './herohandler'
 Errors = require './errors'
 Events = require './events'
+async = require 'async'
 
 MAX_HAND_SIZE = 6
 
@@ -91,7 +93,8 @@ class PlayerHandler extends EventEmitter
         @heroHandler.attack target, (err, actions) =>
           cb err if err? and cb?
           if not err?
-            @emit Events.HERO_ATTACK, target, actions
+            payloads = @battle.processActions actions
+            @emit Events.HERO_ATTACK, target, payloads
 
   onUseHero: ->
     (target, cb) =>
@@ -106,7 +109,8 @@ class PlayerHandler extends EventEmitter
         @heroHandler.use target, (err, actions) =>
           cb err if err? and cb?
           if not err?
-            @emit Events.USE_HERO, target, actions
+            payloads = @battle.processActions actions
+            @emit Events.USE_HERO, target, payloads
 
   onUseCard: ->
     (source, target, cb) =>
@@ -122,7 +126,8 @@ class PlayerHandler extends EventEmitter
           if useError? and cb?
             cb useError
           if not useError?
-            @emit Events.USE_CARD, source, target, actions
+            payloads = @battle.processActions actions
+            @emit Events.USE_CARD, source, payloads
 
   onEndTurn: ->
     (cb) =>
@@ -136,6 +141,11 @@ class PlayerHandler extends EventEmitter
 
   onPlayCard: ->
     (cardId, target, cb) =>
+      if target?
+        if target.card?
+          target = @battle.getCard target.card
+        else
+          target = @battle.getHero target.hero
       validationError = @validatePlayCard(cardId, target)
       cb validationError if validationError? and cb?
       if not validationError?
@@ -144,7 +154,8 @@ class PlayerHandler extends EventEmitter
           if err?
             cb err
           else
-            @emit Events.PLAY_CARD, cardHandler.model, actions
+            payloads = @battle.processActions actions
+            @emit Events.PLAY_CARD, payloads
             cb null, cardHandler.model
 
   ###
@@ -209,4 +220,68 @@ class PlayerHandler extends EventEmitter
   isActive: ->
     return @model.state.activePlayer is @userId
 
+  ##############
+  # AI Specific Methods
+  ##############
+
+  # Called by the AI routine in order to build up a list of possible actions
+  getPossibleMoves: (cb)->
+    # If the battle is over, then no moves available
+    if @battle.getPhase() isnt 'game' or not @isActive()
+      console.log @battle.model.state.phase
+      console.log @isActive()
+      cb null, []
+    else
+      moves = []
+      # End turn is always an option
+      moves.push new AIActions.EndTurnAction(@player)
+
+      getCardPlayTargets = (handler, cb) ->
+        handler.getValidPlayTargets (err, targets) -> cb err, {card:handler.model, targets:targets}
+      getCardUseTargets = (handler, cb) ->
+        handler.getValidUseTargets (err, targets) -> cb err, {card:handler.model, targets:targets}
+
+      playableCards = @getPossiblePlayCards().map (c) => @battle.getCardHandler(c)
+      usableCards = @getPossibleUseCards().map (c) => @battle.getCardHandler(c)
+
+      # Map playable cards to possible targets
+      async.mapSeries playableCards, getCardPlayTargets, (err, cardTargets) =>
+        for cardTarget in cardTargets
+          targets = cardTarget.targets
+          card = cardTarget.card
+          if targets?
+            for target in targets
+              moves.push new AIActions.PlayCardAction cardTarget.card, target
+          else
+            moves.push new AIActions.PlayCardAction cardTarget.card, null
+
+        # Map usable cards to possible targets
+        async.mapSeries usableCards, getCardUseTargets, (err, useCardTargets) =>
+          for cardTarget in useCardTargets
+            card = cardTarget.card
+            targets = cardTarget.targets
+            if targets?
+              for target in targets
+                moves.push new AIActions.UseCardAction card, target
+            else
+              moves.push new AIActions.UseCardAction card, null
+
+          # Hero attack is possible
+          handler = @getHeroHandler()
+          handler.getValidAttackTargets (err, targets) =>
+            if not err? and targets?
+              for target in targets
+                moves.push new AIActions.HeroAttackAction @getHero(), target
+
+            handler.getValidUseTargets (err, targets) =>
+              if not err? and targets?
+                for target in targets
+                  moves.push new AIActions.UseHeroAction @getHero(), target
+              cb null, moves
+
+  getPossibleUseCards: ->
+    return @getFieldCards().filter (c) => 'frozen' not in c.getStatus() and 'used' not in c.getStatus()
+  getPossiblePlayCards: ->
+    return @getHandCards().filter (c) =>
+      c.getEnergy() <= @player.energy
 module.exports = PlayerHandler

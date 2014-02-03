@@ -10,6 +10,8 @@ class DamageAllAbility
     @damageMinions = @model.data.damageMinions
     @cardModel = @model.sourceCard
 
+  getValidTargets: (battle) -> return null
+
   cast: (battle, target) ->
     actions = []
     for playerid, player of battle.players

@@ -9,6 +9,8 @@ class StartTurnDrawCardAbility
     @sourceCard = @model.sourceCard
     @amount = @model.data.amount
 
+  getValidTargets: -> return null
+
   filter: (battle, actions) ->
     player = battle.getPlayerOfCard(@sourceCard)
     for action in actions

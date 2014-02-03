@@ -4,6 +4,8 @@ class DrawCardAbility
   constructor: (@model) ->
     @source = @model.sourceCard
 
+  getValidTargets: -> return null
+
   cast: (battle, target) ->
     actions = []
     player = battle.getPlayerOfCard(@source)

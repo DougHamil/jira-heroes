@@ -1,11 +1,14 @@
 Errors = require './errors'
+async = require 'async'
 {EventEmitter} = require 'events'
 Abilities = require './abilities'
+BattleHelpers = require '../../lib/common/battlehelpers'
 DrawCardAction = require './actions/drawcard'
 StartTurnAction = require './actions/startturn'
 ActionProcessor = require './actionprocessor'
 CardCache = require '../../lib/models/cardcache'
 PlayerHandler = require './playerhandler'
+BotHandler = require './bothandler'
 CardHandler = require './cardhandler'
 Actions = require './actions'
 Events = require './events'
@@ -17,20 +20,22 @@ ENERGY_INCREASE_PER_TURN = 1
 class Battle extends EventEmitter
   constructor: (@model) ->
     super
+    BattleHelpers.addMethodsToBattle(@model)
     @players = {}
     @sockets = {}
     @field = {}
     @cards = {}
     @abilities = []
     for player in @model.players
+      if @model.isVirtual? or (player.isBot? and player.isBot)
+        @players[player.userId] = new BotHandler(@, player)
+      else
+        @players[player.userId] = new PlayerHandler(@, player)
       cardsById = {}
-      @players[player.userId] = new PlayerHandler(@, player)
       for card in player.deck.cards
         cardsById[card._id] = card
         @cards[card._id] = new CardHandler(@, @players[player.userId], card)
       player.cards = cardsById
-      # TEMP
-      player.deck.hero.health = 1
       @registerPlayer(player.userId, @players[player.userId])
 
     # Restore passive abilities
@@ -43,6 +48,11 @@ class Battle extends EventEmitter
     # Start the battle if it's still in initial phase
     if @model.state.phase is 'initial'
       @startGame()
+
+  clone: ->
+    clonedModel = JSON.parse(JSON.stringify(@model))
+    clonedModel.isVirtual = true
+    return new Battle(clonedModel)
 
   registerPlayer: (userId, handler) ->
     handler.on Events.PLAY_CARD, @onPlayCard(userId)               # Deploy card from hand to field
@@ -66,14 +76,14 @@ class Battle extends EventEmitter
 
   # Called when a player used a card, targeting another card
   onUseCard: (userId) ->
-    (card, target, actions) =>
-      @emitAllButActive 'opponent-'+Events.USE_CARD, userId, card, target._id
+    (actions) =>
+      @emitAllButActive 'opponent-'+Events.USE_CARD, userId
       @emitActionsAll 'action', actions
 
   # Called when the player has played a card
   onPlayCard: (userId) ->
-    (card, actions) =>
-      @emitAllButActive 'opponent-'+Events.PLAY_CARD, userId, card
+    (actions) =>
+      @emitAllButActive 'opponent-'+Events.PLAY_CARD, userId
       @emitActionsAll 'action', actions
 
   # Called when the player has completed his turn
@@ -146,22 +156,28 @@ class Battle extends EventEmitter
 
   # Called when the game is over and a player has won
   declareWinner: (userId) ->
-    console.log "WINNER IS #{userId}"
     @model.state.phase = 'over'
+    @model.winner = userId
     losers = (userId for userId, socket of @sockets).filter (u)-> u isnt userId
     @emit 'battle-over', userId, losers
 
   startGame: ->
     @model.state.phase = 'game'
     @assignNextActivePlayer()
-    initActions = []
 
-    for i in [0..INITIAL_CARD_COUNT]
-      initActions.push new DrawCardAction(@getActivePlayer())
-    for p in @getNonActivePlayers()
-      for i in [0..(INITIAL_CARD_COUNT-1)]
-        initActions.push new DrawCardAction(@getPlayer(p))
-    @nextTurn(initActions)
+    # Play the heroes for all players
+    playHero = (handler, cb) -> handler.getHeroHandler().play cb
+    async.mapSeries (handler for id, handler of @players), playHero, (err, actionSets) =>
+      initActions = []
+      for actions in actionSets
+        initActions = initActions.concat actions
+
+      for i in [0..INITIAL_CARD_COUNT]
+        initActions.push new DrawCardAction(@getActivePlayer())
+      for p in @getNonActivePlayers()
+        for i in [0..(INITIAL_CARD_COUNT-1)]
+          initActions.push new DrawCardAction(@getPlayer(p))
+      @nextTurn(initActions)
 
   nextTurn: (initActions)->
     @model.turnNumber++
@@ -174,6 +190,16 @@ class Battle extends EventEmitter
     @emitActive 'your-turn'
     @emitAllButActive 'opponent-turn'
     @emitActionsAll 'action', payloads
+
+    # If it's the bot's turn, then tell the bot to handle its turn
+    activePlayer = @getActivePlayer()
+    if not @model.isVirtual?
+      if activePlayer.isBot
+        doTurn = => @getPlayerHandler(activePlayer).doTurn()
+        setTimeout doTurn, 0
+    else
+      doTurn = => @getPlayerHandler(activePlayer).doVirtualTurn()
+      setTimeout doTurn, 0
 
   sanitizePayloads: (userId, payloads) ->
     out = []
@@ -204,8 +230,13 @@ class Battle extends EventEmitter
   getActivePlayer: ->
     return @getPlayer(@model.state.activePlayer)
 
+  getActivePlayerHandler: ->
+    return @getPlayerHandler(@getActivePlayer())
+
   getNonActivePlayers: ->
     return @model.users.filter (u) => u isnt @model.state.activePlayer
+
+  getPhase: -> return @model.state.phase
 
   getPlayer: (playerId) ->
     if typeof playerId is 'object'
@@ -234,6 +265,12 @@ class Battle extends EventEmitter
       return player.getHero()
     else
       return null
+
+  getHeroes: ->
+    heroes = []
+    for playerId, player of @players
+      heroes.push player.getHero()
+    return heroes
 
   getHeroOfPlayer: (playerId) ->
     playerId = playerId._id if playerId._id?
@@ -267,11 +304,13 @@ class Battle extends EventEmitter
     return null
 
   getCardHandler: (cardId) ->
+    if cardId._id?
+      cardId = cardId._id
     return @cards[cardId]
 
   getHeroHandler: (heroId) ->
     player = @getPlayerOfHero(heroId)
-    return player.getHeroHandler()
+    return @getPlayerHandler(player).getHeroHandler()
 
   getCard: (cardId) ->
     for _, p of @players

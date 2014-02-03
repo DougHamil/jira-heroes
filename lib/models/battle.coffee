@@ -61,12 +61,23 @@ newPlayerInstance = (userId, deck, cb) ->
           player =
             _id: userId
             userId: userId
+            isBot: false
+            botType: null
             energy: 0
             maxEnergy: 0
             deck:
               hero: hero
               cards: cards
           cb null, player
+
+newBotInstance = (userId, deck, botType, cb) ->
+  newPlayerInstance userId, deck, (err, player) ->
+    if err?
+      cb err if cb?
+    else
+      player.isBot = true
+      player.botType = botType
+      cb null, player if cb?
 
 # Represents a single stat modifier to either a card or a hero.
 _modifierSchema = new mongoose.Schema
@@ -96,6 +107,8 @@ _playerSchema = new mongoose.Schema
   userId: String
   energy: Number
   maxEnergy: Number
+  isBot: Boolean
+  botType: String
   deck:
     hero:
       isHero: {type:Boolean, default:true}
@@ -119,6 +132,7 @@ _schema = new mongoose.Schema
   passiveAbilities: [mongoose.Schema.Types.Mixed]
   abilityId: {type:Number, default:0}
   turnNumber: {type:Number, default:0}
+  winner: String
   state:
     phase: {type:String, default:'initial'}
     activePlayer: String
@@ -128,6 +142,16 @@ _schema.methods.getPublicData = ->
   out =
     _id:@_id
     users:@users
+
+_schema.methods.addBot = (botType, userId, deck, cb) ->
+  if not @players?
+    @players = []
+  newBotInstance userId, deck, botType, (err, player) =>
+    if err?
+      cb err if cb?
+    else
+      @players.push player
+      cb null, player if cb?
 
 _schema.methods.addPlayer = (userId, deck, cb) ->
   if not @players?
@@ -146,11 +170,7 @@ _addMethodsToModels = (cb) ->
     if err?
       cb err
     else
-      addToModel = (battleModel) ->
-        for player in battleModel.players
-          for card in player.deck.cards
-            BattleHelpers.addCardMethods(card)
-          BattleHelpers.addHeroMethods(player.deck.hero)
+      addToModel = (battleModel) -> BattleHelpers.addMethodsToBattle(battleModel)
       if models instanceof Array
         for model in models
           addToModel(model)

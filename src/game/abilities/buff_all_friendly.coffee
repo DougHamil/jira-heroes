@@ -7,6 +7,8 @@ class BuffAllFriendly
     @data = @model.data
     @model.modifierId = @model.modifierId || @model._id
 
+  getValidTargets: -> return null
+
   # Called when this ability is registered to the battle (ie is now active)
   onRegistered: (battle) ->
     player = battle.getPlayerOfCard(@source)

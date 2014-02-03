@@ -13,14 +13,14 @@ class HeroHandler
     try
       ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, heroClass.ability
       actions = ability.cast @battle, target
-      cb null, @battle.processActions(actions)
+      cb null, actions
     catch ex
       cb ex if cb?
       if not ex.jiraHeroesError?
         throw ex
 
   use: (target, cb) ->
-    HeroCache.get @model.class, (err, heroClass) ->
+    HeroCache.get @model.class, (err, heroClass) =>
       err = @_validateUse(target, heroClass)
       cb err if cb? and err?
       if not err?
@@ -29,14 +29,14 @@ class HeroHandler
   _attack: (target, heroClass, cb) ->
     try
       actions = @attackAbility.cast @battle, target
-      cb null, @battle.processActions(actions)
+      cb null, actions
     catch ex
       cb ex if cb?
       if not ex.jiraHeroesError?
         throw ex
 
   attack: (target, cb) ->
-    HeroCache.get @model.class, (err, heroClass) ->
+    HeroCache.get @model.class, (err, heroClass) =>
       err = @_validateAttack(target, heroClass)
       cb err if cb? and err?
       if not err?
@@ -44,13 +44,14 @@ class HeroHandler
 
   # Called by Battle when game starts, register any passive abilities
   play: (cb) ->
-    HeroCache.get @model.class, (err, heroClass) ->
+    HeroCache.get @model.class, (err, heroClass) =>
       @passiveAbilities = []
-      for abilityModel in heroClass.passiveAbilities
-        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
-        @passiveAbilities.push ability
+      if heroClass.passiveAbilities?
+        for abilityModel in heroClass.passiveAbilities
+          ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
+          @passiveAbilities.push ability
       actions = [Actions.PlayHero(@model, heroClass)]
-      cb null, @battle.processActions(actions)
+      cb null, actions
 
   registerPassiveAbilities: ->
     actions = []
@@ -97,5 +98,28 @@ class HeroHandler
     if @model.getDamage() <= 0
       return Errors.NO_DAMAGE
     return null
+
+  # Determine which targets are valid if this card were to be used
+  getValidUseTargets: (cb)->
+    HeroCache.get @model.class, (err, heroClass) =>
+      if heroClass.ability?
+        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, heroClass.ability
+        targets = ability.getValidTargets(@battle)
+        if targets?
+          targets = targets.filter (t) => return not @_validateUse(t, heroClass)?
+        cb err, targets
+      else
+        cb null, []
+
+  # Determine which objects are valid for targetting by this card on play
+  getValidAttackTargets: (cb)->
+    HeroCache.get @model.class, (err, heroClass) =>
+      if @attackAbility?
+        targets = @attackAbility.getValidTargets(@battle)
+        if targets?
+          targets = targets.filter (t) => return not @_validateAttack(t, heroClass)?
+        cb err, targets
+      else
+        cb err, []
 
 module.exports = HeroHandler

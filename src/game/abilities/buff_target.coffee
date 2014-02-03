@@ -7,6 +7,15 @@ class BuffTargetAbility
     @data = @model.data
     @model.modifierId = @model.modifierId || @model._id
 
+  getValidTargets: (battle)->
+    targets = []
+    for fieldCard in battle.getFieldCards()
+      targets.push fieldCard
+    if @data.applyToHero? and @data.applyToHero
+      for hero in battle.getHeroes()
+        targets.push hero
+    return targets
+
   cast: (battle, target) ->
     throw Errors.INVALID_TARGET if not target?
     if target.isHero and @data.applyToHero? and not @data.applyToHero

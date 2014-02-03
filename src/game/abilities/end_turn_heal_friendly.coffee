@@ -12,6 +12,8 @@ class EndTurnHealFriendly
     @healMinions = @model.data.healMinions
     @cardModel = @model.sourceCard
 
+  getValidTargets: -> return null
+
   respond: (battle, payloads, actions) ->
     player = battle.getPlayerOfCard(@cardModel)
     for payload in payloads

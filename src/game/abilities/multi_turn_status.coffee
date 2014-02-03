@@ -10,6 +10,14 @@ class MultiTurnStatusAbility
     @cardModel = @model.sourceCard
     @model.modifierId = @model.modifierId || @model._id
 
+  getValidTargets: (battle) ->
+    targets = []
+    for fieldCard in battle.getFieldCards()
+      targets.push fieldCard
+    for hero in battle.getHeroes()
+      targets.push hero
+    return targets
+
   cast: (battle, target) ->
     battle.registerPassiveAbility @
     # Track the target ID, so if this ability is persisted it can restored

@@ -18,15 +18,18 @@ module.exports = (app, Users) ->
         if err?
           res.send 500, err
         else
-          battle.addPlayer user._id, deck, (err, player) ->
-            if err?
-              res.send 500, err
-            else
-              async.series [battle.save.bind(battle), user.save.bind(user)], (err) ->
-                if err?
-                  res.send 500, err
-                else
-                  res.json battle.getPublicData()
+          battle.users.push user._id + 'BOT'
+          battle.addBot 'montecarlonaive', user._id + "BOT", deck, (err, bot) ->
+            console.log err
+            battle.addPlayer user._id, deck, (err, player) ->
+              if err?
+                res.send 500, err
+              else
+                async.series [battle.save.bind(battle), user.save.bind(user)], (err) ->
+                  if err?
+                    res.send 500, err
+                  else
+                    res.json battle.getPublicData()
 
   # Join battle
   app.post '/secure/battle/:id/join', (req, res) ->

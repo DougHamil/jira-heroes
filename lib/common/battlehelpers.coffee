@@ -13,7 +13,7 @@ else
   ###
   # Add some convenience methods to the card model
   ###
-  exports.addCardMethods = (model) ->
+  _addCardMethods = (model) ->
     model.sumModifierProperty = (prop) ->
       if not @modifiers?
         return 0
@@ -53,7 +53,7 @@ else
   ###
   # Add some convenience methods to the hero model
   ###
-  exports.addHeroMethods = (model) ->
+  _addHeroMethods = (model) ->
     model.sumModifierProperty = (prop) ->
       if not @modifiers?
         return 0
@@ -87,4 +87,13 @@ else
           if modifier.data.removeStatusAll?
             status = status.filter (s) -> s isnt modifier.data.removeStatusAll
       return status
+  _addMethodsToBattle = (model) ->
+    for player in model.players
+      for card in player.deck.cards
+        _addCardMethods(card)
+      _addHeroMethods(player.deck.hero)
+
+  exports.addHeroMethods = _addHeroMethods
+  exports.addCardMethods = _addCardMethods
+  exports.addMethodsToBattle = _addMethodsToBattle
 )(myExports)

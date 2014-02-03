@@ -6,6 +6,14 @@ class HealAbility
     @source = @model.sourceCard
     @data = @model.data
 
+  getValidTargets: (battle) ->
+    targets = []
+    for fieldCard in battle.getFieldCards()
+      targets.push fieldCard
+    for hero in battle.getHeroes()
+      targets.push hero
+    return targets
+
   cast: (battle, target) ->
     if not target?
       throw Errors.INVALID_TARGET

@@ -10,6 +10,8 @@ class HealAllFriendlyAbility
     @healHero = @model.data.healHero
     @cardModel = @model.sourceCard
 
+  getValidTargets: (battle) -> return null
+
   getTargets: (battle, target) ->
     targets = []
     player = battle.getPlayerOfCard(@cardModel)
