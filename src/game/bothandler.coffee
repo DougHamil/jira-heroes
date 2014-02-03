@@ -20,6 +20,8 @@ class BotHandler extends PlayerHandler
     console.log "DO TURN"
     virtualBattle = @battle.clone()
     AIFactory.getAI(@player.botType).calculateAction @, virtualBattle, (err, aiAction) =>
+      console.log "AI Hand Cards:"
+      console.log @getHandCards().length
       console.log "AI Picked:"
       console.log aiAction
       if aiAction?

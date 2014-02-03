@@ -8,12 +8,14 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       super
       @myStage = stage
       @myStage.addChild new PIXI.Sprite BACKGROUND_TEXTURE
+      @playBotBtn = new GUI.TextButton 'Play Bot'
       @hostBtn = new GUI.TextButton 'Host Battle'
       @joinBtn = new GUI.TextButton 'Join Battle'
       @decksBtn = new GUI.TextButton 'Decks'
       @libraryBtn = new GUI.TextButton 'Library'
       @logoutBtn = new GUI.SpriteButton LOGOUT_TEXTURE
       @logoSprite = new PIXI.Sprite LOGO_TEXTURE
+      @playBotBtn.position = {x:(engine.WIDTH/2) - @playBotBtn.width/2, y:(engine.HEIGHT/2) - 2 * @playBotBtn.height}
       @hostBtn.position = {x:(engine.WIDTH/2) - @hostBtn.width/2, y:(engine.HEIGHT/2)}
       @joinBtn.position = {x:(engine.WIDTH/2) - @joinBtn.width/2, y:@hostBtn.position.y + 2 * @joinBtn.height}
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
@@ -22,12 +24,14 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
 
       @libraryBtn.onClick => @manager.activateView 'Library'
       @decksBtn.onClick => @manager.activateView 'Decks'
-      @hostBtn.onClick => @manager.activateView 'HostBattle'
+      @hostBtn.onClick => @manager.activateView 'HostBattle', false
+      @playBotBtn.onClick => @manager.activateView 'HostBattle', true
       @joinBtn.onClick => @manager.activateView 'JoinBattle'
       @logoutBtn.onClick => window.location = 'user/logout'
 
       @.addChild @logoSprite
       @.addChild @hostBtn
+      @.addChild @playBotBtn
       @.addChild @joinBtn
       @.addChild @decksBtn
       @.addChild @libraryBtn

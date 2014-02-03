@@ -94,7 +94,7 @@ class PlayerHandler extends EventEmitter
           cb err if err? and cb?
           if not err?
             payloads = @battle.processActions actions
-            @emit Events.HERO_ATTACK, target, payloads
+            @emit Events.HERO_ATTACK, payloads
 
   onUseHero: ->
     (target, cb) =>
@@ -110,7 +110,7 @@ class PlayerHandler extends EventEmitter
           cb err if err? and cb?
           if not err?
             payloads = @battle.processActions actions
-            @emit Events.USE_HERO, target, payloads
+            @emit Events.USE_HERO, payloads
 
   onUseCard: ->
     (source, target, cb) =>
@@ -127,7 +127,7 @@ class PlayerHandler extends EventEmitter
             cb useError
           if not useError?
             payloads = @battle.processActions actions
-            @emit Events.USE_CARD, source, payloads
+            @emit Events.USE_CARD, payloads
 
   onEndTurn: ->
     (cb) =>

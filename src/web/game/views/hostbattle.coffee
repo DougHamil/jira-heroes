@@ -15,11 +15,11 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
 
     hostBattleWithDeck: (deckId) ->
       if @decks[deckId]?
-        JH.HostBattle deckId, (battle) =>
+        JH.HostBattle @addBot, deckId, (battle) =>
           @manager.activateView 'Battle', battle
 
 
-    activate: ->
+    activate: (@addBot)->
       activate = (decks) =>
         decks = decks.filter (d) -> d.cards.length is 30
         if decks.length > 0

@@ -11,7 +11,7 @@ define ['gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Text
         @width = @cardsPerRow * cardWidth + (@cardsPerRow + 1) * @padding
         @height = @rowsPerPage * cardHeight + (@rowsPerPage + 1) * @padding
       @nextBtn = new TextButton 'Next Page'
-      @prevBtn = new TextButton 'Last Page'
+      @prevBtn = new TextButton 'Previous Page'
       @nextBtn.position = {x:@width - @nextBtn.width, y:@height + @nextBtn.height}
       @prevBtn.position = {x:0, y:@height + @prevBtn.height}
       @nextBtn.onClick => @nextPage()

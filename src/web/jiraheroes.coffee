@@ -42,8 +42,8 @@ define ['jquery'], ($) ->
       $.get '/secure/battle/active', cb
     @QueryBattles: (query, cb) ->
       $.post '/battle/query', {query:query}, cb
-    @HostBattle: (deckId, cb) ->
-      $.post '/secure/battle/host', {deck:deckId}, cb
+    @HostBattle: (addBot, deckId, cb) ->
+      $.post '/secure/battle/host', {deck:deckId, bot:addBot}, cb
     @JoinBattle: (battleId, deckId, cb) ->
       $.post "/secure/battle/#{battleId}/join", {deck:deckId}, cb
 

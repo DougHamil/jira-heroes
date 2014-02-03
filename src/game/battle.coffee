@@ -78,6 +78,7 @@ class Battle extends EventEmitter
   onUseCard: (userId) ->
     (actions) =>
       @emitAllButActive 'opponent-'+Events.USE_CARD, userId
+      console.log actions
       @emitActionsAll 'action', actions
 
   # Called when the player has played a card

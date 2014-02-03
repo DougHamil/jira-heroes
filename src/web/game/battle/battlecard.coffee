@@ -10,6 +10,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @flippedCardSprite = new GUI.FlippedCard()
       @flippedCardSprite.visible = false
       if cardClass? and card?
+        if card.position is 'field'
+          console.log card
         @setCard(cardClass, card)
 
     animateModifierAdd: (status) ->
@@ -244,7 +246,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @card = card
       @hasCard = true
       @cardClass = cardClass
-      @cardSprite = new GUI.Card cardClass, card.damage, card.health, card.status
+      @cardSprite = new GUI.Card cardClass, cardClass.damage, cardClass.health, card.getStatus()
       @tokenSprite = new GUI.CardToken card, cardClass
       @cardSprite.visible = false
       @tokenSprite.visible = false

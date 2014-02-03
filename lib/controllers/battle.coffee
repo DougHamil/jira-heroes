@@ -2,9 +2,12 @@ Decks = require '../models/deck'
 Battles = require '../models/battle'
 async = require 'async'
 
+
+ADD_BOT = false
+
 module.exports = (app, Users) ->
 
-  userJoinBattle = (battle, user, deckId, res) ->
+  userJoinBattle = (addBot, battle, user, deckId, res) ->
     if battle.users.length >= 2
       res.send 400, 'Battle full'
     else if deckId not in user.decks
@@ -18,9 +21,7 @@ module.exports = (app, Users) ->
         if err?
           res.send 500, err
         else
-          battle.users.push user._id + 'BOT'
-          battle.addBot 'montecarlonaive', user._id + "BOT", deck, (err, bot) ->
-            console.log err
+          addPlayer = =>
             battle.addPlayer user._id, deck, (err, player) ->
               if err?
                 res.send 500, err
@@ -30,6 +31,17 @@ module.exports = (app, Users) ->
                     res.send 500, err
                   else
                     res.json battle.getPublicData()
+          if addBot
+            battle.users.push user._id + 'BOT'
+            battle.addBot 'montecarlonaive', user._id + "BOT", deck, (err, bot) ->
+              addPlayer()
+          else
+            addPlayer()
+
+  # TEMP: More easily drop all existing battles without having to wipe the user database too
+  #app.get '/secure/battle/dropall', (req, res) ->
+  #  if req.session.user.name is 'dhamilton'
+  #    Battles.find
 
   # Join battle
   app.post '/secure/battle/:id/join', (req, res) ->
@@ -45,11 +57,12 @@ module.exports = (app, Users) ->
           if err?
             res.send 500, err
           else
-            userJoinBattle battle, user, deckId, res
+            userJoinBattle false, battle, user, deckId, res
 
   # Host battle
   app.post '/secure/battle/host', (req, res) ->
     deckId = req.body.deck
+    addBot = req.body.bot? and req.body.bot
     Users.fromSession req.session.user, (err, user) ->
       if err?
         res.send 500, err
@@ -58,7 +71,7 @@ module.exports = (app, Users) ->
           if err?
             res.send 500, err
           else
-            userJoinBattle battle, user, deckId, res
+            userJoinBattle addBot, battle, user, deckId, res
 
   # Query battle
   app.post '/battle/query', (req, res) ->
