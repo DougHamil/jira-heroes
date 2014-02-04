@@ -15,6 +15,11 @@ class BotHandler extends PlayerHandler
   # Called by the battle when it's our turn to act
   doTurn: ->
     virtualBattle = @battle.clone()
+    otherPlayer = @battle.getNonActivePlayerHandler()
+    player = @battle.getActivePlayerHandler()
+    console.log "#{otherPlayer.player.userId}: #{otherPlayer.getHeroHandler().model.health}"
+    console.log "#{player.player.userId}: #{player.getHeroHandler().model.health}"
+    #console.log player.getFieldCards()
     AIFactory.getAI(@player.botType).calculateAction @, virtualBattle, (err, aiAction) =>
       #console.log "AI Hand Cards:"
       #console.log @getHandCards().length
@@ -23,6 +28,9 @@ class BotHandler extends PlayerHandler
       console.log aiAction
       if aiAction?
         aiAction.build @battle, (err, actions) =>
+          if err?
+            console.log "ERR:"
+            console.log err
           @emit aiAction.event, @battle.processActions(actions)
           if aiAction.event isnt Events.END_TURN and @isActive() and @battle.getPhase() is 'game'
             @doTurn()
@@ -30,31 +38,16 @@ class BotHandler extends PlayerHandler
         console.log "ERROR: Bot unable to determine a valid move"
 
   # Called by a virtual battle when it's our turn to act
-  doVirtualTurn: ->
-    #console.log "Virtual turn for #{@player.userId} #{@virtualTurnCount}"
-    if @virtualTurnCount?
-      @virtualTurnCount--
-    if not @virtualTurnCount? or @virtualTurnCount > 0
-      #console.log "PLAYED"
-      @getPossibleMoves (err, moves) =>
-        move = null
-        if moves.length is 1 and @getDeckCards().length > 0 and @getFieldCards().length > 0 and @getHandCards().length > 0
-          move = moves[0]
-        else if moves.length > 1
-          #moves = moves.filter (m) -> m.event isnt Events.END_TURN
-          move = moves[Math.floor(Math.random() * moves.length)]
-        if move?
-          move.enact @battle, (err) =>
-            if move.event isnt Events.END_TURN
-              doNextTurn = => @doVirtualTurn()
-              setTimeout doNextTurn, 0
-        else
-          #console.log "Virtual game over out of moves"
-          @battle.emit 'virtual-game-over', @battle.model.winner
-    else
-      #console.log "Virtual game timeout"
-      @battle.emit 'virtual-game-over', @battle.model.winner
-
-  _doATurn: (move) ->
-
+  doVirtualTurn: (cb) ->
+    @getPossibleMoves (err, moves) =>
+      move = null
+      if moves.length is 1
+        move = moves[0]
+      else if moves.length > 1
+        #moves = moves.filter (m) -> m.event isnt Events.END_TURN
+        move = moves[Math.floor(Math.random() * moves.length)]
+      if move?
+        move.enact @battle, cb
+      else
+        cb null
 module.exports = BotHandler

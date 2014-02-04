@@ -25,13 +25,14 @@ Users = require('../lib/models/user')(jira)
 Decks = require '../lib/models/deck'
 Cards = require '../lib/models/card'
 CardCache = require '../lib/models/cardcache'
+HeroCache = require '../lib/models/herocache'
 Heroes = require '../lib/models/hero'
 
 mongoose.connect("mongodb://#{options.databaseServer}:#{options.databasePort}/#{options.database}")
 db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once 'open', ->
-  async.series [Cards.load.bind(Cards), Heroes.load.bind(Heroes), CardCache.loadAll.bind(CardCache)], (err) ->
+  async.series [Cards.load.bind(Cards), Heroes.load.bind(Heroes), CardCache.loadAll.bind(CardCache), HeroCache.loadAll.bind(HeroCache)], (err) ->
     UserController(server.app, Users)
     DeckController(server.app, Users)
     CardController(server.app, Users)

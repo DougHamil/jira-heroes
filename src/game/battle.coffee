@@ -160,9 +160,29 @@ class Battle extends EventEmitter
     @model.winner = userId
     losers = (userId for userId, socket of @sockets).filter (u)-> u isnt userId
     @emit 'battle-over', userId, losers
+
+  virtualPlayout: (turnLimit, cb)->
+    turnCount = 0
     if @model.isVirtual? and @model.isVirtual
-      console.log "Virtual game over due to winner: #{@model.winner}"
-      @emit 'virtual-game-over', @model.winner
+      _doTurnFor = (handler, battleOverCb) =>
+        turnCount++
+        if turnCount >= turnLimit
+          battleOverCb null, null
+          #battleOverCb null, @getHighestHealthPlayer()?.userId
+        else
+          _delayed = => handler.doVirtualTurn => _nextTurn(battleOverCb)
+          setTimeout _delayed, 0
+      _nextTurn = (battleOverCb) =>
+        if @outOfCards()
+          battleOverCb null, null
+          #battleOverCb null, @getHighestHealthPlayer()?.userId
+        else if @model.state.phase is 'over'
+          battleOverCb null, @model.winner
+        else
+          _doTurnFor @getActivePlayerHandler(), battleOverCb
+      _nextTurn(cb)
+    else
+      throw new Error("Virtual playout called on non-virtual battle")
 
   startGame: ->
     @model.state.phase = 'game'
@@ -205,9 +225,6 @@ class Battle extends EventEmitter
         console.flag()
         doTurn = => @getPlayerHandler(activePlayer).doTurn()
         setTimeout doTurn, 0
-    else
-      doTurn = => @getPlayerHandler(activePlayer).doVirtualTurn()
-      setTimeout doTurn, 0
 
   sanitizePayloads: (userId, payloads) ->
     out = []
@@ -292,6 +309,8 @@ class Battle extends EventEmitter
 
   # Given an ID, get the hero or card that correspond to it
   getCardOrHero: (id) ->
+    if not id?
+      return null
     if id._id?
       id = id._id
     hero = @getHero(id)
@@ -379,6 +398,21 @@ class Battle extends EventEmitter
         hand: player.getHandCards()
         deckSize: player.getDeckCards().length # Player doesn't get to know what card is in deck
       opponents: @getOpponentsData(user)
+
+  outOfCards: ->
+    for id, playerHandler of @players
+      if playerHandler.getFieldCards() isnt 0 or playerHandler.getDeckCards() isnt 0 or playerHandler.getHandCards() isnt 0
+        return false
+    return true
+
+  getHighestHealthPlayer: ->
+    healths = []
+    for id, playerHandler of @players
+      healths.push {player:id, health:playerHandler.getHeroHandler().getHealth()}
+    healths.sort (a, b) -> b.health-a.health
+    if healths[0].health is healths[1].health
+      return null
+    return @getPlayer(healths[0].player)
 
   getTurnNumber: -> return @model.turnNumber
   # Used to generate unique ability Ids

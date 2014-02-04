@@ -252,11 +252,14 @@ class PlayerHandler extends EventEmitter
           handler = cardTarget.handler
           if targets?
             for target in targets
+              targetHandler = @battle.getCardHandler(target)
+              if not targetHandler?
+                targetHandler = @battle.getHeroHandler(target)
               if not @validatePlayCard(card, target)?
-                moves.push new AIActions.PlayCardAction cardTarget.card, target
+                moves.push new AIActions.PlayCardAction handler, targetHandler, cardTarget.card, target
           else
             if not @validatePlayCard(card, target)?
-              moves.push new AIActions.PlayCardAction cardTarget.card, null
+              moves.push new AIActions.PlayCardAction handler, null, cardTarget.card, null
 
         # Map usable cards to possible targets
         async.mapSeries usableCards, getCardUseTargets, (err, useCardTargets) =>
@@ -266,11 +269,14 @@ class PlayerHandler extends EventEmitter
             handler = cardTarget.handler
             if targets?
               for target in targets
-                if not @validateUseCard(card, target)?
-                  moves.push new AIActions.UseCardAction card, target
+                targetHandler = @battle.getCardHandler(target)
+                if not targetHandler?
+                  targetHandler = @battle.getHeroHandler(target)
+                if not @validateUseCard(card, target)? and target.userId isnt card.userId
+                  moves.push new AIActions.UseCardAction handler, targetHandler, card, target
             else
               if not @validateUseCard(card, target)?
-                moves.push new AIActions.UseCardAction card, null
+                moves.push new AIActions.UseCardAction handler, null, card, null
 
           # Hero attack is possible
           handler = @getHeroHandler()
@@ -286,8 +292,8 @@ class PlayerHandler extends EventEmitter
               cb null, moves
 
   getPossibleUseCards: ->
-    return @getFieldCards().filter (c) => 'frozen' not in c.getStatus() and 'used' not in c.getStatus()
+    return (@getFieldCards().filter (c) => 'frozen' not in c.getStatus() and 'used' not in c.getStatus())
+
   getPossiblePlayCards: ->
-    return @getHandCards().filter (c) =>
-      c.getEnergy() <= @player.energy
+    return (@getHandCards().filter (c) => c.getEnergy() <= @player.energy)
 module.exports = PlayerHandler

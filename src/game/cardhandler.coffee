@@ -124,7 +124,7 @@ class CardHandler
 
   # Determine which objects are valid for targetting by this card on play
   getValidPlayTargets: (cb)->
-    if @cardClass.isSpellCard()
+    if @cardClass.isSpellCard() and @cardClass.playAbility.requiresTarget
       ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, @cardClass.playAbility
       targets = ability.getValidTargets(@battle)
       if targets?
@@ -148,6 +148,8 @@ class CardHandler
       return Errors.NOT_ENOUGH_ENERGY
     if not cardClass.isSpellCard() and @playerHandler.getFieldCards().length >= MAX_FIELD_CARDS
       return Errors.FULL_FIELD
+    if cardClass.isSpellCard() and cardClass.playAbility.requiresTarget and not target?
+      return Errors.INVALID_TARGET
 
   play: (target, cb) ->
     CardCache.get @model.class, (err, cardClass) =>

@@ -7,6 +7,7 @@ Events = require './events'
 
 class HeroHandler
   constructor: (@battle, @playerHandler, @model) ->
+    @heroClass = HeroCache.heroes[@model.class]
     @attackAbility = Abilities.Attack @battle.getNextAbilityId(), @model
 
   _use: (target, heroClass, cb) ->
@@ -121,5 +122,7 @@ class HeroHandler
         cb err, targets
       else
         cb err, []
+
+  getHealth: -> return @model.health
 
 module.exports = HeroHandler

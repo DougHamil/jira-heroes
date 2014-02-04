@@ -13,10 +13,13 @@ class Ability
   handle: (battle, actions) ->
 
 class Abilities
+  @cache: {}
   @Attack: (abilityId, sourceCard) -> return @New(abilityId, 'attack', sourceCard)
 
   @New: (abilityId, type, sourceCard, data) ->
-    clazz = require('./abilities/'+type)
+    if not @cache[type]
+      @cache[type] = require('./abilities/'+type)
+    clazz = @cache[type]
     # Stupid clone
     if data?
       data = JSON.parse(JSON.stringify(data))
@@ -33,7 +36,9 @@ class Abilities
 
   # Restore an ability instance from a model
   @RestoreFromModel: (sourceCard, model) ->
-    clazz = require('./abilities/'+model.class)
+    if not @cache[model.class]?
+      @cache[model.class] = require('./abilities/'+model.class)
+    clazz = @cache[model.class]
     model.sourceCard = sourceCard
     return new clazz(model, true)
 

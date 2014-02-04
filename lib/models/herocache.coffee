@@ -7,6 +7,14 @@ Heroes = require '../../lib/models/hero'
 class HeroCache
   @heroes: {}
   @allLoaded: false
+  @loadAll: (cb) ->
+    Heroes.getAll (err, heroes) =>
+      if err?
+        cb err
+      else
+        for hero in heroes
+          @heroes[hero._id] = hero
+        cb null
   @getAll: (cb) ->
     if @allLoaded
       cb null, (hero for id, hero of @heroes)
