@@ -114,7 +114,7 @@ class HeroHandler
   # Determine which objects are valid for targetting by this card on play
   getValidAttackTargets: (cb)->
     HeroCache.get @model.class, (err, heroClass) =>
-      if @attackAbility?
+      if @attackAbility? and @model.getDamage() > 0
         targets = @attackAbility.getValidTargets(@battle)
         if targets?
           targets = targets.filter (t) => return not @_validateAttack(t, heroClass)?

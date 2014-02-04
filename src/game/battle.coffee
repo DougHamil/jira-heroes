@@ -160,6 +160,9 @@ class Battle extends EventEmitter
     @model.winner = userId
     losers = (userId for userId, socket of @sockets).filter (u)-> u isnt userId
     @emit 'battle-over', userId, losers
+    if @model.isVirtual? and @model.isVirtual
+      console.log "Virtual game over due to winner: #{@model.winner}"
+      @emit 'virtual-game-over', @model.winner
 
   startGame: ->
     @model.state.phase = 'game'
@@ -195,6 +198,11 @@ class Battle extends EventEmitter
     activePlayer = @getActivePlayer()
     if not @model.isVirtual?
       if activePlayer.isBot
+        console.flag()
+        console.flag()
+        console.log "DO AI TURN"
+        console.flag()
+        console.flag()
         doTurn = => @getPlayerHandler(activePlayer).doTurn()
         setTimeout doTurn, 0
     else
@@ -232,6 +240,9 @@ class Battle extends EventEmitter
 
   getActivePlayerHandler: ->
     return @getPlayerHandler(@getActivePlayer())
+
+  getPossibleMoves: (cb)->
+    @getActivePlayerHandler().getPossibleMoves cb
 
   getNonActivePlayerHandler: ->
     return @getPlayerHandler(@getNonActivePlayers()[0])

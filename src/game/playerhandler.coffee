@@ -31,8 +31,8 @@ class PlayerHandler extends EventEmitter
     @socket.on Events.USE_CARD, @onUseCard()
     @socket.on Events.TEST, @onTest()
 
-  validatePlayCard: (cardId, target) ->
-    cardHandler = @getCardHandler(cardId)
+  validatePlayCard: (card, target) ->
+    cardHandler = @getCardHandler(card)
     if @model.state.phase isnt 'game' or not cardHandler? or not @isActive() or cardHandler.model.position isnt 'hand'
       return Errors.INVALID_ACTION
     return null
@@ -62,20 +62,18 @@ class PlayerHandler extends EventEmitter
       return Errors.INVALID_ACTION
     if 'frozen' in sourceCard.getStatus() # Frozen cards cannot be used
       return Errors.FROZEN
-    targetCard = @battle.getCard(target.card) if target.card?
-    targetHero = @battle.getHero(target.hero) if target.hero?
-    if not targetCard? and not targetHero? # Player must target something
+    if not target? # Player must target something
       return Errors.INVALID_TARGET
 
-    targetUserId = if targetCard? then targetCard.userId else targetHero.userId
+    targetUserId = target.userId
 
-    if targetCard? and (targetCard.position isnt 'field' or targetCard is sourceCard) # Target card must be on the field and not the source card
+    if target.isCard and (target.position isnt 'field' or target is sourceCard) # Target card must be on the field and not the source card
         return Errors.INVALID_TARGET
 
     tauntCards = @battle.getFieldCards(targetUserId).filter (c)-> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus() # Get non-frozen taunt cards
-    if targetHero? and tauntCards.length isnt 0
+    if target.isHero and tauntCards.length isnt 0
       return Errors.MUST_TARGET_TAUNT
-    if targetCard? and tauntCards.length isnt 0 and targetCard not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
+    if target.isCard and tauntCards.length isnt 0 and target not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
       return Errors.MUST_TARGET_TAUNT
 
     # Valid move
@@ -83,13 +81,14 @@ class PlayerHandler extends EventEmitter
 
   onHeroAttack: ->
     (target, cb) =>
-      err = @validateHeroAttack(target)
-      cb err if err? and cb?
-      if not err?
+      if target?
         if target.card?
           target = @battle.getCard(target.card)
         else
           target = @battle.getHero(target.hero)
+      err = @validateHeroAttack(target)
+      cb err if err? and cb?
+      if not err?
         @heroHandler.attack target, (err, actions) =>
           cb err if err? and cb?
           if not err?
@@ -98,14 +97,14 @@ class PlayerHandler extends EventEmitter
 
   onUseHero: ->
     (target, cb) =>
+      if target?
+        if target.card?
+          target = @battle.getCard(target.card)
+        else
+          target = @battle.getHero(target.hero)
       err = @validateUseHero(target)
       cb err if err? and cb?
       if not err?
-        if target?
-          if target.card?
-            target = @battle.getCard(target.card)
-          else
-            target = @battle.getHero(target.hero)
         @heroHandler.use target, (err, actions) =>
           cb err if err? and cb?
           if not err?
@@ -114,14 +113,14 @@ class PlayerHandler extends EventEmitter
 
   onUseCard: ->
     (source, target, cb) =>
+      if target.card?
+        target = @battle.getCard(target.card)
+      else
+        target = @battle.getHero(target.hero)
       err = @validateUseCard(source, target)
       cb err if err? and cb?
       if not err?
         cardHandler = @getCardHandler(source)
-        if target.card?
-          target = @battle.getCard(target.card)
-        else
-          target = @battle.getHero(target.hero)
         cardHandler.use target, (useError, actions) =>
           if useError? and cb?
             cb useError
@@ -146,7 +145,8 @@ class PlayerHandler extends EventEmitter
           target = @battle.getCard target.card
         else
           target = @battle.getHero target.hero
-      validationError = @validatePlayCard(cardId, target)
+      card = @battle.getCard cardId
+      validationError = @validatePlayCard(card, target)
       cb validationError if validationError? and cb?
       if not validationError?
         cardHandler = @getCardHandler(cardId)
@@ -192,6 +192,8 @@ class PlayerHandler extends EventEmitter
     return @getFieldCards().filter (c) -> 'taunt' in c.status
 
   getCardHandler: (cardId) ->
+    if cardId._id?
+      cardId = cardId._id
     return @battle.getCardHandler(cardId)
 
   getCard: (cardId) ->
@@ -228,8 +230,6 @@ class PlayerHandler extends EventEmitter
   getPossibleMoves: (cb)->
     # If the battle is over, then no moves available
     if @battle.getPhase() isnt 'game' or not @isActive()
-      console.log @battle.model.state.phase
-      console.log @isActive()
       cb null, []
     else
       moves = []
@@ -237,9 +237,9 @@ class PlayerHandler extends EventEmitter
       moves.push new AIActions.EndTurnAction(@player)
 
       getCardPlayTargets = (handler, cb) ->
-        handler.getValidPlayTargets (err, targets) -> cb err, {card:handler.model, targets:targets}
+        handler.getValidPlayTargets (err, targets) -> cb err, {card:handler.model, targets:targets, handler:handler}
       getCardUseTargets = (handler, cb) ->
-        handler.getValidUseTargets (err, targets) -> cb err, {card:handler.model, targets:targets}
+        handler.getValidUseTargets (err, targets) -> cb err, {card:handler.model, targets:targets, handler:handler}
 
       playableCards = @getPossiblePlayCards().map (c) => @battle.getCardHandler(c)
       usableCards = @getPossibleUseCards().map (c) => @battle.getCardHandler(c)
@@ -249,22 +249,28 @@ class PlayerHandler extends EventEmitter
         for cardTarget in cardTargets
           targets = cardTarget.targets
           card = cardTarget.card
+          handler = cardTarget.handler
           if targets?
             for target in targets
-              moves.push new AIActions.PlayCardAction cardTarget.card, target
+              if not @validatePlayCard(card, target)?
+                moves.push new AIActions.PlayCardAction cardTarget.card, target
           else
-            moves.push new AIActions.PlayCardAction cardTarget.card, null
+            if not @validatePlayCard(card, target)?
+              moves.push new AIActions.PlayCardAction cardTarget.card, null
 
         # Map usable cards to possible targets
         async.mapSeries usableCards, getCardUseTargets, (err, useCardTargets) =>
           for cardTarget in useCardTargets
             card = cardTarget.card
             targets = cardTarget.targets
+            handler = cardTarget.handler
             if targets?
               for target in targets
-                moves.push new AIActions.UseCardAction card, target
+                if not @validateUseCard(card, target)?
+                  moves.push new AIActions.UseCardAction card, target
             else
-              moves.push new AIActions.UseCardAction card, null
+              if not @validateUseCard(card, target)?
+                moves.push new AIActions.UseCardAction card, null
 
           # Hero attack is possible
           handler = @getHeroHandler()

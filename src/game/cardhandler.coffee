@@ -9,9 +9,9 @@ MAX_FIELD_CARDS = 5
 
 class CardHandler
   constructor: (@battle, @playerHandler, @model) ->
-    @cardClass = null
+    @cardClass = CardCache.cards[@model.class]
     # Spell cards have a "playAbility" property and do not have an attack ability
-    if not @model.playAbility? or not @model.playAbility.class?
+    if not @cardClass.playAbility? or not @cardClass.playAbility.class?
       @attackAbility = Abilities.Attack @battle.getNextAbilityId(), @model
     else
       @attackAbility = null
@@ -83,8 +83,10 @@ class CardHandler
       @model.turnPlayed = @battle.getTurnNumber()
       cb null, actions
     catch err # Abilities can throw errors if their target is invalid
-      console.log "Ability Cast Error #{cardClass.name}: "
+      console.log "Play card error #{cardClass.name}: "
+      console.log cardClass.playAbility
       console.log err
+      console.log target
       cb err if cb?
       # Throw error higher if this is an actual program error
       if not err.jiraHeroesError?
@@ -107,31 +109,29 @@ class CardHandler
 
   # Determine which targets are valid if this card were to be used
   getValidUseTargets: (cb)->
-    CardCache.get @model.class, (err, cardClass) =>
-      if cardClass.rushAbility? and cardClass.rushAbility.class? and @model.turnPlayed is @battle.getTurnNumber()
-        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, cardClass.rushAbility
-        targets = ability.getValidTargets(@battle)
-        if targets?
-          targets = targets.filter (t) => return not @validateUse(t, cardClass)?
-        cb err, targets
-      else if @attackAbility?
-        targets = @attackAbility.getValidTargets(@battle)
-        targets = targets.filter (t) => return not @validateUse(t, cardClass)?
-        cb null, targets
-      else
-        cb null, []
+    if @cardClass.rushAbility? and @cardClass.rushAbility.class? and @model.turnPlayed is @battle.getTurnNumber()
+      ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, @cardClass.rushAbility
+      targets = ability.getValidTargets(@battle)
+      if targets?
+        targets = targets.filter (t) => return not @validateUse(t, @cardClass)?
+      cb null, targets
+    else if @attackAbility?
+      targets = @attackAbility.getValidTargets(@battle)
+      targets = targets.filter (t) => return not @validateUse(t, @cardClass)?
+      cb null, targets
+    else
+      cb null, []
 
   # Determine which objects are valid for targetting by this card on play
   getValidPlayTargets: (cb)->
-    CardCache.get @model.class, (err, cardClass) =>
-      if cardClass.isSpellCard()
-        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, cardClass.playAbility
-        targets = ability.getValidTargets(@battle)
-        if targets?
-          targets = targets.filter (t) => return not @validatePlay(t, cardClass)?
-        cb err, targets
-      else
-        cb err, null
+    if @cardClass.isSpellCard()
+      ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, @cardClass.playAbility
+      targets = ability.getValidTargets(@battle)
+      if targets?
+        targets = targets.filter (t) => return not @validatePlay(t, @cardClass)?
+      cb null, targets
+    else
+      cb null, null
 
   validateUse: (target, cardClass) ->
     if 'used' in @model.getStatus()

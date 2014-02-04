@@ -1,75 +1,149 @@
 Events = require '../events'
+math = require('mathjs')()
+
+EXPLORATION_PARAM = math.sqrt(2)
+TURN_COUNT = 50
+
 class MCNode
-  constructor: (@parent, moves) ->
+  constructor: (@parent, @move, @battle) ->
     if @parent?
-      @parent.children.push @
-    @children = []
-    @untried = moves.filter (m) -> return true
-    @tried = []
+      @userId = @parent.userId
+    @wins = 0
+    @plays = 0
+    @isTerminal = false
+    @moves = null
+    @moveId = 0
+    @heuristic = 0
+    @children = {}
+    @isExpanded = false
 
-  pickRandomMove: ->
-    if @untried.length > 0
-      move = @untried[Math.floor(Math.random() * @untried.length)]
-      @untried = @untried.filter (m) -> m isnt move
-      return move
-    return null
+    if @move?
+      # Negative weight for end-turn (commonly will not help)
+      if @move.event is Events.END_TURN
+        @heuristic = -10
 
-ITERATIONS = 500
+  pickBestMove: ->
+    sorted = (child for moveId, child of @children)
+    sorted.sort (a, b) -> b.plays - a.plays
+    debug = []
+    for node in sorted
+      debug.push {wins:node.wins, play:node.plays, move:node.move.event}
+    console.log debug
+    console.log debug[0]
+    return sorted[0].move
+
+  # Back propagate
+  update: (wins, plays) ->
+    @wins += wins
+    @plays += plays
+    if @parent?
+      @parent.update(wins, plays)
+
+  _calcUCT: (node)->
+    h = node.heuristic
+    p = node.plays
+    w = node.wins
+    if p is 0
+      p = 1
+    return (h/p) + (w / p) + (EXPLORATION_PARAM) * (math.sqrt((math.log(@plays,2)/p)))
+
+  # Select a child node
+  selectChild: ->
+    if @moves.length is 0
+      return null
+    else
+      nodesWithWeight = []
+      for moveId, node of @children
+        uct = @_calcUCT(node)
+        nodesWithWeight.push {node:node, weight:uct}
+      nodesWithWeight.sort (a, b) -> b.weight - a.weight
+      return nodesWithWeight[0].node
+
+  expand: (cb) ->
+    @isExpanded = true
+    if not @moves?
+      @battle.getPossibleMoves (err, moves) =>
+        todo = moves.length
+        _runChild = (childBattle, move) =>
+          return (err) =>
+            if not err?
+              @children[move.id] = new MCNode @, move, childBattle
+            todo--
+            if todo is 0
+              cb null
+        @moves = moves
+        for move in moves
+          move.id = @moveId++
+          cBattle = @battle.clone()
+          move.enact cBattle, _runChild(cBattle, move)
+        if moves.length is 0
+          @isTerminal = true
+          cb null
+    else
+      cb null
+
+  playout: (cb) ->
+    if @isTerminal
+      console.log "TERMINAL NODE PLAYOUT"
+      cb null, @battle.model.winner.toString() is @userId.toString()
+    else
+      console.log "STARTING PLAYOUT"
+      battle = @battle.clone()
+      handler = battle.getActivePlayerHandler()
+      handler.virtualTurnCount = TURN_COUNT
+      battle.on 'virtual-game-over', (winner) =>
+        console.log "END PLAYOUT: #{winner}"
+        cb null, winner? and winner.toString() is @userId.toString()
+      handler.doVirtualTurn()
+
+ITERATIONS = 10
 
 # Utilizes the Monte-Carlo Tree Search MCST algorithm for determining which move to make
 class MonteCarloNaiveAI
   constructor:->
 
   calculateAction: (handler, battle, cb) ->
-    iterCount = ITERATIONS + 0
-    moveId = 0
-
-    # Initialize root node with the possible moves that the bot can make
-    handler.getPossibleMoves (err, allMoves) =>
-      #console.log "Possible moves:"
-      #console.log allMoves
-      root = new MCNode null, allMoves
-      moveDistribution = {}
-      for move in allMoves
-        move.id = moveId++
-        moveDistribution[move.id] = 0
-      simulate = =>
-        move = root.pickRandomMove()
-        if move?
-          @_playOutMove handler.getUserId(), move, battle, (err, success) =>
-            moveDistribution[move.id] += success
-            iterCount--
-            if iterCount < 0
-              cb null, @_pickBestMove(moveDistribution, allMoves)
-            else
-              setTimeout simulate, 0
+    iterCount = ITERATIONS
+    root = new MCNode null, null, battle
+    root.userId = handler.player.userId
+    _simulate = (node, cb) =>
+      node.playout (err, isWin) =>
+        if isWin
+          node.update(1, 1)
         else
-          cb null, @_pickBestMove(moveDistribution, allMoves)
-      simulate()
+          node.update(0, 1)
+        cb err
 
-  _pickBestMove: (moveDist, moves) ->
-    moveValues = []
-    for moveId, value of moveDist
-      moveValues.push {moveId: parseInt(moveId), value:value}
-    moveValues.sort (a, b) -> return a.value - b.value
-    bestMove = moveValues[0]
-    for move in moves
-      if move.id is bestMove.moveId
-        console.log bestMove.value
-        return move
-    return null
+    _expand = (node, cb) =>
+      node.expand (err) =>
+        child = node.selectChild()
+        if child?
+          _simulate child, cb
+        else
+          _simulate node, cb
 
-  _playOutMove: (userId, move, battle, cb) ->
-    battle = battle.clone()
-    # Invoke the move on the game state
-    move.build battle, (err, actions) =>
-      handler = battle.getActivePlayerHandler()
-      handler.virtualTurnCount = 500
-      battle.on 'virtual-game-over', (winner) =>
-        healthDiff = handler.getHeroHandler().model.health - battle.getNonActivePlayerHandler().getHeroHandler().model.health
-        console.log "WINNER #{healthDiff}"
-        cb null, healthDiff
-      handler.doVirtualTurn move
+    _select = (node, cb) =>
+      if not node.isExpanded
+        _expand node, cb
+      else
+        child = node.selectChild()
+        if child?
+          _select child, cb
+        else # terminal, simulate from parent
+          _simulate node, cb
 
+    _run = =>
+      _select root, (err) =>
+        iterCount--
+        if iterCount is 0
+          cb null, root.pickBestMove()
+        else
+          runAgain = => _run()
+          setTimeout runAgain, 0
+    root.expand (err) =>
+      if root.moves.length is 1
+        cb null, root.pickBestMove()
+      else
+        _run()
 
 module.exports = MonteCarloNaiveAI

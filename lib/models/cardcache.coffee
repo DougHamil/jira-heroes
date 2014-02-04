@@ -6,6 +6,14 @@ Cards = require '../../lib/models/card'
 ###
 class CardCache
   @cards: {}
+  @loadAll: (cb) ->
+    Cards.getAll (err, cards) =>
+      if err?
+        cb err
+      else
+        for card in cards
+          @cards[card._id] = card
+        cb null
   @getCard: (cardId, cb) ->
     if @cards[cardId]?
       cb null, @cards[cardId]
