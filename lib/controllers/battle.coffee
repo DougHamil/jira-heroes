@@ -7,7 +7,8 @@ ADD_BOT = false
 
 module.exports = (app, Users) ->
 
-  userJoinBattle = (addBot, battle, user, deckId, res) ->
+  userJoinBattle = (addBotFlag, battle, user, deckId, res) ->
+    console.log "ADD BOT FLAG #{addBotFlag}"
     if battle.users.length >= 2
       res.send 400, 'Battle full'
     else if deckId not in user.decks
@@ -31,7 +32,8 @@ module.exports = (app, Users) ->
                     res.send 500, err
                   else
                     res.json battle.getPublicData()
-          if addBot
+          console.log "ADD BOT FLAG #{addBotFlag}"
+          if addBotFlag
             battle.users.push user._id + 'BOT'
             battle.addBot 'montecarlonaive', user._id + "BOT", deck, (err, bot) ->
               addPlayer()
@@ -63,6 +65,7 @@ module.exports = (app, Users) ->
   app.post '/secure/battle/host', (req, res) ->
     deckId = req.body.deck
     addBot = req.body.bot? and req.body.bot
+    addBot = addBot? and addBot is 'true'
     Users.fromSession req.session.user, (err, user) ->
       if err?
         res.send 500, err
