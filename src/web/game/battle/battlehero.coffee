@@ -3,19 +3,36 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     constructor: (@hero, @heroClass, @interactive) ->
       super
       @token = new GUI.HeroToken @hero, @heroClass
+      @damageIndicator = new GUI.DamageIndicator 0
+      @damageIndicator.visible = false
+      @damageIndicator.position = {x:@token.width/2, y:@token.height/2}
+      @token.addChild @damageIndicator
 
-    animateDamaged:->
+    animateDamaged:(amount)->
       animation = new Animation()
-      jitterSteps = 5
-      sprite = @getTokenSprite()
-      initialPosition = Util.clone(sprite.position)
-      for i in [0...5]
-        animation.addTweenStep ->
-          return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 50
-      animation.addTweenStep =>
-        @getTokenSprite().setHealth(@hero.health)
-        return Util.spriteTween sprite, sprite.position, initialPosition, 50
+      animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
+      animation.on 'complete', => @getTokenSprite().setHealth(@hero.health)
       return animation
+
+    animateAction: (action) ->
+      switch action.type
+        when 'damage'
+          return @animateDamaged(action.damage)
+        when 'destroy'
+          return @animateDestroyed()
+        when 'heal'
+          return @animateHealed(action.amount)
+        when 'overheal'
+          return @animateOverhealed(action.amount)
+        when 'status-add'
+          return @animateStatusAdd(action.status)
+        when 'status-remove'
+          return @animationStatusRemove(action.status)
+        when 'add-modifier'
+          return @animateModifierAdd(action.modifier)
+        when 'remove-modifier'
+          return @animateModifierRemove(action.modifier)
+      console.log Error("BattleHero cannot animate #{action.type}!")
 
     animateModifierAdd: (status) ->
       #TODO: Fancy status-specific animations

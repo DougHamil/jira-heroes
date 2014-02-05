@@ -7,6 +7,6 @@ define [
     'zap':Zap
     'attack':Attack
   class FxFactory
-    @create: (type, fxdata) ->
-      return new FX_CLASSES[type](fxdata)
+    @create: (type, cons...) ->
+      return new FX_CLASSES[type](cons...)
 

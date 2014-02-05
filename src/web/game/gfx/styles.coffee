@@ -15,6 +15,11 @@ define [], ->
       fill:'#FFFFFF'
       strokeThickness:2
       font:'20px pixel'
+    DAMAGE_TEXT:
+      stroke:'#000000'
+      fill:'#B22222'
+      strokeThickness:2
+      font:'20px pixel'
     TEXT_WARN:
       stroke:'#000000'
       fill:'#B22222'

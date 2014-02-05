@@ -9,8 +9,18 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
       @sourceDestroyed = false
       @targetDestroyed = false
       @actions = []
+      @actionsById = {}
+      @sourceDamageById = {}
 
     onAction: (action) ->
+      if action.target?
+        if not @actionsById[action.target]?
+          @actionsById[action.target] = []
+        @actionsById[action.target].push action
+        if action.target is @source
+          if not @sourceDamageById[action.source]?
+            @sourceDamageById[action.source] = []
+          @sourceDamageById[action.source].push action
       if action.type is 'damage'
         if action.target is @source
           @sourceDamage += action.damage
@@ -24,38 +34,40 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
       @actions.push action
 
     animate: (animator, battle) ->
-      fxData =
-        source: battle.getCardOrHero(@source)
-        targets: [battle.getCardOrHero(@target)]
-      fx = FxFactory.create 'attack', fxData
+      fxData = {}
+      fx = FxFactory.create 'attack', @source, @target, fxData
       animation = fx.animate(animator)
-      battleToken = animator.getBattleObject(@target)
-      sourceBattleToken = animator.getBattleObject(@source)
-      targetDamageAnimation = new Animation()
-      sourceDamageAnimation = new Animation()
-      if @targetDamage > 0
-        targetDamageAnimation.addAnimationStep battleToken.animateDamaged()
-      if @targetDestroyed
-        targetDamageAnimation.addAnimationStep battleToken.animateDestroyed()
-        targetDamageAnimation.addAnimationStep animator.discardCard(@target)
-      if @sourceDamage > 0
-        sourceDamageAnimation.addAnimationStep sourceBattleToken.animateDamaged()
-      if @sourceDestroyed
-        sourceDamageAnimation.addAnimationStep sourceBattleToken.animateDestroyed()
-        sourceDamageAnimation.addAnimationStep animator.discardCard(@source)
-      animation.addUnchainedAnimationStep targetDamageAnimation
-      animation.addUnchainedAnimationStep sourceDamageAnimation
+      animation.on 'hit-target', (target) =>
+        console.log target
+        actions = @actionsById[target]
+        if actions?
+          # Only animate the damage animation on hit
+          hitActions = actions.filter (a) -> a.type is 'damage'
+          # Usually there should be only one damage action, but if there are more, then consolidate
+          hitAction = hitActions[0]
+          if hitActions.length > 0
+            for i in [1...hitActions.length]
+              hitAction.damage += hitActions[i]
+            animator.getBattleObject(target).animateAction(hitAction).play()
+        # Animate return damage
+        actions = @sourceDamageById[target]
+        if actions?
+          # Only animate the damage animation on hit
+          hitActions = actions.filter (a) -> a.type is 'damage'
+          # Usually there should be only one damage action, but if there are more, then consolidate
+          hitAction = hitActions[0]
+          if hitActions.length > 0
+            for i in [1...hitActions.length]
+              hitAction.damage += hitActions[i]
+            animator.getBattleObject(@source).animateAction(hitAction).play()
 
-      for action in @actions
-        switch action.type
-          when 'status-add'
-            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateStatusAdd(action.status)
-          when 'status-remove'
-            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateStatusRemove(action.status)
-          when 'add-modifier'
-            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateModifierAdd(action.modifier)
-          when 'remove-modifier'
-            animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateModifierRemove(action.modifier)
+      animation.on 'complete', =>
+        for id, actions of @actionsById
+          anim = new Animation()
+          for action in actions
+            if action.type isnt 'damage'
+              anim.addAnimationStep animator.getBattleObject(id).animateAction(action)
+          anim.play()
 
       return animation
 

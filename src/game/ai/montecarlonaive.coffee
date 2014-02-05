@@ -3,7 +3,7 @@ math = require('mathjs')()
 
 EXPLORATION_PARAM = math.sqrt(2)
 TURN_LIMIT = 100
-ITERATIONS = 60
+ITERATIONS = 10
 
 class MCNode
   constructor: (@parent, @move, @battle) ->

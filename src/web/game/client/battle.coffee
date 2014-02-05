@@ -18,6 +18,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
         for card in opp.field
           @cardsById[card._id] = card
           BattleHelpers.addCardMethods(card)
+        BattleHelpers.addHeroMethods(opp.hero)
+      BattleHelpers.addHeroMethods(@model.you.hero)
       @socket.on 'player-connected', (userId) => @onPlayerConnected(userId)
       @socket.on 'player-disconnected', (userId) => @onPlayerDisconnected(userId)
       @socket.on 'your-turn', => @emit 'your-turn'

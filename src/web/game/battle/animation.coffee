@@ -16,17 +16,18 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
       @isPlaying = false
       @steps = []
 
-    addUnchainedAnimationStep:(animation, id) ->
+    addUnchainedAnimationStep:(animation, id, cbData...) ->
       if not animation?
         return
       step =
         id: id
         animation: animation
         chained: false
+        cbData:cbData
       @steps.push step
 
     # Nested animations
-    addAnimationStep: (animation, id) ->
+    addAnimationStep: (animation, id, cbData...) ->
       if not animation?
         return
       animationFunc = null
@@ -38,9 +39,10 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
         animation: animation
         animationFunc: animationFunc
         chained: true
+        cbData:cbData
       @steps.push step
 
-    addTweenStep: (tweens, id) ->
+    addTweenStep: (tweens, id, cbData...) ->
       tweenFunc = null
       if typeof tweens is 'function'
         tweenFunc = tweens
@@ -53,6 +55,7 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
         id: id
         tweens: tweens
         tweenFunc: tweenFunc
+        cbData:cbData
       @steps.push step
 
     stop: ->
@@ -74,8 +77,9 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
       =>
         if @isPlaying
           # Fire event indicating this step is finished
-          @emit EVENT.COMPLETE_STEP, step.id
-          @emit EVENT.COMPLETE_STEP + '-' + step.id
+          @emit EVENT.COMPLETE_STEP, step.id, step.cbData...
+          @emit EVENT.COMPLETE_STEP + '-' + step.id, step.cbData...
+          @emit step.id, step.cbData...
           @activeTweens = null
           @activeAnimation = null
           @_playNext(idx + 1)
@@ -98,7 +102,8 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
               if totalSteps <= 0
                 @_playNextHandler(step, idx)()
             for tween in step.tweens
-              tween.onComplete onCompleteHandler
+              tween.onComplete =>
+                onCompleteHandler()
               tween.start()
           else
             @_playNextHandler(step, idx)()

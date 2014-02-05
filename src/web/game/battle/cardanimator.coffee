@@ -35,6 +35,8 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
   class CardAnimator extends PIXI.DisplayObjectContainer
     constructor: (@heroClasses, @cardClasses, @userId, @battle) ->
       super
+      @animationQueue = []
+      @activeAnimation = new Animation()
       @cards = {}
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
@@ -81,7 +83,19 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       for payload in payloads
         if payload.animate?
           animation.addAnimationStep payload.animate(@, @battle)
-      animation.play()
+
+      @enqueueAnimation animation
+
+    enqueueAnimation: (animation) ->
+      animation.on 'complete', => @playNextAnimation()
+      @animationQueue.push animation
+      if not @activeAnimation? or not @activeAnimation.isPlaying
+        @playNextAnimation()
+
+    playNextAnimation: ->
+      if @animationQueue.length > 0
+        @activeAnimation = @animationQueue.shift()
+        @activeAnimation.play()
 
     processAction:(action) ->
       switch action.type
@@ -264,6 +278,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
         return @enemyHero
       else
         return @getBattleCard(id)
+
     getBattleCard: (card) ->
       if card._id?
         card = card._id
@@ -301,15 +316,18 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
 
     getCardClass: (card) -> return @cardClasses[card.class]
     getSprite: (obj) ->
+      if not obj?
+        return null
       if obj._id?
-        if @cards[obj._id]
-          card = @cards[obj._id]
-          if card.isTokenVisible()
-            return card.getTokenSprite()
-          else
-            return card.getAvailableCardSprite()
-        if @playerHero.getId() is obj._id
-          return @playerHero.getTokenSprite()
-        if @enemyHero.getId() is obj._id
-          return @enemyHero.getTokenSprite()
+        obj = obj._id
+      if @playerHero.getId() is obj
+        return @playerHero.getTokenSprite()
+      if @enemyHero.getId() is obj
+        return @enemyHero.getTokenSprite()
+      if @cards[obj]?
+        card = @cards[obj]
+        if card.isTokenVisible()
+          return card.getTokenSprite()
+        else
+          return card.getAvailableCardSprite()
       return null

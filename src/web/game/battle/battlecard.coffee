@@ -7,6 +7,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     constructor: (@cardId, cardClass, card) ->
       super
       @hasCard = false
+      @damageIndicator = new GUI.DamageIndicator 0
+      @damageIndicator.visible = false
       @flippedCardSprite = new GUI.FlippedCard()
       @flippedCardSprite.visible = false
       if cardClass? and card?
@@ -14,6 +16,25 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
           console.log card
         @setCard(cardClass, card)
 
+    animateAction: (action) ->
+      switch action.type
+        when 'damage'
+          return @animateDamaged(action.damage)
+        when 'destroy'
+          return @animateDestroyed()
+        when 'heal'
+          return @animateHealed(action.amount)
+        when 'overheal'
+          return @animateOverhealed(action.amount)
+        when 'status-add'
+          return @animateStatusAdd(action.status)
+        when 'status-remove'
+          return @animationStatusRemove(action.status)
+        when 'add-modifier'
+          return @animateModifierAdd(action.modifier)
+        when 'remove-modifier'
+          return @animateModifierRemove(action.modifier)
+      console.log Error("BattleCard cannot animate #{action.type}!")
     animateModifierAdd: (status) ->
       #TODO: Fancy status-specific animations
       animation = new Animation()
@@ -83,17 +104,15 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
       return animation
 
-    animateDamaged:->
+    animateOverhealed: ->
       animation = new Animation()
-      jitterSteps = 5
-      sprite = @getTokenSprite()
-      initialPosition = Util.clone(sprite.position)
-      for i in [0...5]
-        animation.addTweenStep ->
-          return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 50
-      animation.addTweenStep =>
-        @getTokenSprite().setHealth(@card.health)
-        return Util.spriteTween sprite, sprite.position, initialPosition, 50
+      animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
+      return animation
+
+    animateDamaged: (amount)->
+      animation = new Animation()
+      animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
+      animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
       return animation
 
     flipCard: ->
@@ -248,6 +267,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @cardClass = cardClass
       @cardSprite = new GUI.Card cardClass, cardClass.damage, cardClass.health, card.getStatus()
       @tokenSprite = new GUI.CardToken card, cardClass
+      @damageIndicator.position = {x:@tokenSprite.width/2, y:@tokenSprite.height/2}
+      @tokenSprite.addChild @damageIndicator
       @cardSprite.visible = false
       @tokenSprite.visible = false
 

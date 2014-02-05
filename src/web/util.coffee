@@ -19,8 +19,11 @@ define ['jquery', 'pixi', 'tween'], ($) ->
       return tween
     scaleSpriteTween: (sprite, factor, time) ->
       destScale = UTILS.copy(sprite.scale)
-      destScale.x *= factor
-      destScale.y *= factor
+      if factor.x? and factor.y?
+        destScale = factor
+      else
+        destScale.x *= factor
+        destScale.y *= factor
       tween = new TWEEN.Tween(UTILS.copy(sprite.scale)).to(destScale, time).onUpdate ->
         for key, value of @
           if key is 'x'

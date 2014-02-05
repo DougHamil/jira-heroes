@@ -1,7 +1,7 @@
 define ['battle/fx/factory', 'battle/animation', 'util'], (FxFactory, Animation, Util) ->
-  class CastCardPayload
+  class CastRushPayload
     constructor: (action) ->
-      @type = 'cast-card'
+      @type = 'cast-rush'
       @player = action.player
       @card = action.card
       @targets = action.targets
@@ -25,12 +25,17 @@ define ['battle/fx/factory', 'battle/animation', 'util'], (FxFactory, Animation,
 
       cardClass = animator.getCardClass(@card)
       if cardClass.media.fx? and cardClass.media.fx.type?
-        fxData = cardClass.media.fx.data
-        fx = FxFactory.create cardClass.media.fx.type, @card, @targets, fxData
+        fxData =
+          source: @card
+          targets:@targets
+          data:cardClass.media.fx.data
+        fx = FxFactory.create cardClass.media.fx.type, fxData
         animation.addAnimationStep fx.animate(animator)
       else if @targets.length > 0
-        fxData = {}
-        fx = FxFactory.create 'attack', @card, @targets, fxData
+        fxData =
+          source: @card
+          targets: @targets
+        fx = FxFactory.create 'attack', fxData
         animation.addAnimationStep fx.animate(animator)
 
       # Handle all of the possible actions
@@ -48,7 +53,7 @@ define ['battle/fx/factory', 'battle/animation', 'util'], (FxFactory, Animation,
           when 'damage'
             if action.damage > 0
               tToken = animator.getBattleObject(action.target)
-              subAnim.addAnimationStep tToken.animateDamaged(action.damage)
+              subAnim.addAnimationStep tToken.animateDamaged()
           when 'heal'
             if action.amount > 0
               tToken = animator.getBattleObject(action.target)
