@@ -16,6 +16,13 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
       @isPlaying = false
       @steps = []
 
+    addPauseStep: (time, id, cbData...) ->
+      step =
+        id: id
+        pause:time
+        cbData:cbData
+      @steps.push step
+
     addUnchainedAnimationStep:(animation, id, cbData...) ->
       if not animation?
         return
@@ -87,35 +94,40 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
     _playNext: (idx) ->
       if idx < @steps.length
         step = @steps[idx]
-        if step.animationFunc?
-          step.animation = step.animationFunc()
-        if step.tweenFunc?
-          step.tweens = step.tweenFunc()
-          if step.tweens not instanceof Array
-            step.tweens = [step.tweens]
-        if step.tweens?
-          totalSteps = step.tweens.length
-          if totalSteps > 0
-            @activeTweens = step.tweens
-            onCompleteHandler = =>
-              totalSteps -= 1
-              if totalSteps <= 0
-                @_playNextHandler(step, idx)()
-            for tween in step.tweens
-              tween.onComplete =>
-                onCompleteHandler()
-              tween.start()
-          else
+        if step.pause?
+          doNext = =>
             @_playNextHandler(step, idx)()
-        else if step.animation?
-          if step.chained
-            @activeAnimation = step.animation
-            # Listen for completion of animation
-            @activeAnimation.on EVENT.COMPLETE, @_playNextHandler(step, idx)
-            @activeAnimation.play()
-          else
-            step.animation.play()
-            @_playNextHandler(step, idx)()
+          setTimeout doNext, step.pause
+        else
+          if step.animationFunc?
+            step.animation = step.animationFunc()
+          if step.tweenFunc?
+            step.tweens = step.tweenFunc()
+            if step.tweens not instanceof Array
+              step.tweens = [step.tweens]
+          if step.tweens?
+            totalSteps = step.tweens.length
+            if totalSteps > 0
+              @activeTweens = step.tweens
+              onCompleteHandler = =>
+                totalSteps -= 1
+                if totalSteps <= 0
+                  @_playNextHandler(step, idx)()
+              for tween in step.tweens
+                tween.onComplete =>
+                  onCompleteHandler()
+                tween.start()
+            else
+              @_playNextHandler(step, idx)()
+          else if step.animation?
+            if step.chained
+              @activeAnimation = step.animation
+              # Listen for completion of animation
+              @activeAnimation.on EVENT.COMPLETE, @_playNextHandler(step, idx)
+              @activeAnimation.play()
+            else
+              step.animation.play()
+              @_playNextHandler(step, idx)()
         @emit EVENT.START_STEP, step.id
       else
         @_complete()
