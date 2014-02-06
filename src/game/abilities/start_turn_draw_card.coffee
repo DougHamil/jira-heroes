@@ -12,13 +12,14 @@ class StartTurnDrawCardAbility
   getValidTargets: -> return null
 
   filter: (battle, actions) ->
-    player = battle.getPlayerOfCard(@sourceCard)
-    for action in actions
-      # Only draw if it's our player's end of turn
-      if action instanceof StartTurnAction and player is action.player
-        for i in [0...@amount]
-          actions.push new DrawCardAction(player)
-        return true
+    if 'frozen' not in @sourceCard.getStatus()
+      player = battle.getPlayerOfCard(@sourceCard)
+      for action in actions
+        # Only draw if it's our player's end of turn
+        if action instanceof StartTurnAction and player is action.player
+          for i in [0...@amount]
+            actions.push new DrawCardAction(player)
+          return true
     return false
 
 module.exports = StartTurnDrawCardAbility
