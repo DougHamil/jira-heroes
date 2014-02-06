@@ -19,7 +19,7 @@ define [], ->
       stroke:'#000000'
       fill:'#B22222'
       strokeThickness:2
-      font:'20px pixel'
+      font:'64px pixel'
     TEXT_WARN:
       stroke:'#000000'
       fill:'#B22222'

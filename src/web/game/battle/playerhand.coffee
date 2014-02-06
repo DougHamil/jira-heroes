@@ -6,11 +6,13 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       @animTime = config.animationTime
       @cards = {}
       @cardRow = new Row config.origin, GUI.Card.Width, config.padding
+      @requiresReorder = false
 
     removeCard: (battleCard) ->
       delete @cards[battleCard.getId()]
       @cardRow.remove battleCard
       @_removeCardInteraction(battleCard)
+      @requiresReorder = true
 
     addCard: (battleCard, doAnimation, enableInteraction) ->
       doAnimation = true if not doAnimation? # default to true
@@ -54,13 +56,13 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
         hoveredPosition.y += @hoverOffset.y
         if battleCard.hoverAnimation?
           battleCard.hoverAnimation.stop()
-        battleCard.hoverAnimation = battleCard.moveCardTo(hoveredPosition, @animTime, false)
+        battleCard.hoverAnimation = battleCard.moveCardTo(hoveredPosition, @animTime, false)()
         battleCard.hoverAnimation.play()
       battleCard.on 'card-hover-end', =>
         handPosition = Util.clone(@cardRow.getPositionOf(battleCard))
         if battleCard.hoverAnimation?
           battleCard.hoverAnimation.stop()
-        battleCard.hoverAnimation = battleCard.moveCardTo(handPosition, @animTime, false)
+        battleCard.hoverAnimation = battleCard.moveCardTo(handPosition, @animTime, false)()
         battleCard.hoverAnimation.play()
       # Minion cards are draggable
       if battleCard.isMinionCard() or (battleCard.isSpellCard() and not battleCard.requiresTarget())

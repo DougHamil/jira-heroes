@@ -4,10 +4,6 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
       @type = 'attack'
       @source = attackAction.source
       @target = attackAction.target
-      @sourceDamage = 0
-      @targetDamage = 0
-      @sourceDestroyed = false
-      @targetDestroyed = false
       @actions = []
       @actionsById = {}
       @sourceDamageById = {}
@@ -21,16 +17,6 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
           if not @sourceDamageById[action.source]?
             @sourceDamageById[action.source] = []
           @sourceDamageById[action.source].push action
-      if action.type is 'damage'
-        if action.target is @source
-          @sourceDamage += action.damage
-        else if action.target is @target
-          @targetDamage += action.damage
-      else if action.type is 'destroy'
-        if action.target is @source
-          @sourceDestroyed = true
-        else if action.target is @target
-          @targetDestroyed = true
       @actions.push action
 
     animate: (animator, battle) ->
@@ -38,11 +24,11 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
       fx = FxFactory.create 'attack', @source, @target, fxData
       animation = fx.animate(animator)
       animation.on 'hit-target', (target) =>
-        console.log target
         actions = @actionsById[target]
         if actions?
           # Only animate the damage animation on hit
           hitActions = actions.filter (a) -> a.type is 'damage'
+          hitActions.forEach (a) -> a.animated = true
           # Usually there should be only one damage action, but if there are more, then consolidate
           hitAction = hitActions[0]
           if hitActions.length > 0
@@ -54,6 +40,7 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
         if actions?
           # Only animate the damage animation on hit
           hitActions = actions.filter (a) -> a.type is 'damage'
+          hitActions.forEach (a) -> a.animated = true
           # Usually there should be only one damage action, but if there are more, then consolidate
           hitAction = hitActions[0]
           if hitActions.length > 0
@@ -61,13 +48,7 @@ define ['battle/animation', 'battle/fx/factory', 'util'], (Animation, FxFactory,
               hitAction.damage += hitActions[i]
             animator.getBattleObject(@source).animateAction(hitAction).play()
 
-      animation.on 'complete', =>
-        for id, actions of @actionsById
-          anim = new Animation()
-          for action in actions
-            if action.type isnt 'damage'
-              anim.addAnimationStep animator.getBattleObject(id).animateAction(action)
-          anim.play()
+      animation.on 'complete', => animator.animateActions @actions
 
       return animation
 

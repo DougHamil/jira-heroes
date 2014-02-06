@@ -20,11 +20,11 @@ class EndTurnHealFriendly
       if payload.type is 'end-turn' and payload.player is player.userId
         myActions = []
         targets = []
-        if @healMinions?
+        if @healMinions? and @heroMinions
           for minion in battle.getFieldCards(player)
             myActions.push new HealAction(@cardModel, minion, @amount)
             targets.push minion
-        if @healHero?
+        if @healHero? and @healHero
           hero = battle.getHero(player)
           myActions.push new HealAction(@cardModel, hero, @amount)
           targets.push hero

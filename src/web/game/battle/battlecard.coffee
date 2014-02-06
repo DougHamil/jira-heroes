@@ -12,11 +12,10 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @flippedCardSprite = new GUI.FlippedCard()
       @flippedCardSprite.visible = false
       if cardClass? and card?
-        if card.position is 'field'
-          console.log card
         @setCard(cardClass, card)
 
     animateAction: (action) ->
+      action.animated = true
       switch action.type
         when 'damage'
           return @animateDamaged(action.damage)
@@ -29,17 +28,18 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         when 'status-add'
           return @animateStatusAdd(action.status)
         when 'status-remove'
-          return @animationStatusRemove(action.status)
+          return @animateStatusRemove(action.status)
         when 'add-modifier'
           return @animateModifierAdd(action.modifier)
         when 'remove-modifier'
           return @animateModifierRemove(action.modifier)
+      action.animated = false
       console.log Error("BattleCard cannot animate #{action.type}!")
+
     animateModifierAdd: (status) ->
       #TODO: Fancy status-specific animations
       animation = new Animation()
       animation.on 'complete', =>
-        console.log @card.getStatus()
         @getTokenSprite().setFrozen('frozen' in @card.getStatus())
         @getTokenSprite().setTaunt('taunt' in @card.getStatus())
         @getTokenSprite().setSleeping('sleeping' in @card.getStatus())
@@ -195,42 +195,44 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     # Generate the animation for moving a card to a position
     ###
     moveCardTo: (position, animTime, disableInteraction) ->
-      animation = new Animation()
-      cardSprite = @getAvailableCardSprite()
-      buildTween = ->
-        tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
-        if disableInteraction
-          @setCardInteractive(false)
-          tween.onComplete => @setCardInteractive(true)
-        return tween
-      animation.addTweenStep buildTween, 'card-move'
-      return animation
+      return =>
+        animation = new Animation()
+        cardSprite = @getAvailableCardSprite()
+        buildTween = ->
+          tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          if disableInteraction
+            @setCardInteractive(false)
+            tween.onComplete => @setCardInteractive(true)
+          return tween
+        animation.addTweenStep buildTween, 'card-move'
+        return animation
 
     moveFlippedCardTo: (position, animTime, disableInteraction) ->
-      animation = new Animation()
-      cardSprite = @getFlippedCardSprite()
-      buildTween = ->
-        tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
-        if disableInteraction
-          @setCardInteractive(false)
-          tween.onComplete => @setCardInteractive(true)
-        return tween
-      animation.addTweenStep buildTween, 'card-move'
-      return animation
+      return =>
+        animation = new Animation()
+        cardSprite = @getFlippedCardSprite()
+        buildTween = ->
+          tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          if disableInteraction
+            @setCardInteractive(false)
+            tween.onComplete => @setCardInteractive(true)
+          return tween
+        animation.addTweenStep buildTween, 'card-move'
+        return animation
 
     moveTokenTo: (position, animTime, disableInteraction) ->
-      animation = new Animation()
-      tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
-      if disableInteraction
-        @setTokenInteractive(false)
-      animation.addTweenStep tween, 'token-move'
-      if disableInteraction
-        animation.on 'complete', =>
-          @setTokenInteractive(true)
-      return animation
+      return =>
+        animation = new Animation()
+        tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
+        if disableInteraction
+          @setTokenInteractive(false)
+        animation.addTweenStep tween, 'token-move'
+        if disableInteraction
+          animation.on 'complete', =>
+            @setTokenInteractive(true)
+        return animation
 
     buildCastAnimation: (target) ->
-      console.log target
       animation = new Animation()
       tween = null
       # TODO: Figure out good cast animation system with particles and stuff

@@ -11,25 +11,22 @@ define ['battle/animation', 'util'], (Animation, Util) ->
     animate: (animator, battle) ->
       battleCard = animator.getBattleCard(@card)
       animation = new Animation()
-      for action in @actions
-        switch action.type
-          when 'energy'
-            animation.addUnchainedAnimationStep animator.animateAction(action)
+
+      # If the card is the enemy's then we need to reveal it
+      if @player isnt battle.getPlayerId()
+        battleCard = animator.getBattleCard @card
+        animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 1000, false)
+        animation.addAnimationStep battleCard.flipCard()
+
       if @player is battle.getPlayerId()
-        animation.addAnimationStep animator.putCardOnField(@card, true)
+        animation.addAnimationStep => animator.putCardOnField(@card, true)
       else
-        animation.addAnimationStep animator.putCardOnEnemyField(@card, true)
+        animation.addAnimationStep => animator.putCardOnEnemyField(@card, true)
 
       # Animate actions that occur after token has been placed on field
       for action in @actions
-        switch action.type
-          when 'status-add'
-            animation.addAnimationStep animator.getBattleObject(action.target).animateStatusAdd(action.status)
-          when 'status-remove'
-            animation.addAnimationStep animator.getBattleObject(action.target).animateStatusRemove(action.status)
-          when 'add-modifier'
-            animation.addAnimationStep animator.getBattleObject(action.target).animateModifierAdd(action.modifier)
-          when 'remove-modifier'
-            animation.addAnimationStep animator.getBattleObject(action.target).animateModifierRemove(action.modifier)
+        if action.target?
+          animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateAction(action)
 
+      animation.on 'complete', => animator.animateActions(@actions)
       return animation

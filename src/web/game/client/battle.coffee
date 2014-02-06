@@ -123,6 +123,7 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       @emit 'player-disconnected', userId
 
     getPlayerId: -> return @userId
+    getUserId: -> return @userId
     getEnemyId: -> return @model.opponents[0].userId
     getPlayer: (id) ->
       if id is @userId

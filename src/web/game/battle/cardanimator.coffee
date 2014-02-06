@@ -54,57 +54,68 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @enemyField = new PlayerField ENEMY_FIELD_CONFIG, @uiLayer
       @setPlayerHero(@battle.getHero())
       @setEnemyHero(@battle.getEnemyHero())
-      anim = new Animation()
       for card in @battle.getCardsInHand()
         @addCard(card)
-        anim.addAnimationStep(@putCardInHand(card, false), 'card-in-hand-'+card._id)
+        @enqueueAnimation(@putCardInHand(card, true), 'card-in-hand-'+card._id)
       for cardId in @battle.getEnemyCardsInHand()
         @addCardId cardId
-        anim.addAnimationStep(@putCardInEnemyHand(cardId, false), 'enemy-card-in-hand-'+cardId)
+        @enqueueAnimation(@putCardInEnemyHand(cardId, true), 'enemy-card-in-hand-'+cardId)
       for card in @battle.getCardsOnField()
         @addCard(card)
-        anim.addAnimationStep(@putCardOnField(card, false), 'card-on-field-'+card._id)
+        @enqueueAnimation(@putCardOnField(card, true), 'card-on-field-'+card._id)
       for card in @battle.getEnemyCardsOnField()
         @addCard(card)
-        anim.addAnimationStep(@putCardOnEnemyField(card, false), 'enemy-card-on-field'+card._id)
-      anim.play()
+        @enqueueAnimation(@putCardOnEnemyField(card, true), 'enemy-card-on-field'+card._id)
       @playerHand.on 'card-dropped', (battleCard, position) => @onCardDropped(battleCard, position)
       @playerHand.on 'card-target', (battleCard, position) => @onCardTarget(battleCard, position)
       @playerField.on 'token-target', (battleCard, position) => @onTokenTarget(battleCard, position)
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = => @onMouseUp()
-      @battle.on 'action', (actions) => @animateActions(actions)
+      @battle.on 'action', (actions) => @handleActions(actions)
 
-    animateActions: (actions) ->
+    animateAction: (action) ->
+      switch action.type
+        when 'energy'
+          if action.player is @battle.getPlayerId()
+            @playerEnergyIcon.setEnergy(@battle.getEnergy())
+            tween = Util.scaleSpriteTween @playerEnergyIcon, 2, 200
+            animation = new Animation()
+            animation.addTweenStep tween
+            animation.addAnimationStep =>
+              tween = Util.scaleSpriteTween @playerEnergyIcon, 0.5, 200
+              anim = new Animation()
+              anim.addTweenStep tween
+              return anim
+            return animation
+        when 'draw-card'
+          animation = new Animation()
+          if action.player is @userId
+            animation.addAnimationStep => @putCardInHand(action.card, true)
+          else
+            animation.addAnimationStep => @putCardInEnemyHand(action.card, true)
+          return animation
+        when 'destroy'
+          return @getBattleObject(action.target).animateDestroyed()
+        when 'discard-card'
+          return @discardCard action.card
+      return null
+
+    handleActions: (actions) ->
       for action in actions
-        @processAction(action)
+        @preprocessAction(action)
       animation = new Animation()
       payloads = PayloadFactory.processActions(@battle, actions)
       for payload in payloads
         if payload.animate?
           animation.addAnimationStep payload.animate(@, @battle)
-
       @enqueueAnimation animation
 
-    enqueueAnimation: (animation) ->
-      animation.on 'complete', => @playNextAnimation()
-      @animationQueue.push animation
-      if not @activeAnimation? or not @activeAnimation.isPlaying
-        @playNextAnimation()
-
-    playNextAnimation: ->
-      if @animationQueue.length > 0
-        @activeAnimation = @animationQueue.shift()
-        @activeAnimation.play()
-
-    processAction:(action) ->
+    preprocessAction:(action) ->
+      action.animated = false
       switch action.type
-        when 'energy'
-          if action.player is @battle.getPlayerId()
-            @playerEnergyIcon.setEnergy(@battle.getEnergy())
         when 'draw-card'
           if action.player is @userId
-            @addCard(action.card)
+            @addCard(@battle.getCard(action.card))
           else
             @addCardId action.card
         when 'play-card'
@@ -130,8 +141,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       if targets.length > 0
         castFx = new BasicTargetFx(card, targets)
         animation.addAnimationStep castFx.buildAnimation(@), 'cast-spell'
-      animation.addAnimationStep ->
-        battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
+      animation.addAnimationStep battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
       return animation
 
     discardCard: (card, animation) ->
@@ -143,32 +153,37 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       battleCard.setTokenInteractive(false)
       if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
-        animation.addAnimationStep @playerHand.buildReorderAnimation()
       else if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
-        animation.addAnimationStep @enemyHand.buildReorderAnimation()
       else if @playerField.hasCard(battleCard)
         @playerField.removeCard(battleCard)
-        animation.addAnimationStep @playerField.buildReorderAnimation()
       else if @enemyField.hasCard(battleCard)
         @enemyField.removeCard(battleCard)
-        animation.addAnimationStep @enemyField.buildReorderAnimation()
       return animation
 
-    animateAction: (action) ->
-      switch action.type
-        when 'energy'
-          if action.player is @battle.getPlayerId()
-            tween = Util.scaleSpriteTween @playerEnergyIcon, 2, 200
-            animation = new Animation()
-            animation.addTweenStep tween
-            animation.addAnimationStep =>
-              tween = Util.scaleSpriteTween @playerEnergyIcon, 0.5, 200
-              anim = new Animation()
-              anim.addTweenStep tween
-              return anim
-            return animation
-      return null
+    animateActions:(actions) ->
+      animation = new Animation()
+      for action in actions
+        if not action.animated
+          animation.addAnimationStep @animateAction(action)
+      subAnim = new Animation()
+      subAnim.addAnimationStep @playerHand.buildReorderAnimation()
+      subAnim.addUnchainedAnimationStep @enemyHand.buildReorderAnimation()
+      subAnim.addUnchainedAnimationStep @playerField.buildReorderAnimation()
+      subAnim.addUnchainedAnimationStep @enemyField.buildReorderAnimation()
+      animation.addAnimationStep subAnim
+      @enqueueAnimation(animation)
+
+    enqueueAnimation: (animation) ->
+      animation.on 'complete', => @playNextAnimation()
+      @animationQueue.push animation
+      if not @activeAnimation? or not @activeAnimation.isPlaying
+        @playNextAnimation()
+
+    playNextAnimation: ->
+      if @animationQueue.length > 0
+        @activeAnimation = @animationQueue.shift()
+        @activeAnimation.play()
 
     putCardOnEnemyField: (card, animate) ->
       animate = true if not animate?

@@ -1,9 +1,9 @@
 Events = require '../events'
 math = require('mathjs')()
 
-EXPLORATION_PARAM = math.sqrt(1)
-TURN_LIMIT = 100
-ITERATIONS = 20
+EXPLORATION_PARAM = math.sqrt(2)
+TURN_LIMIT = 20
+ITERATIONS = 10
 
 class MCNode
   constructor: (@parent, @move, @battle) ->

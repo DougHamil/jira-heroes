@@ -15,12 +15,10 @@ define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, e
     animate: (battleAnimator)->
       animation = new Animation()
       sourceSprite = battleAnimator.getSprite(@source)
-      console.log sourceSprite
-      console.log @source
       if not @targets?
         @_animateNoTarget(battleAnimator, sourceSprite, animation)
       else if @targets instanceof Array
-        @_animateMultiTragets(battleAnimator, sourceSprite, animation)
+        @_animateMultiTarget(battleAnimator, sourceSprite, animation)
       else
         @_animateSingleTarget(battleAnimator, sourceSprite, battleAnimator.getSprite(@targets), animation)
       return animation

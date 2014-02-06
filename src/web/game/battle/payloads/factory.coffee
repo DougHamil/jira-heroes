@@ -5,6 +5,7 @@ define [
   'battle/payloads/castpassive',
   'battle/payloads/startturn',
   'battle/payloads/endturn',
+  'battle/payloads/castrush',
   'util'], (
     AttackPayload,
     PlayCardPayload,
@@ -12,11 +13,13 @@ define [
     CastPassivePayload,
     StartTurnPayload,
     EndTurnPayload,
+    CastRushPayload
     Util) ->
   PAYLOAD_CLASSES =
     'attack':AttackPayload
     'play-card':PlayCardPayload
     'cast-card':CastCardPayload
+    'cast-rush':CastRushPayload
     'cast-passive':CastPassivePayload
     'start-turn':StartTurnPayload
     'end-turn':EndTurnPayload

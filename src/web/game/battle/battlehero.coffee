@@ -8,13 +8,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @damageIndicator.position = {x:@token.width/2, y:@token.height/2}
       @token.addChild @damageIndicator
 
-    animateDamaged:(amount)->
-      animation = new Animation()
-      animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
-      animation.on 'complete', => @getTokenSprite().setHealth(@hero.health)
-      return animation
-
     animateAction: (action) ->
+      action.animated = true
       switch action.type
         when 'damage'
           return @animateDamaged(action.damage)
@@ -27,12 +22,19 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         when 'status-add'
           return @animateStatusAdd(action.status)
         when 'status-remove'
-          return @animationStatusRemove(action.status)
+          return @animateStatusRemove(action.status)
         when 'add-modifier'
           return @animateModifierAdd(action.modifier)
         when 'remove-modifier'
           return @animateModifierRemove(action.modifier)
+      action.animated = false
       console.log Error("BattleHero cannot animate #{action.type}!")
+
+    animateDamaged:(amount)->
+      animation = new Animation()
+      animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
+      animation.on 'complete', => @getTokenSprite().setHealth(@hero.health)
+      return animation
 
     animateModifierAdd: (status) ->
       #TODO: Fancy status-specific animations
@@ -40,8 +42,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.on 'complete', =>
         console.log @hero.getStatus()
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
-        @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
-        @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
         @getTokenSprite().setDamage(@hero.getDamage())
       return animation
 
@@ -50,8 +50,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation = new Animation()
       animation.on 'complete', =>
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
-        @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
-        @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
         @getTokenSprite().setDamage(@hero.getDamage())
       return animation
 
@@ -61,8 +59,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.on 'complete', =>
         console.log @hero.getStatus()
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
-        @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
-        @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
         @getTokenSprite().setUsed('used' in @hero.getStatus())
       return animation
 
@@ -71,8 +67,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation = new Animation()
       animation.on 'complete', =>
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
-        @getTokenSprite().setTaunt('taunt' in @hero.getStatus())
-        @getTokenSprite().setSleeping('sleeping' in @hero.getStatus())
         @getTokenSprite().setUsed('used' in @hero.getStatus())
       return animation
 
