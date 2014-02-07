@@ -5,6 +5,9 @@ define [], ->
     BUTTON_COLOR: 0x3399BB
     CARD_PURCHASED_COLOR: 0x00BB00
     CARD_CANT_AFFORD_COLOR: 0xBB0000
+    NORMAL_COLOR:0xFFFFFF
+    BAD_COLOR:0xB22222
+    GOOD_COLOR:0x22B222
     HEADING:
       stroke: 'black'
       fill:'#77DDEE'
@@ -20,6 +23,24 @@ define [], ->
       fill:'#B22222'
       strokeThickness:2
       font:'64px pixel'
+
+    # These should all have same font-size
+    ICON_TEXT_NORMAL:
+      stroke:'#000000'
+      fill:'#FFFFFF'
+      strokeThickness:2
+      font:'20px pixel'
+    ICON_TEXT_GOOD:
+      stroke:'#000000'
+      fill:'#22B222'
+      strokeThickness:2
+      font:'20px pixel'
+    ICON_TEXT_BAD:
+      stroke:'#000000'
+      fill:'#B22222'
+      strokeThickness:2
+      font:'20px pixel'
+
     TEXT_WARN:
       stroke:'#000000'
       fill:'#B22222'

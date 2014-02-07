@@ -17,8 +17,8 @@ class BotHandler extends PlayerHandler
     virtualBattle = @battle.clone()
     otherPlayer = @battle.getNonActivePlayerHandler()
     player = @battle.getActivePlayerHandler()
-    console.log "#{otherPlayer.player.userId}: #{otherPlayer.getHeroHandler().model.health}"
-    console.log "#{player.player.userId}: #{player.getHeroHandler().model.health}"
+    #console.log "#{otherPlayer.player.userId}: #{otherPlayer.getHeroHandler().model.health}"
+    #console.log "#{player.player.userId}: #{player.getHeroHandler().model.health}"
     #console.log player.getFieldCards()
     AIFactory.getAI(@player.botType).calculateAction @, virtualBattle, (err, aiAction) =>
       #console.log "AI Hand Cards:"

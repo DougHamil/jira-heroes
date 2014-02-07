@@ -53,7 +53,7 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
       if @titleText.width >= @backgroundSprite.width - 20
         @titleText.width = @backgroundSprite.width - 20
-      @energyIcon = new EnergyIcon cardClass.energy
+      @energyIcon = new EnergyIcon cardClass.energy, cardClass.energy
       @description = @buildAbilityText cardClass
       @description.position = {x:15, y: @backgroundSprite.height / 2 + 30}
       @titleText.anchor = {x: 0.5, y:0}
@@ -71,8 +71,8 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
 
       # Damage and health only appear for non-spell cards
       if not cardClass.playAbility?
-        @healthIcon = new HealthIcon health
-        @damageIcon = new DamageIcon damage
+        @healthIcon = new HealthIcon health, cardClass.health
+        @damageIcon = new DamageIcon damage, cardClass.damage
         @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
         @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
         @.addChild @healthIcon

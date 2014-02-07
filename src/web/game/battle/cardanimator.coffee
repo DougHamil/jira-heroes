@@ -98,6 +98,10 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
           return @getBattleObject(action.target).animateDestroyed()
         when 'discard-card'
           return @discardCard action.card
+      if action.target?
+        target = @getBattleObject(action.target)
+        if target?
+          return target.animateAction(action)
       return null
 
     handleActions: (actions) ->

@@ -32,8 +32,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @frameSprite = new PIXI.Sprite FRAME_TEXTURE
       @frameSprite.width = TOKEN_WIDTH
       @frameSprite.height = TOKEN_HEIGHT
-      @damageIcon = new DamageIcon hero.damage
-      @healthIcon = new HealthIcon hero.health
+      @damageIcon = new DamageIcon hero.getDamage(), heroClass.damage
+      @healthIcon = new HealthIcon hero.health, heroClass.health
       @damageIcon.anchor = {x:0, y:0}
       @healthIcon.anchor = {x:0, y:0}
       @damageIcon.position = {x:0, y:@height - @damageIcon.height}

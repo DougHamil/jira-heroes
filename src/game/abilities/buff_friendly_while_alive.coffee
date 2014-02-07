@@ -46,8 +46,6 @@ class BuffFriendlyWhileAlive
     for minion in battle.getFieldCards()
       if minion.hasModifier(@model.modifierId)
         actions.push new RemoveModifierAction(@model.modifierId, minion)
-      else
-        console.log "Minion no have modifier"
     for hero in battle.getHeroes()
       if hero.hasModifier(@model.modifierId)
         actions.push new RemoveModifierAction(@model.modifierId, hero)

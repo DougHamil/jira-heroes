@@ -16,5 +16,6 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (STYLES, Util) ->
       @width = ICON_WIDTH
       @height = ICON_HEIGHT
 
-    setText:(text) ->
-      @text.setText(text)
+    setText:(text) -> @text.setText(text)
+
+    setStyle:(style) -> @text.setStyle style

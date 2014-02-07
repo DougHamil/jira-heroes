@@ -45,8 +45,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @tauntHighlightSprite.width = TOKEN_WIDTH
       @tauntHighlightSprite.height = TOKEN_HEIGHT
       @tauntHighlightSprite.visible = false
-      @damageIcon = new DamageIcon card.getDamage()
-      @healthIcon = new HealthIcon card.health
+      @damageIcon = new DamageIcon card.getDamage(), cardClass.damage
+      @healthIcon = new HealthIcon card.health, cardClass.health
       @damageIcon.anchor = {x:0.5, y:0.5}
       @healthIcon.anchor = {x:0.5, y:0.5}
       @damageIcon.position = {x:0, y:@height - @damageIcon.height}
