@@ -8,13 +8,13 @@ class HealAllFriendlyAbility
   constructor: (@model) ->
     @amount = @model.data.amount
     @healHero = @model.data.healHero
-    @cardModel = @model.sourceCard
+    @sourceModel = @model.source
 
   getValidTargets: (battle) -> return null
 
   getTargets: (battle, target) ->
     targets = []
-    player = battle.getPlayerOfCard(@cardModel)
+    player = battle.getPlayerOfCard(@sourceModel)
     for minion in battle.getFieldCards(player)
       targets.push minion
     if @healHero? and @healHero
@@ -23,13 +23,13 @@ class HealAllFriendlyAbility
     return targets
 
   cast: (battle, target) ->
-    player = battle.getPlayerOfCard(@cardModel)
+    player = battle.getPlayerOfCard(@sourceModel)
     actions = []
     for minion in battle.getFieldCards(player)
-      actions.push new HealAction(@cardModel, minion, @amount)
+      actions.push new HealAction(@sourceModel, minion, @amount)
     if @healHero? and @healHero
       hero = battle.getHero(player)
-      actions.push new HealAction(@cardModel, hero, @amount)
+      actions.push new HealAction(@sourceModel, hero, @amount)
     return actions
 
 module.exports = HealAllFriendlyAbility

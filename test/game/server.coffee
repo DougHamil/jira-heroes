@@ -4,7 +4,7 @@ GameTestHarness = require './harness'
 GameFlowTest = require './flow'
 io = util.io
 
-describe 'GameServer', ->
+describe.skip 'GameServer', ->
 
   it 'should automatically disconnect any users who are not logged-in', (done) ->
     socket = io.connect("http://localhost:#{util.port}", {'force new connection':true})

@@ -27,8 +27,8 @@ class Abilities
       _id: abilityId
       class:type
       data:data
-      sourceCardId: sourceCard._id
-      sourceCard: sourceCard
+      sourceId: sourceCard._id
+      source: sourceCard
     return new clazz(model, false)
 
   @NewFromModel: (abilityId, sourceCard, model) ->
@@ -39,7 +39,7 @@ class Abilities
     if not @cache[model.class]?
       @cache[model.class] = require('./abilities/'+model.class)
     clazz = @cache[model.class]
-    model.sourceCard = sourceCard
+    model.source = sourceCard
     return new clazz(model, true)
 
 module.exports = Abilities

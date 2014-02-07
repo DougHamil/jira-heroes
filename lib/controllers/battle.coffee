@@ -8,7 +8,6 @@ ADD_BOT = false
 module.exports = (app, Users) ->
 
   userJoinBattle = (addBotFlag, battle, user, deckId, res) ->
-    console.log "ADD BOT FLAG #{addBotFlag}"
     if battle.users.length >= 2
       res.send 400, 'Battle full'
     else if deckId not in user.decks

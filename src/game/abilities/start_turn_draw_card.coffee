@@ -6,14 +6,14 @@ StartTurnAction = require '../actions/startturn'
 ###
 class StartTurnDrawCardAbility
   constructor: (@model) ->
-    @sourceCard = @model.sourceCard
+    @source = @model.source
     @amount = @model.data.amount
 
   getValidTargets: -> return null
 
   filter: (battle, actions) ->
-    if 'frozen' not in @sourceCard.getStatus()
-      player = battle.getPlayerOfCard(@sourceCard)
+    if 'frozen' not in @source.getStatus()
+      player = battle.getPlayerOfCard(@source)
       for action in actions
         # Only draw if it's our player's end of turn
         if action instanceof StartTurnAction and player is action.player

@@ -2,7 +2,7 @@ DrawCardAction = require '../actions/drawcard'
 
 class DrawCardAbility
   constructor: (@model) ->
-    @source = @model.sourceCard
+    @source = @model.source
 
   getValidTargets: -> return null
 

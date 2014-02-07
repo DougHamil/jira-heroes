@@ -5,7 +5,7 @@ util = require '../util'
 # Prepare server
 deckController = require('../../lib/controllers/deck')(server.app, util.Users)
 
-describe 'DeckController', ->
+describe.skip 'DeckController', ->
   it 'should return no decks for new user', (done) ->
     util.get '/secure/deck', (err, res, body) ->
       should.not.exist(err)

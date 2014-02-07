@@ -3,7 +3,7 @@ AttackAction = require '../actions/attack'
 
 class AttackAbility
   constructor: (@model) ->
-    @source = @model.sourceCard
+    @source = @model.source
 
   getValidTargets: (battle) ->
     targets = []

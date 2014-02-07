@@ -3,7 +3,7 @@ request = require 'request'
 util = require '../util'
 Battles = require '../../lib/models/battle'
 
-describe 'BattleController', ->
+describe.skip 'BattleController', ->
 
   user = null
   it 'should create a new battle', (done) ->

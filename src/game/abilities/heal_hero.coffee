@@ -2,7 +2,7 @@ HealAction = require '../actions/heal'
 
 class HealHeroAbility
   constructor: (@model) ->
-    @source = @model.sourceCard
+    @source = @model.source
     @data = @model.data
 
   getValidTargets: (battle) -> return null

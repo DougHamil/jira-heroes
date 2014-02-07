@@ -40,10 +40,10 @@ class Battle extends EventEmitter
 
     # Restore passive abilities
     for abilityModel in @model.passiveAbilities
-      sourceCard = @cards[abilityModel.sourceCardId]
-      sourceCard = sourceCard.model if sourceCard?
+      source = @cards[abilityModel.sourceId]
+      source = source.model if source?
       # Don't do the onregister callback again, because we're just restoring
-      @registerPassiveAbility Abilities.RestoreFromModel(sourceCard, abilityModel), false
+      @registerPassiveAbility Abilities.RestoreFromModel(source, abilityModel), false
 
     # Start the battle if it's still in initial phase
     if @model.state.phase is 'initial'
@@ -317,6 +317,13 @@ class Battle extends EventEmitter
     if hero?
       return hero
     return @getCard(id)
+
+  getPlayerOf:(objId) ->
+    player = @getPlayerOfHero(objId)
+    if player?
+      return player
+    else
+      return @getPlayerOfCard(objId)
 
   getPlayerOfCard: (cardId) ->
     if cardId._id?

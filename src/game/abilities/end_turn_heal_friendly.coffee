@@ -10,27 +10,27 @@ class EndTurnHealFriendly
     @amount = @model.data.amount
     @healHero = @model.data.healHero
     @healMinions = @model.data.healMinions
-    @cardModel = @model.sourceCard
+    @sourceModel = @model.source
 
   getValidTargets: -> return null
 
   respond: (battle, payloads, actions) ->
-    if 'frozen' not in @cardModel.getStatus()
-      player = battle.getPlayerOfCard(@cardModel)
+    if 'frozen' not in @sourceModel.getStatus()
+      player = battle.getPlayerOfCard(@sourceModel)
       for payload in payloads
         if payload.type is 'end-turn' and payload.player is player.userId
           myActions = []
           targets = []
           if @healMinions? and @healMinions
             for minion in battle.getFieldCards(player)
-              myActions.push new HealAction(@cardModel, minion, @amount)
+              myActions.push new HealAction(@sourceModel, minion, @amount)
               targets.push minion
           if @healHero? and @healHero
             hero = battle.getHero(player)
-            myActions.push new HealAction(@cardModel, hero, @amount)
+            myActions.push new HealAction(@sourceModel, hero, @amount)
             targets.push hero
           if myActions.length > 0
-            actions.push new CastPassiveAction(@cardModel, targets, myActions, 'heal-all-friendly')
+            actions.push new CastPassiveAction(@sourceModel, targets, myActions, 'heal-all-friendly')
           return true
     return false
 

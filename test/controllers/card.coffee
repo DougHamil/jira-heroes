@@ -2,7 +2,7 @@ server = require '../server'
 should = require 'should'
 util = require '../util'
 
-describe 'CardController', ->
+describe.skip 'CardController', ->
   cardController = require('../../lib/controllers/card')(server.app, util.Users)
 
   cardId = null

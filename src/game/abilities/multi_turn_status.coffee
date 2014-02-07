@@ -7,7 +7,7 @@ RemoveModifierAction = require '../actions/removemodifier'
 class MultiTurnStatusAbility
   constructor: (@model, isRestored) ->
     @status = @model.data.status
-    @cardModel = @model.sourceCard
+    @sourceModel = @model.source
     @model.modifierId = @model.modifierId || @model._id
 
   getValidTargets: (battle) ->

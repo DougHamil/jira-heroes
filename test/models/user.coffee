@@ -1,7 +1,7 @@
 should = require 'should'
 Users = require('../util').Users
 
-describe "Users", ->
+describe.skip "Users", ->
   afterEach (done) ->
     Users.model.remove {}, ->
       done()

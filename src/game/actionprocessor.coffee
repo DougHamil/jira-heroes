@@ -11,7 +11,7 @@ module.exports = class ActionProcessor
     else
       # Let all of the passive abilities respond to the actions we wish to process
       # Abilities may add/remove/alter the action list
-      for ability in passiveAbilities.filter((a) -> not a.usedFilter and 'frozen' not in a.model.sourceCard.getStatus())
+      for ability in passiveAbilities.filter((a) -> not a.usedFilter)
         # handle method returns true when the ability was invoked
         if ability.filter? and ability.filter(battle, actions)
           ability.used = true
@@ -31,7 +31,7 @@ module.exports = class ActionProcessor
           addedActions = addedActions.concat newActions
 
       # Now give abilities the chance to respond to payloads
-      for ability in passiveAbilities.filter((a) -> not a.usedRespond and 'frozen' not in a.model.sourceCard.getStatus())
+      for ability in passiveAbilities.filter((a) -> not a.usedRespond)
         if ability.respond? and ability.respond(battle, newPayloads, addedActions)
           ability.usedRespond = true
       return @_process battle, addedActions, payloads, passiveAbilities, ++depth

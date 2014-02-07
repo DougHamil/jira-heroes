@@ -4,6 +4,7 @@ config =
 
 global.isTest = true
 server = require('../src/server')(config)
+server.app.isTest = true
 require('../lib/controllers/user')(server.app, util.Users)
 require('../lib/controllers/battle')(server.app, util.Users)
 require('../lib/controllers/card')(server.app, util.Users)

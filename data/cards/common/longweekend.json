@@ -1,0 +1,21 @@
+{
+	"name":"longweekend",
+	"displayName":"Long Weekend",
+	"cost":{
+		"storyPoints": 2
+	},
+	"energy":0,
+	"health":0,
+	"damage":0,
+	"playAbility": {
+		"class":"player_energy",
+		"requiresTarget": false,
+		"text":"Gain <amount> energy.",
+		"data":{
+			"amount":4
+		}
+	},
+	"media": {
+		"image": "common/longweekend.png"
+	}
+}

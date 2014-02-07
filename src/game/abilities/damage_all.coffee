@@ -8,7 +8,7 @@ class DamageAllAbility
     @amount = @model.data.amount
     @damageHero = @model.data.damageHero
     @damageMinions = @model.data.damageMinions
-    @cardModel = @model.sourceCard
+    @sourceModel = @model.source
 
   getValidTargets: (battle) -> return null
 
@@ -17,10 +17,10 @@ class DamageAllAbility
     for playerid, player of battle.players
       if @damageHero? and @damageHero
         hero = battle.getHero(player)
-        actions.push new DamageAction(@cardModel, hero, @amount)
+        actions.push new DamageAction(@sourceModel, hero, @amount)
       if @damageMinions? and @damageMinions
         for minion in battle.getFieldCards(playerid)
-          actions.push new DamageAction(@cardModel, minion, @amount)
+          actions.push new DamageAction(@sourceModel, minion, @amount)
     return actions
 
 module.exports = DamageAllAbility

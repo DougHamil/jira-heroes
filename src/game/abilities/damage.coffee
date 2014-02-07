@@ -3,7 +3,7 @@ Errors = require '../errors'
 
 class DamageAbility
   constructor: (@model) ->
-    @source = @model.sourceCard
+    @source = @model.source
     @data = @model.data
 
   getValidTargets: (battle) ->

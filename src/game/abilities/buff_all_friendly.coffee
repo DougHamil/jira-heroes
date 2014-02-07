@@ -3,7 +3,7 @@ CastPassiveAction = require '../actions/castpassive'
 
 class BuffAllFriendly
   constructor: (@model) ->
-    @source = @model.sourceCard
+    @source = @model.source
     @data = @model.data
     @model.modifierId = @model.modifierId || @model._id
 

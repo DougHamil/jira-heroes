@@ -1,5 +1,6 @@
 MockCard = require './mockcard'
 MockPlayer = require './mockplayer'
+Battle = require '../../src/game/battle'
 
 class MockBattle
   constructor: ->
