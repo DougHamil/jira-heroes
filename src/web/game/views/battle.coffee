@@ -8,8 +8,8 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       super
       @backdropImage = new PIXI.Sprite BACKDROP_TEXTURE
       @statusText = new PIXI.Text 'Hosting battle...', GUI.STYLES.TEXT
-      @winBattleText = new PIXI.Text 'You won!', GUI.STYLES.HEADING
-      @loseBattleText = new PIXI.Text 'You lost', GUI.STYLES.HEADING
+      @winBattleText = new GUI.Win 'You win!', 0x22B222
+      @loseBattleText = new GUI.Win 'You lost', 0xB22222
       @winBattleText.position = {x: engine.WIDTH/2 - @winBattleText.width/2, y:engine.HEIGHT/2 - @winBattleText.height/2}
       @loseBattleText.position = {x: engine.WIDTH/2 - @loseBattleText.width/2, y:engine.HEIGHT/2 - @loseBattleText.height/2}
       @setStatusText 'Connecting to battle...'
@@ -46,11 +46,15 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
             @.removeChild @gfxLayer
             @.removeChild @backdropImage
             @uiLayer.addChild @winBattleText
+            @uiLayer.removeChild @endTurnButton
+            @winBattleText.animate().play()
         @battle.on 'action-lose-battle', (action) =>
           if action.player is JH.user._id
             @.removeChild @gfxLayer
             @.removeChild @backdropImage
             @uiLayer.addChild @loseBattleText
+            @uiLayer.removeChild @endTurnButton
+            @loseBattleText.animate().play()
 
       @.addChild @innerStage
 

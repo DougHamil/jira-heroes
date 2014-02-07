@@ -51,6 +51,11 @@ define [], ->
       fill:'#FFFFFF'
       strokeThickness:2
       font:'20px pixel'
+    LARGE_TEXT:
+      stroke:'#000000'
+      fill:'#FFFFFF'
+      strokeThickness:2
+      font:'72px pixel'
     CARD_TITLE:
       stroke: '#002244'
       fill:'#FFFFFF'

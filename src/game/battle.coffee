@@ -36,6 +36,7 @@ class Battle extends EventEmitter
         cardsById[card._id] = card
         @cards[card._id] = new CardHandler(@, @players[player.userId], card)
       player.cards = cardsById
+      #player.deck.hero.health = 1
       @registerPlayer(player.userId, @players[player.userId])
 
     # Restore passive abilities
