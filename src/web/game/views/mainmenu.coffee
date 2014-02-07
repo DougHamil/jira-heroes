@@ -8,6 +8,34 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       super
       @myStage = stage
       @myStage.addChild new PIXI.Sprite BACKGROUND_TEXTURE
+      @lineLayer = new PIXI.DisplayObjectContainer()
+      @myStage.addChild @lineLayer
+      for i in [0...10]
+        line = new GUI.Scanline()
+        @lineLayer.addChild line
+      for i in [0...5]
+        line = new GUI.Scanline(true)
+        @lineLayer.addChild line
+
+      rotLines = =>
+        newRot = (Math.random() - 0.5) * 50
+        layer = @lineLayer
+        tween = new TWEEN.Tween({rot:@lineLayer.position.y}).to({rot:newRot}, 500).easing(TWEEN.Easing.Elastic.Out)
+        tween.onUpdate ->
+          layer.position = {x:0, y:@rot}
+        tween.start()
+        tween = new TWEEN.Tween({pos:@logoSprite.position.x}).to({pos:@logoSprite.position.x + newRot}, 500).easing(TWEEN.Easing.Elastic.Out)
+        logo = @logoSprite
+        origPos = @logoSprite.position.x
+        tween.onUpdate ->
+          logo.position = {x:@pos, y:logo.position.y}
+        tween.onComplete =>
+          tween2 = new TWEEN.Tween({pos:@logoSprite.position.x}).to({pos:origPos}).easing(TWEEN.Easing.Elastic.Out)
+          tween2.onUpdate ->
+            logo.position = {x:@pos, y:logo.position.y}
+          tween2.start()
+        tween.start()
+      setInterval rotLines, 5000
       @playBotBtn = new GUI.TextButton 'Play Bot'
       @hostBtn = new GUI.TextButton 'Host Battle'
       @joinBtn = new GUI.TextButton 'Join Battle'

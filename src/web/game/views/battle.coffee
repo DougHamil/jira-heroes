@@ -14,6 +14,7 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       @loseBattleText.position = {x: engine.WIDTH/2 - @loseBattleText.width/2, y:engine.HEIGHT/2 - @loseBattleText.height/2}
       @setStatusText 'Connecting to battle...'
 
+
       # UI Layer is always above GFX layer
       @uiLayer = new PIXI.DisplayObjectContainer()
       @gfxLayer = new PIXI.DisplayObjectContainer()

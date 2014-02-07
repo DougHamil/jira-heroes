@@ -20,6 +20,7 @@ define ['./gfx/herobutton',
         './gfx/spritebutton',
         './gfx/damageindicator',
         './gfx/win',
+        './gfx/scanline',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -44,6 +45,7 @@ define ['./gfx/herobutton',
         SpriteButton,
         DamageIndicator,
         Win,
+        Scanline,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -68,6 +70,7 @@ define ['./gfx/herobutton',
     SpriteButton: SpriteButton
     DamageIndicator:DamageIndicator
     Win:Win
+    Scanline:Scanline
     STYLES: styles
 
   return GUI
