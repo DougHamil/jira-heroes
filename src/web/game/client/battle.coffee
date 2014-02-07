@@ -40,19 +40,25 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
           if not target?
             target = @getHero action.target
           if target?
-            target.modifiers.push action.modifier
+            hasMod = false
+            for modifier in target.modifiers
+              if modifier._id.toString() is action.modifier._id.toString()
+                hasMod = true
+            if not hasMod
+              target.modifiers.push action.modifier
         when 'remove-modifier'
           target = @getCard action.target
           if not target?
             target = @getHero action.target
           if target?
-            target.modifiers = target.modifiers.filter (m) -> m._id isnt action.modifier
+            target.modifiers = target.modifiers.filter (m) -> m._id.toString() isnt action.modifier.toString()
         when 'status-add'
           target = @getCardOrHero action.target
           if target?
             if not target.status?
               target.status = []
-            target.status.push action.status
+            if action.status not in target.status
+              target.status.push action.status
         when 'status-remove'
           target = @getCardOrHero action.target
           if target?

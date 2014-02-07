@@ -97,9 +97,9 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
 
     _addTokenInteraction: (battleCard) ->
       @_addPopupInteraction(battleCard)
-      battleCard.on 'token-mouse-down', => @_beginTokenTarget(battleCard)
+      battleCard.on 'token-mouse-down', => @beginTokenTarget(battleCard)
 
-    _beginTokenTarget: (battleCard) ->
+    beginTokenTarget: (battleCard) ->
       @targetSourceCard = battleCard
 
     _endTokenTarget: (position) ->

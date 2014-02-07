@@ -7,6 +7,15 @@
 	"energy":4,
 	"health":3,
 	"damage":5,
+	"passiveAbilities": [
+		{
+			"class":"buff_friendly_while_alive",
+			"text":"Minions get +<damage> damage while alive.",
+			"data":{
+				"damage":1
+			}
+		}
+	],
 	"media": {
 		"image": "common/naicetl.png"
 	}

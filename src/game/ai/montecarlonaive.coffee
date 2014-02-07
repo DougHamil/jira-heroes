@@ -4,6 +4,7 @@ math = require('mathjs')()
 EXPLORATION_PARAM = math.sqrt(2)
 TURN_LIMIT = 20
 ITERATIONS = 10
+LOG_ACTIONS = false
 
 class MCNode
   constructor: (@parent, @move, @battle) ->
@@ -33,11 +34,12 @@ class MCNode
         topScores.push node
       else
         break
-    debug = []
-    for node in sorted
-      debug.push {wins:node.wins, play:node.plays, move:node.move.debug}
-    console.log "Moves:"
-    console.log debug
+    if LOG_ACTIONS
+      debug = []
+      for node in sorted
+        debug.push {wins:node.wins, play:node.plays, move:node.move.debug}
+      console.log "Moves:"
+      console.log debug
     # Randomly pick for a tie
     return topScores[Math.floor(Math.random() * topScores.length)].move
 

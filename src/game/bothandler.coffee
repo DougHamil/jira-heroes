@@ -23,14 +23,11 @@ class BotHandler extends PlayerHandler
     AIFactory.getAI(@player.botType).calculateAction @, virtualBattle, (err, aiAction) =>
       #console.log "AI Hand Cards:"
       #console.log @getHandCards().length
-      console.flag()
-      console.log "AI Picked:"
-      console.log aiAction
+      #console.flag()
+      #console.log "AI Picked:"
+      #console.log aiAction
       if aiAction?
         aiAction.build @battle, (err, actions) =>
-          if err?
-            console.log "ERR:"
-            console.log err
           @emit aiAction.event, @battle.processActions(actions)
           if aiAction.event isnt Events.END_TURN and @isActive() and @battle.getPhase() is 'game'
             @doTurn()

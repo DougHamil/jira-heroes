@@ -22,6 +22,13 @@ else
         if modifier.data? and modifier.data[prop]?
           sum += modifier.data[prop]
       return sum
+    model.hasModifier = (modifierId) ->
+      if not @modifiers?
+        return false
+      for modifier in @modifiers
+        if modifier._id.toString() is modifierId.toString()
+          return true
+      return false
     model.hasRushAbility = (cardClass) ->
       return cardClass.rushAbility? and cardClass.rushAbility.class?
     model.getMaxHealth = ->
@@ -62,6 +69,13 @@ else
         if modifier.data? and modifier.data[prop]?
           sum += modifier.data[prop]
       return sum
+    model.hasModifier = (modifierId) ->
+      if not @modifiers?
+        return false
+      for modifier in @modifiers
+        if modifier._id is modifierId
+          return true
+      return false
     model.getMaxHealth = ->
       return @maxHealth + @sumModifierProperty('maxHealth')
     model.getDamage = ->

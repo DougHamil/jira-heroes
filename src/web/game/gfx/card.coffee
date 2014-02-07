@@ -112,6 +112,12 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
         count++
         parent.addChild text
 
+      if cardClass.rushAbility? and cardClass.rushAbility.text?
+        text = @_buildAbilityText("Rush: "+cardClass.rushAbility.text, cardClass.rushAbility.data)
+        text.position = {x:0, y:count * text.height}
+        count++
+        parent.addChild text
+
       for ability in cardClass.passiveAbilities
         text = @_buildAbilityText ability.text, ability.data
         text.position = {x: 0, y: count * text.height}

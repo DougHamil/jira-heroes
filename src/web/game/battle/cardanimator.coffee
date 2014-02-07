@@ -265,8 +265,10 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       if @playerField.containsPoint(position)
         @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
           if err?
-            console.log err
             @playerHand.returnCardToHand(battleCard).play()
+          else if battleCard.cardClass.rushAbility? and battleCard.cardClass.rushAbility.requiresTarget
+            @playerField.beginTokenTarget battleCard
+
       else
         @playerHand.returnCardToHand(battleCard).play()
 

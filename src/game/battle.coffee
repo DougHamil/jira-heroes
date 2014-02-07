@@ -113,7 +113,9 @@ class Battle extends EventEmitter
     actions = []
     if ability.onUnregistered?
       actions = ability.onUnregistered(@)
-    if not actions instanceof Array
+    if actions? and actions not instanceof Array
+      actions = [actions]
+    else if not actions?
       actions = []
     return actions
 
@@ -218,11 +220,6 @@ class Battle extends EventEmitter
     activePlayer = @getActivePlayer()
     if not @model.isVirtual?
       if activePlayer.isBot
-        console.flag()
-        console.flag()
-        console.log "DO AI TURN"
-        console.flag()
-        console.flag()
         doTurn = => @getPlayerHandler(activePlayer).doTurn()
         setTimeout doTurn, 0
 

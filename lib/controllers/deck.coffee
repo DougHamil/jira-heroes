@@ -42,7 +42,7 @@ module.exports = (app, Users) ->
         if err?
           res.send 500, err
         else
-          if not global.isTest? and not user.ownsCards(cards)
+          if not app.isTest? and not user.ownsCards(cards)
             res.send 400, "User does not own the cards"
           else if cards.length > Decks.MAX_DECK_SIZE
             res.send 400, "Too many cards, maximum number of cards is #{Decks.MAX_DECK_SIZE}"
@@ -52,7 +52,7 @@ module.exports = (app, Users) ->
                 res.send 500, err
               else
                 validateCardsForDeck deck, cards, (validationError) ->
-                  if validationError? and not global.isTest?
+                  if validationError? and not app.isTest?
                     res.send 400, validationError
                   else
                     deck.cards = cards
