@@ -141,8 +141,9 @@ class CardHandler
         return Errors.CARD_SLEEPING
       else if @model.turnPlayed < @battle.getTurnNumber()
         return Errors.CARD_SLEEPING
+
     targetUserId = target.userId
-    if target.isCard and (target.position isnt 'field' or target is sourceCard) # Target card must be on the field and not the source card
+    if target.isCard and (target.position isnt 'field' or target is @model) # Target card must be on the field and not the source card
         return Errors.INVALID_TARGET
 
     # Rush abilities should not require a taunt target
