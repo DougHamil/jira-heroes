@@ -65,17 +65,6 @@ class PlayerHandler extends EventEmitter
     if not target? # Player must target something
       return Errors.INVALID_TARGET
 
-    targetUserId = target.userId
-
-    if target.isCard and (target.position isnt 'field' or target is sourceCard) # Target card must be on the field and not the source card
-        return Errors.INVALID_TARGET
-
-    tauntCards = @battle.getFieldCards(targetUserId).filter (c)-> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus() # Get non-frozen taunt cards
-    if target.isHero and tauntCards.length isnt 0
-      return Errors.MUST_TARGET_TAUNT
-    if target.isCard and tauntCards.length isnt 0 and target not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
-      return Errors.MUST_TARGET_TAUNT
-
     # Valid move
     return null
 
