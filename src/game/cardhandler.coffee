@@ -141,6 +141,17 @@ class CardHandler
         return Errors.CARD_SLEEPING
       else if @model.turnPlayed < @battle.getTurnNumber()
         return Errors.CARD_SLEEPING
+    targetUserId = target.userId
+    if target.isCard and (target.position isnt 'field' or target is sourceCard) # Target card must be on the field and not the source card
+        return Errors.INVALID_TARGET
+
+    # Rush abilities should not require a taunt target
+    if not cardClass.rushAbility? or not cardClass.rushAbility.class? or @model.turnPlayed < @battle.getTurnNumber()
+      tauntCards = @battle.getFieldCards(targetUserId).filter (c)-> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus() # Get non-frozen taunt cards
+      if target.isHero and tauntCards.length isnt 0
+        return Errors.MUST_TARGET_TAUNT
+      if target.isCard and tauntCards.length isnt 0 and target not in tauntCards # If taunt cards are played, then the target must be one of the taunt cards
+        return Errors.MUST_TARGET_TAUNT
     return null
 
   validatePlay: (target, cardClass) ->
