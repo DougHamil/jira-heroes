@@ -17,6 +17,7 @@ define ['battle/animation', 'util'], (Animation, Util) ->
         battleCard = animator.getBattleCard @card
         animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 1000, false)
         animation.addAnimationStep battleCard.flipCard()
+        animation.addPauseStep 500
 
       if @player is battle.getPlayerId()
         animation.addAnimationStep => animator.putCardOnField(@card, true)

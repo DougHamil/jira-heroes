@@ -122,9 +122,12 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @cardSprite.position = @flippedCardSprite.position
         sprite = @cardSprite
         flippedSprite = @flippedCardSprite
-        tweenOut = new TWEEN.Tween({scale:1.0}).to({scale:0}, 500).onUpdate ->
+        startx = flippedSprite.position.x
+        tweenOut = new TWEEN.Tween({scale:1.0}).to({scale:0}, 300).easing(TWEEN.Easing.Quadratic.Out).onUpdate ->
+          flippedSprite.position.x = startx + ((1.0 - @scale) * (flippedSprite.width/2))
           flippedSprite.scale.x = @scale
-        tweenIn = new TWEEN.Tween({scale:0}).to({scale:1.0}, 500).onUpdate ->
+        tweenIn = new TWEEN.Tween({scale:0}).to({scale:1.0}, 300).easing(TWEEN.Easing.Quadratic.InOut).onUpdate ->
+          sprite.position.x = startx + ((1.0 - @scale) * (flippedSprite.width/2))
           sprite.scale.x = @scale
         innerAnim.addTweenStep tweenOut, 'flipOut'
         innerAnim.addTweenStep tweenIn, 'flipIn'
@@ -200,6 +203,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         cardSprite = @getAvailableCardSprite()
         buildTween = ->
           tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          tween.easing(TWEEN.Easing.Cubic.Out)
           if disableInteraction
             @setCardInteractive(false)
             tween.onComplete => @setCardInteractive(true)
@@ -213,6 +217,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         cardSprite = @getFlippedCardSprite()
         buildTween = ->
           tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          tween.easing(TWEEN.Easing.Cubic.Out)
           if disableInteraction
             @setCardInteractive(false)
             tween.onComplete => @setCardInteractive(true)
@@ -224,6 +229,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       return =>
         animation = new Animation()
         tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
+        tween.easing(TWEEN.Easing.Cubic.Out)
         if disableInteraction
           @setTokenInteractive(false)
         animation.addTweenStep tween, 'token-move'

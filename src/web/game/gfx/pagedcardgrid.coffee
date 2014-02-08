@@ -1,15 +1,14 @@
-define ['gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (TextButton, STYLES, Util, engine) ->
+define ['gfx/card','gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Card, TextButton, STYLES, Util, engine) ->
   ###
   # Presents cards as a grid with pages
   ###
   class PagedCardGrid extends PIXI.DisplayObjectContainer
     constructor: (@width, @height, @padding, @cardsPerRow, @rowsPerPage, @cardSprites) ->
       super
-      if @cardSprites? and @cardSprites.length > 0
-        cardHeight = @cardSprites[0].height
-        cardWidth = @cardSprites[0].width
-        @width = @cardsPerRow * cardWidth + (@cardsPerRow + 1) * @padding
-        @height = @rowsPerPage * cardHeight + (@rowsPerPage + 1) * @padding
+      cardHeight = Card.Height
+      cardWidth = Card.Width
+      @width = @cardsPerRow * cardWidth + (@cardsPerRow + 1) * @padding
+      @height = @rowsPerPage * cardHeight + (@rowsPerPage + 1) * @padding
       @nextBtn = new TextButton 'Next Page'
       @prevBtn = new TextButton 'Previous Page'
       @nextBtn.position = {x:@width - @nextBtn.width, y:@height + @nextBtn.height}
@@ -54,4 +53,5 @@ define ['gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'tween'], (Text
         if @pageIndex?
           @.removeChild @pages[@pageIndex]
         @pageIndex = index
-        @.addChild @pages[@pageIndex]
+        if @pages[@pageIndex]?
+          @.addChild @pages[@pageIndex]

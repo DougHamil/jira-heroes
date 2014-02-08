@@ -14,7 +14,7 @@ class HealAllFriendlyAbility
 
   getTargets: (battle, target) ->
     targets = []
-    player = battle.getPlayerOfCard(@sourceModel)
+    player = battle.getPlayerOf(@sourceModel)
     for minion in battle.getFieldCards(player)
       targets.push minion
     if @healHero? and @healHero

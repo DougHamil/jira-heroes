@@ -10,6 +10,10 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @myStage.addChild new PIXI.Sprite BACKGROUND_TEXTURE
       @lineLayer = new PIXI.DisplayObjectContainer()
       @myStage.addChild @lineLayer
+      # Return cursor to arrow:
+      @myStage.buttonMode = true
+      @myStage.interactive = true
+      @myStage.defaultCursor = 'inherit'
       for i in [0...10]
         line = new GUI.Scanline()
         @lineLayer.addChild line
@@ -40,17 +44,17 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @hostBtn = new GUI.TextButton 'Host Battle'
       @joinBtn = new GUI.TextButton 'Join Battle'
       @decksBtn = new GUI.TextButton 'Decks'
-      @libraryBtn = new GUI.TextButton 'Library'
+      @storeBtn = new GUI.TextButton 'Store'
       @logoutBtn = new GUI.SpriteButton LOGOUT_TEXTURE
       @logoSprite = new PIXI.Sprite LOGO_TEXTURE
       @playBotBtn.position = {x:(engine.WIDTH/2) - @playBotBtn.width/2, y:(engine.HEIGHT/2) - 2 * @playBotBtn.height}
       @hostBtn.position = {x:(engine.WIDTH/2) - @hostBtn.width/2, y:(engine.HEIGHT/2)}
       @joinBtn.position = {x:(engine.WIDTH/2) - @joinBtn.width/2, y:@hostBtn.position.y + 2 * @joinBtn.height}
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
-      @libraryBtn.position = {x:(engine.WIDTH/2) - @libraryBtn.width/2, y:@decksBtn.position.y + 2 * @libraryBtn.height}
+      @storeBtn.position = {x:(engine.WIDTH/2) - @storeBtn.width/2, y:@decksBtn.position.y + 2 * @storeBtn.height}
       @logoutBtn.position = {x:20, y:engine.HEIGHT - @logoutBtn.height - 20}
 
-      @libraryBtn.onClick => @manager.activateView 'Library'
+      @storeBtn.onClick => @manager.activateView 'Store'
       @decksBtn.onClick => @manager.activateView 'Decks'
       @hostBtn.onClick => @manager.activateView 'HostBattle', false
       @playBotBtn.onClick => @manager.activateView 'HostBattle', true
@@ -62,7 +66,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @.addChild @playBotBtn
       @.addChild @joinBtn
       @.addChild @decksBtn
-      @.addChild @libraryBtn
+      @.addChild @storeBtn
       @.addChild @logoutBtn
 
     onActiveBattlePicked: (battleId) ->

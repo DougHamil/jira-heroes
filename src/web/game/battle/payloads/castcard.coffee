@@ -17,6 +17,7 @@ define ['battle/fx/factory', 'battle/animation', 'util'], (FxFactory, Animation,
         battleCard = animator.getBattleCard @card
         animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 1000, false)
         animation.addAnimationStep battleCard.flipCard()
+        animation.addPauseStep 500
 
       cardClass = animator.getCardClass(@card)
 

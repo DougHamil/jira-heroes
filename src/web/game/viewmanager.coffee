@@ -1,5 +1,5 @@
 define ['./views/mainmenu',
-        './views/library',
+        './views/store',
         './views/decks',
         './views/createdeck',
         './views/editdeck',
@@ -8,7 +8,7 @@ define ['./views/mainmenu',
         './views/battle',
         'jiraheroes', 'engine'], (
           MainMenu,
-          Library,
+          Store,
           Decks,
           CreateDeck,
           EditDeck,
@@ -20,7 +20,7 @@ define ['./views/mainmenu',
     constructor: (@stage) ->
       @views =
         'MainMenu': new MainMenu @, @stage
-        'Library': new Library @, @stage
+        'Store': new Store @, @stage
         'Decks': new Decks @, @stage
         'CreateDeck': new CreateDeck @, @stage
         'EditDeck': new EditDeck @, @stage

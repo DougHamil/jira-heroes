@@ -7,10 +7,10 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
   CARDS_PER_ROW = 4
   ROWS_PER_PAGE = 2
 
-  class Library extends PIXI.DisplayObjectContainer
+  class Store extends PIXI.DisplayObjectContainer
     constructor: (@manager, @myStage) ->
       super
-      @heading = new PIXI.Text 'Library', GUI.STYLES.HEADING
+      @heading = new PIXI.Text 'Store', GUI.STYLES.HEADING
       @backBtn = new GUI.TextButton 'Back'
 
       @backBtn.position = {x:20, y:engine.HEIGHT - @backBtn.height - 20}
@@ -34,6 +34,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @updateLibrary JH.user.library
         JH.cards = cards
         allCardIds = (id for id, card of JH.cards)
+        allCardIds = allCardIds.filter (c) -> c not in JH.user.library
         @cardPicker = new GUI.CardPicker allCardIds, JH.cards
         @cardPicker.position = {x:20, y:100}
         @cardsById = {}
@@ -43,14 +44,15 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
             JH.AddCardToUserLibrary cardId, @onCardBought(cardId), @onCardBuyFail(cardId)
         for cardId, card of cards
           cardSprite = @cardPicker.getSprite(cardId)
-          @cardSprites[cardId] = cardSprite
-          @cardsById[card._id] = card
-          cardSprite.onHoverStart (card) =>
-            card.scale.x += 0.1
-            card.scale.y += 0.1
-          cardSprite.onHoverEnd (card) =>
-            card.scale.x -= 0.1
-            card.scale.y -= 0.1
+          if cardSprite
+            @cardSprites[cardId] = cardSprite
+            @cardsById[card._id] = card
+            cardSprite.onHoverStart (card) =>
+              card.scale.x += 0.1
+              card.scale.y += 0.1
+            cardSprite.onHoverEnd (card) =>
+              card.scale.x -= 0.1
+              card.scale.y -= 0.1
         @addCostSprites JH.user, @library, @cardSprites, @cardsById
         @.addChild @cardPicker
         @.addChild JH.walletGraphic

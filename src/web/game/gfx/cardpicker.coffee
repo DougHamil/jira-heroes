@@ -24,6 +24,7 @@ define ['gfx/styles', 'gfx/card', 'gfx/pagedcardgrid', 'util', 'engine', 'pixi',
       @bg.height = HEIGHT
       @bg.beginFill STYLES.DARK_BACKGROUND_COLOR
       @bg.drawRect 0, 0, @bg.width, @bg.height
+      @bg.alpha = 0.5
       @width = @bg.width
       @height = @bg.height
       @.addChild @bg

@@ -134,13 +134,17 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     _buildAbilityText: (abilityText, abilityData) ->
       chunks = abilityText.split ' '
       string = ""
+      regex = /^(.*)<(\w+)>$/
       for chunk in chunks
         # Extract a property from the metadata of the ability
-        if /^<\w+>$/.test(chunk)
-          prop = chunk.replace /[<>]/g, ''
+        if regex.test(chunk)
+          match = regex.exec(chunk)
+          chunk.replace regex, ''
+          prop = match[2]
           chunk = abilityData[prop]
           if not chunk?
             chunk = "[UNKNOWN: #{prop}]"
+          chunk = match[1] + chunk
         string += (chunk + ' ')
       return new PIXI.Text string, styles.CARD_DESCRIPTION
 
