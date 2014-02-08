@@ -29,14 +29,26 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
 
     processAndEmit: (event, actions) ->
       @emit 'start-'+event, actions
+      added = {} # Track cards just added in this batch of actions, because modifiers will have already been applied
       for action in actions
-        @process(action)
+        @process(action, added)
       @emit event, actions
 
-    process: (action) ->
+    process: (action, added) ->
       switch action.type
+        when 'weapon-destroy'
+          target = @getHero action.hero
+          target.weapon = null
+        when 'weapon-durability'
+          target = @getHero action.hero
+          target.weapon.durability += action.amount
+        when 'weapon-equip'
+          target = @getHero action.hero
+          target.weapon = action.weapon
         when 'add-modifier'
           target = @getCard action.target
+          if target? and added[target._id]?
+            return
           if not target?
             target = @getHero action.target
           if target?
@@ -48,12 +60,16 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
               target.modifiers.push action.modifier
         when 'remove-modifier'
           target = @getCard action.target
+          if target? and added[target._id]?
+            return
           if not target?
             target = @getHero action.target
           if target?
             target.modifiers = target.modifiers.filter (m) -> m._id.toString() isnt action.modifier.toString()
         when 'status-add'
           target = @getCardOrHero action.target
+          if target? and added[target._id]?
+            return
           if target?
             if not target.status?
               target.status = []
@@ -61,12 +77,16 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
               target.status.push action.status
         when 'status-remove'
           target = @getCardOrHero action.target
+          if target? and added[target._id]?
+            return
           if target?
             if not target.status?
               target.status = []
             target.status = target.status.filter (s) -> s isnt action.status
         when 'heal'
           card = @getCard(action.target)
+          if target? and added[target._id]?
+            return
           if card?
             card.health += action.amount
           else
@@ -75,6 +95,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
               hero.health += action.amount
         when 'overheal'
           card = @getCard(action.target)
+          if target? and added[target._id]?
+            return
           if card?
             card.health += action.amount
           else
@@ -82,6 +104,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
             hero.health += action.amount if hero?
         when 'damage'
           card = @getCard(action.target)
+          if target? and added[target._id]?
+            return
           if card?
             card.health -= action.damage
           else
@@ -99,6 +123,7 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
           if action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
+            added[action.card._id] = true
           @getPlayer(action.player).hand.push action.card
         when 'max-energy'
           @getPlayer(action.player).maxEnergy += action.amount
@@ -108,11 +133,13 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
           if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
+            added[action.card._id] = true
           @getPlayer(action.player).field.push action.card
         when 'cast-card'
           if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
+            added[action.card._id] = true
       console.log action
       @emit 'action-'+action.type, action
 
@@ -167,6 +194,8 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
     getEnergy: -> return @model.you.energy
     getMaxEnergy: -> return @model.you.maxEnergy
     getHeroById: (heroId) ->
+      if heroId._id?
+        heroId = heroId._id
       if heroId is @model.you.hero._id
         return @model.you.hero
       for opp in @model.opponents
@@ -184,5 +213,5 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
     emitEndTurnEvent: -> @socket.emit 'end-turn'
     emitPlayCardEvent: (cardId, target, cb) -> @socket.emit 'play-card', cardId, target, cb
     emitUseCardEvent: (cardId, target, cb) -> @socket.emit 'use-card', cardId, target, cb
-    emitHeroAttackEvent: (heroId, target, cb) -> @socket.emit 'hero-attack', heroId, target, cb
+    emitHeroAttackEvent: (heroId, target, cb) -> @socket.emit 'hero-attack', target, cb
     emitUseHeroEvent: (heroId, target, cb) -> @socket.emit 'use-hero', target, cb

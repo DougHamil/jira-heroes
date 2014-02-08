@@ -38,6 +38,8 @@ class PlayerHandler extends EventEmitter
     return null
 
   validateHeroAttack: (target) ->
+    if @model.state.phase isnt 'game' or not @isActive()
+      return Errors.INVALID_ACTION
     if not target?
       return Errors.INVALID_TARGET
     return null
@@ -76,11 +78,11 @@ class PlayerHandler extends EventEmitter
         else
           target = @battle.getHero(target.hero)
       err = @validateHeroAttack(target)
-      if err? and cb? and typeof cb is 'function'
+      if err? and cb?
         cb err
       if not err?
         @heroHandler.attack target, (err, actions) =>
-          if err? and cb? and typeof cb is 'function'
+          if err? and cb?
             cb err
           if not err?
             payloads = @battle.processActions actions

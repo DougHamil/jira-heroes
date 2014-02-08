@@ -59,6 +59,8 @@ class Battle extends EventEmitter
     handler.on Events.PLAY_CARD, @onPlayCard(userId)               # Deploy card from hand to field
     handler.on Events.END_TURN, @onEndTurn(userId)                 # Turn over
     handler.on Events.USE_CARD, @onUseCard(userId)                 # Player used a card, targeting something
+    handler.on Events.USE_HERO, @onUseHero(userId)                 # Player used a hero ability, targeting something
+    handler.on Events.HERO_ATTACK, @onHeroAttack(userId)           # Player attacked with his hero
 
   ###
   # EVENTS
@@ -74,6 +76,18 @@ class Battle extends EventEmitter
     @players[user._id.toString()].connect socket
     @sockets[user._id] = socket
     @emitAllBut user._id.toString(), 'player-connected', user._id
+
+  # Called when a player attacked with a hero
+  onHeroAttack: (userId) ->
+    (actions) =>
+      @emitAllButActive 'opponent-'+Events.HERO_ATTACK, userId
+      @emitActionsAll 'action', actions
+
+  # Called when a player used a hero's ability
+  onUseHero: (userId) ->
+    (actions) =>
+      @emitAllButActive 'opponent-'+Events.USE_HERO, userId
+      @emitActionsAll 'action', actions
 
   # Called when a player used a card, targeting another card
   onUseCard: (userId) ->

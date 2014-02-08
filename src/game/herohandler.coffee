@@ -8,12 +8,16 @@ Events = require './events'
 class HeroHandler
   constructor: (@battle, @playerHandler, @model) ->
     @heroClass = HeroCache.heroes[@model.class]
-    @attackAbility = Abilities.Attack @battle.getNextAbilityId(), @model
+    @attackAbility = Abilities.HeroAttack @battle.getNextAbilityId(), @model
 
   _use: (target, heroClass, cb) ->
     try
+      actions = []
       ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, heroClass.ability
-      actions = ability.cast @battle, target
+      targets = if target? then [target] else []
+      targets = ability.getTargets(@battle, target) if ability.getTargets?
+      actions.push Actions.CastHeroAbility @model, @heroClass, targets
+      actions = actions.concat(ability.cast(@battle, target))
       cb null, actions
     catch ex
       cb ex if cb?
@@ -37,11 +41,11 @@ class HeroHandler
         throw ex
 
   attack: (target, cb) ->
-    HeroCache.get @model.class, (err, heroClass) =>
-      err = @_validateAttack(target, heroClass)
-      cb err if cb? and err?
-      if not err?
-        @_attack target, heroClass, cb
+    err = @_validateAttack(target, @heroClass)
+    if cb? and err?
+      cb err
+    if not err?
+      @_attack target, @heroClass, cb
 
   # Called by Battle when game starts, register any passive abilities
   play: (cb) ->
@@ -64,11 +68,11 @@ class HeroHandler
   _validateUse: (target, heroClass) ->
     if heroClass.ability.requiresTarget and not target?
       return Errors.INVALID_TARGET
-    if 'used' in @model.getStatus()
-      return Errors.HERO_USED
+    if 'ability-used' in @model.getStatus()
+      return Errors.HERO_ABILITY_USED
     if 'frozen' in @model.getStatus()
       return Errors.FROZEN
-    if @playerHandler.player.energy < @model.getEnergy()
+    if @playerHandler.player.energy < @model.getAbilityEnergy()
       return Errors.NOT_ENOUGH_ENERGY
     return null
 
@@ -80,21 +84,17 @@ class HeroHandler
     if 'frozen' in @model.getStatus()
       return Errors.FROZEN
 
-    targetCard = @battle.getCard(target.card) if target.card?
-    targetHero = @battle.getHero(target.hero) if target.hero?
-    if not targetCard? and not targetHero?
+    if target is @model # no attacking self
       return Errors.INVALID_TARGET
-    if targetHero? and targetHero is @model # no attacking self
-      return Errors.INVALID_TARGET
-    if targetCard? and targetCard.position isnt 'field'
+    if target.isCard and target.position isnt 'field'
       return Errors.INVALID_TARGET
 
     # Check for targeting taunt cards
-    targetUserId = if targetCard? then targetCard.userId else targetHero.userId
+    targetUserId = target.userId
     tauntCards = @battle.getFieldCards(targetUserId).filter (c) -> 'taunt' in c.getStatus() and 'frozen' not in c.getStatus()
-    if targetHero? and tauntCards.length isnt 0
+    if target.isHero and tauntCards.length isnt 0
       return Errors.MUST_TARGET_TAUNT
-    if targetCard? and tauntCards.length isnt 0 and targetCard not in tauntCards
+    if target.isCard and tauntCards.length isnt 0 and target not in tauntCards
       return Errors.MUST_TARGET_TAUNT
     if @model.getDamage() <= 0
       return Errors.NO_DAMAGE

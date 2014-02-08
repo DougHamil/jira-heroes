@@ -15,6 +15,7 @@ class Ability
 class Abilities
   @cache: {}
   @Attack: (abilityId, sourceCard) -> return @New(abilityId, 'attack', sourceCard)
+  @HeroAttack: (abilityId, sourceHero) -> return @New(abilityId, 'heroattack', sourceHero)
 
   @New: (abilityId, type, sourceCard, data) ->
     if not @cache[type]

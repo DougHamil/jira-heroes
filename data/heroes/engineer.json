@@ -3,6 +3,19 @@
 	"displayName":"Engineer",
 	"health":30,
 	"damage":0,
+	"ability": {
+		"displayName": "Null Ptr Exception",
+		"class":"damage",
+		"energy":1,
+		"requiresTarget":true,
+		"text":"Damage target minion or hero for <amount> health.",
+		"data":{
+			"amount":1
+		},
+		"media":{
+			"image":"nullpointerexception.png"
+		}
+	},
 	"media":{
 		"image":"engineer.png",
 		"icon":"/media/images/heroes/engineer_icon.png"

@@ -3,6 +3,22 @@
 	"displayName":"Hacker",
 	"health":30,
 	"damage":0,
+	"ability": {
+		"displayName": "SQL Injector",
+		"class":"equip_weapon",
+		"energy":1,
+		"requiresTarget":false,
+		"text":"Equip a +<weapon.damage> damage weapon",
+		"data":{
+			"weapon": {
+				"damage":1,
+				"durability":1
+			}
+		},
+		"media":{
+			"image":"nullpointerexception.png"
+		}
+	},
 	"media":{
 		"image":"hacker.png",
 		"icon":"/media/images/heroes/hacker_icon.png"

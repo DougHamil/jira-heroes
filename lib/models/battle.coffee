@@ -40,9 +40,11 @@ newHeroInstance = (userId, hero, cb) ->
         userId: userId
         class: heroClass._id
         energy: heroClass.energy
+        abilityEnergy: heroClass.ability.energy
         health: heroClass.health
         maxHealth: heroClass.health
         damage: heroClass.damage
+        weapon: null
         modifiers: []
         status: []
         used:false
@@ -120,9 +122,11 @@ _playerSchema = new mongoose.Schema
       maxHealth: Number
       damage: Number
       energy: Number
+      abilityEnergy:Number
       status: [String]
       modifiers: [_modifierSchema]
       used: Boolean
+      weapon: {}
     cards: [_cardSchema]
 
 # Represents a single battle

@@ -6,6 +6,8 @@ define [
   'battle/payloads/startturn',
   'battle/payloads/endturn',
   'battle/payloads/castrush',
+  'battle/payloads/castheroability',
+  'battle/payloads/heroattack',
   'util'], (
     AttackPayload,
     PlayCardPayload,
@@ -13,7 +15,9 @@ define [
     CastPassivePayload,
     StartTurnPayload,
     EndTurnPayload,
-    CastRushPayload
+    CastRushPayload,
+    CastHeroAbilityPayload,
+    HeroAttackPayload,
     Util) ->
   PAYLOAD_CLASSES =
     'attack':AttackPayload
@@ -23,6 +27,8 @@ define [
     'cast-passive':CastPassivePayload
     'start-turn':StartTurnPayload
     'end-turn':EndTurnPayload
+    'cast-hero-ability':CastHeroAbilityPayload
+    'hero-attack':HeroAttackPayload
 
   class PayloadFactory
     @processActions:(battle, actions) ->

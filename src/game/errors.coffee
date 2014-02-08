@@ -27,6 +27,7 @@ errors =
   CARD_CANNOT_ATTACK: 'Card cannot attack'
   CARD_USED: 'Card has already been used this turn'
   HERO_USED: 'Hero has already been used this turn'
+  HERO_ABILITY_USED: 'Hero\'s ability has already been used this turn'
   MUST_TARGET_TAUNT: 'You must target a taunt card'
   FROZEN: 'You cannot use a frozen card or hero'
   FULL_FIELD: 'Field is full, you cannot play any more minions on the field'

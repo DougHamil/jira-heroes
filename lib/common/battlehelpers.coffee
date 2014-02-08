@@ -79,9 +79,12 @@ else
     model.getMaxHealth = ->
       return @maxHealth + @sumModifierProperty('maxHealth')
     model.getDamage = ->
-      return @damage + @sumModifierProperty('damage')
+      weaponDamage = if @weapon? then @weapon.damage else 0
+      return weaponDamage + @damage + @sumModifierProperty('damage')
     model.getEnergy = ->
       return @energy + @sumModifierProperty('energy')
+    model.getAbilityEnergy = ->
+      return @abilityEnergy + @sumModifierProperty('ability-energy')
     model.getStatus = ->
       status = []
       status = status.concat(@status)

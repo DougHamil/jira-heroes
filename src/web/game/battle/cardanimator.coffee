@@ -2,6 +2,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
   DISCARD_ORIGIN = {x:-200, y: 0}
   DEFAULT_TWEEN_TIME = 200
   PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400}
+  PLAYER_HERO_ABILITY_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400 + GUI.HeroToken.Height + 20}
   ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240}
   PLAYER_FIELD_CONFIG =
     animationTime: 500
@@ -100,6 +101,10 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
           return @discardCard action.card
       if action.target?
         target = @getBattleObject(action.target)
+        if target?
+          return target.animateAction(action)
+      else if action.hero?
+        target = @getBattleObject(action.hero)
         if target?
           return target.animateAction(action)
       return null
@@ -277,6 +282,25 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
             console.log err
         return
 
+    onHeroAbilityTarget: (hero, position) ->
+      for targetCard in @getBattleCardsOnField()
+        if targetCard.containsPoint(position)
+          @battle.emitUseHeroEvent hero.getId(), {card:targetCard.getId()}, (err) =>
+            if err?
+              console.log err
+          return
+      if @enemyHero.containsPoint(position)
+        @battle.emitUseHeroEvent hero.getId(), {hero:@enemyHero.getId()}, (err) =>
+          if err?
+            console.log err
+        return
+
+    # Called when the player wants to cast the hero's ability (and it doesn't requrie a target)
+    onHeroCastAbility: (hero) ->
+      @battle.emitUseHeroEvent hero.getId(), (err) =>
+        if err?
+          console.log err
+
     # Called when a card is dropped from the player's hand (ie, player wants to play card)
     onCardDropped: (battleCard, position) ->
       if @playerField.containsPoint(position)
@@ -320,6 +344,15 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
         card = card._id
       return @cards[card]
 
+    getBattleHero: (hero) ->
+      if hero._id?
+        hero = hero._id
+      if hero is @playerHero.getId()
+        return @playerHero
+      else if hero is @enemyHero.getId()
+        return @enemyHero
+      return null
+
     setCard:(cardId, card) ->
       battleCard = @cards[cardId]
       battleCard.setCard(@cardClasses[card.class], card)
@@ -330,8 +363,13 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @playerHero = new BattleHero(heroModel, @heroClasses[heroModel.class], true, @uiLayer)
       sprite = @playerHero.getTokenSprite()
       sprite.position = PLAYER_HERO_POSITION
+      abilitySprite = @playerHero.getAbilityTokenSprite()
+      abilitySprite.position = PLAYER_HERO_ABILITY_POSITION
       @tokenSpriteLayer.addChild sprite
+      @tokenSpriteLayer.addChild abilitySprite
       @playerHero.on 'hero-target', (hero, position) => @onHeroTarget(hero, position)
+      @playerHero.on 'hero-ability-target', (hero, position) => @onHeroAbilityTarget(hero, position)
+      @playerHero.on 'hero-cast-ability', (hero) => @onHeroCastAbility(hero)
 
     setEnemyHero: (heroModel) ->
       @enemyHero = new BattleHero(heroModel, @heroClasses[heroModel.class], false, @uiLayer)
@@ -352,6 +390,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
 
     getCardClass: (card) -> return @cardClasses[card.class]
+    getHeroClass: (hero) -> return @heroClasses[hero.class]
     getSprite: (obj) ->
       if not obj?
         return null

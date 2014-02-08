@@ -3,6 +3,19 @@
 	"displayName":"Analyst",
 	"health":30,
 	"damage":0,
+	"ability": {
+		"displayName": "Null Ptr Exception",
+		"class":"damage",
+		"energy":1,
+		"requiresTarget":true,
+		"text":"Damage target minion or hero for <amount> health.",
+		"data":{
+			"amount":1
+		},
+		"media":{
+			"image":"nullpointerexception.png"
+		}
+	},
 	"media":{
 		"image":"analyst.png",
 		"icon":"/media/images/heroes/analyst_icon.png"

@@ -33,10 +33,10 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (styles, Util) ->
       @line.position = {x:@text.position.x, y:@text.height + UNDERLINE_PADDING}
 
     disable: ->
-      @bg.visible = false
+      @text.setStyle styles.DISABLED_TEXT
       @enabled = false
     enable: ->
-      @bg.visible = true
+      @text.setStyle styles.TEXT
       @enabled = true
 
     onClick: (callback) ->

@@ -1,4 +1,4 @@
-define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, EnergyIcon, styles, Util) ->
+define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, styles, Util) ->
   CARD_SIZE =
     width: 150
     height: 225
@@ -29,14 +29,14 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
   ###
   # Draws everything for a card, showing the image, damage, heatlh, status, etc.
   ###
-  class Card extends PIXI.DisplayObjectContainer
+  class HeroAbilityPopup extends PIXI.DisplayObjectContainer
     @Width: CARD_SIZE.width
     @Height: CARD_SIZE.height
-    @FromClass: (cardClass) ->
-      return new Card cardClass, cardClass.damage, cardClass.health, []
-    constructor: (cardClass, damage, health, status) ->
+    @FromClass: (heroClass) ->
+      return new HeroAbilityPopup heroClass, heroClass.ability
+    constructor: (heroClass, heroAbility) ->
       super()
-      imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
+      imageTexture = PIXI.Texture.fromImage IMAGE_PATH + heroAbility.media.image
       @shadowSprite = new PIXI.Sprite SHADOW_TEXTURE
       @shadowSprite.width = CARD_SIZE.width
       @shadowSprite.height = CARD_SIZE.height
@@ -50,11 +50,11 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @overlaySprite = new PIXI.Sprite OVERLAY_TEXTURE
       @overlaySprite.width = CARD_SIZE.width
       @overlaySprite.height = CARD_SIZE.height
-      @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
+      @titleText = new PIXI.Text heroAbility.displayName, styles.CARD_TITLE
       if @titleText.width >= @backgroundSprite.width - 20
         @titleText.width = @backgroundSprite.width - 20
-      @energyIcon = new EnergyIcon cardClass.energy, cardClass.energy
-      @description = @buildAbilityText cardClass
+      @energyIcon = new EnergyIcon heroAbility.energy, heroAbility.energy
+      @description = @buildAbilityText heroAbility
       @description.position = {x:15, y: @backgroundSprite.height / 2 + 30}
       @titleText.anchor = {x: 0.5, y:0}
       @titleText.position = {x:@backgroundSprite.width / 2, y: 395 * CARD_SCALE.y}
@@ -69,66 +69,19 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @.addChild @description
       @.addChild @energyIcon
 
-      # Damage and health only appear for non-spell cards
-      if not cardClass.playAbility?
-        @healthIcon = new HealthIcon health, cardClass.health
-        @damageIcon = new DamageIcon damage, cardClass.damage
-        @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
-        @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
-        @.addChild @healthIcon
-        @.addChild @damageIcon
-
       @width = CARD_SIZE.width
       @height = CARD_SIZE.height
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
       @.interactive = true
 
-    setHealth: (health) -> @healthIcon.setHealth(health) if @healthIcon?
-    setDamage: (damage) -> @damageIcon.setDamage(damage) if @damageIcon?
-    setEnergy: (energy) -> @energyIcon.setEnergy(energy) if @energyIcon?
-    onHoverStart: (cb) -> @.mouseover = => cb @ if cb?
-    onHoverEnd: (cb) -> @.mouseout = => cb @ if cb?
-    onClick: (cb) -> @.click = => cb @ if cb?
-    onMouseDown: (cb) -> @.mousedown = => cb @ if cb?
-    onMouseUp: (cb) -> @.mouseup = =>cb @ if cb?
-
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
       return @visible and @hitArea.contains(point.x, point.y)
 
-    removeAllInteractions: ->
-      @.mouseover = null
-      @.mouseout = null
-      @.click = null
-      @.mousedown = null
-      @.mouseup = null
-
-    buildAbilityText: (cardClass) ->
+    buildAbilityText: (heroAbility) ->
       parent = new PIXI.DisplayObjectContainer
-      count = 0
-      if cardClass.playAbility? and cardClass.playAbility.text?
-        text = @_buildAbilityText cardClass.playAbility.text, cardClass.playAbility.data
-        text.position = {x:0, y: count * text.height}
-        count++
-        parent.addChild text
-
-      if cardClass.rushAbility? and cardClass.rushAbility.text?
-        text = @_buildAbilityText("Rush: "+cardClass.rushAbility.text, cardClass.rushAbility.data)
-        text.position = {x:0, y:count * text.height}
-        count++
-        parent.addChild text
-
-      for ability in cardClass.passiveAbilities
-        text = @_buildAbilityText ability.text, ability.data
-        text.position = {x: 0, y: count * text.height}
-        count++
-        parent.addChild text
-      # TODO: Figure out how to display 'traits' such as rush
-      if 'taunt' in cardClass.traits
-        text = new PIXI.Text "Taunt", styles.CARD_DESCRIPTION
-        text.position = {x:0, y: count * text.height}
-        count++
-        parent.addChild text
+      text = @_buildAbilityText heroAbility.text, heroAbility.data
+      parent.addChild text
       return parent
 
     _buildAbilityText: (abilityText, abilityData) ->
