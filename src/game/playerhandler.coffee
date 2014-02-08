@@ -76,10 +76,12 @@ class PlayerHandler extends EventEmitter
         else
           target = @battle.getHero(target.hero)
       err = @validateHeroAttack(target)
-      cb err if err? and cb?
+      if err? and cb? and typeof cb is 'function'
+        cb err
       if not err?
         @heroHandler.attack target, (err, actions) =>
-          cb err if err? and cb?
+          if err? and cb? and typeof cb is 'function'
+            cb err
           if not err?
             payloads = @battle.processActions actions
             @emit Events.HERO_ATTACK, payloads

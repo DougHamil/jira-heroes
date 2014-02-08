@@ -48,6 +48,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @damageIcon
 
       @hitArea = new PIXI.Rectangle 0, 0, @width, @height
+      @interactive = true
 
       @setHealth(hero.health)
       @setDamage(hero.getDamage())
@@ -59,6 +60,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
 
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
+      @damageIcon.visible = damage isnt 0
 
     setFrozen: (isFrozen) ->
       @frozenSprite.visible = isFrozen

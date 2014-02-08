@@ -1,12 +1,15 @@
 define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (EventEmitter, Animation, GUI, engine, Util) ->
   class BattleHero extends EventEmitter
-    constructor: (@hero, @heroClass, @interactive) ->
+    constructor: (@hero, @heroClass, @interactive, @uiLayer) ->
       super
       @token = new GUI.HeroToken @hero, @heroClass
       @damageIndicator = new GUI.DamageIndicator 0
       @damageIndicator.visible = false
       @damageIndicator.position = {x:@token.width/2, y:@token.height/2}
+      @isTargeting = false
       @token.addChild @damageIndicator
+      if @interactive
+        @token.mousedown = => @isTargeting = true
 
     animateAction: (action) ->
       action.animated = true
@@ -81,6 +84,22 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.addTweenStep Util.fadeSpriteTween(sprite, 0, 500)
       animation.on 'complete', => @getTokenSprite().visible = false
       return animation
+
+    onMouseUp: (pos)->
+      if @isTargeting
+        @emit 'hero-target', @, pos
+      if @targetGfx?
+        @uiLayer.removeChild @targetGfx
+        @targetGfx = null
+      @isTargeting = false
+
+    update: ->
+      if @isTargeting
+        mousePos = @token.stage.getMousePosition().clone()
+        if @targetGfx?
+          @uiLayer.removeChild @targetGfx
+        @targetGfx = Util.drawArrow(@token.getCenterPosition(), mousePos)
+        @uiLayer.addChild @targetGfx
 
     containsPoint: (point) -> return @token.contains(point)
     getId: -> return @hero.userId

@@ -264,6 +264,19 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
               console.log err
           return
 
+    onHeroTarget: (hero, position) ->
+      for targetCard in @getBattleCardsOnField()
+        if targetCard.containsPoint(position)
+          @battle.emitHeroAttackEvent hero.getId(), {card:targetCard.getId()}, (err) =>
+            if err?
+              console.log err
+          return
+      if @enemyHero.containsPoint(position)
+        @battle.emitHeroAttackEvent hero.getId(), {hero:@enemyHero.getId()}, (err) =>
+          if err?
+            console.log err
+        return
+
     # Called when a card is dropped from the player's hand (ie, player wants to play card)
     onCardDropped: (battleCard, position) ->
       if @playerField.containsPoint(position)
@@ -280,6 +293,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @playerHand.update()
       @enemyHand.update()
       @playerField.update()
+      @playerHero.update()
 
     onMouseUp: ->
       position = @stage.getMousePosition().clone()
@@ -287,6 +301,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @enemyHand.onMouseUp(position)
       @playerField.onMouseUp(position)
       @enemyField.onMouseUp(position)
+      @playerHero.onMouseUp(position)
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 
@@ -312,13 +327,14 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @tokenSpriteLayer.addChild battleCard.getTokenSprite()
 
     setPlayerHero: (heroModel) ->
-      @playerHero = new BattleHero(heroModel, @heroClasses[heroModel.class], true)
+      @playerHero = new BattleHero(heroModel, @heroClasses[heroModel.class], true, @uiLayer)
       sprite = @playerHero.getTokenSprite()
       sprite.position = PLAYER_HERO_POSITION
       @tokenSpriteLayer.addChild sprite
+      @playerHero.on 'hero-target', (hero, position) => @onHeroTarget(hero, position)
 
     setEnemyHero: (heroModel) ->
-      @enemyHero = new BattleHero(heroModel, @heroClasses[heroModel.class], false)
+      @enemyHero = new BattleHero(heroModel, @heroClasses[heroModel.class], false, @uiLayer)
       sprite = @enemyHero.getTokenSprite()
       sprite.position = ENEMY_HERO_POSITION
       @tokenSpriteLayer.addChild sprite
