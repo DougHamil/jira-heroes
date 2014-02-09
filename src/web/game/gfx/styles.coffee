@@ -23,6 +23,11 @@ define [], ->
       fill:'#B22222'
       strokeThickness:2
       font:'64px pixel'
+    ERROR_TEXT:
+      stroke:'#000000'
+      fill:'#B22222'
+      strokeThickness:2
+      font:'32px pixel'
 
     # These should all have same font-size
     ICON_TEXT_NORMAL:

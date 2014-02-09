@@ -11,9 +11,12 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @isTargeting = false
       @token.addChild @damageIndicator
       if @interactive
-        @token.mousedown = => @isTargeting = true
+        @token.mousedown = =>
+          if @hero.getDamage() > 0
+            @isTargeting = true
         if @heroClass.ability.requiresTarget
-          @abilityToken.mousedown = => @isAbilityTargeting = true
+          @abilityToken.mousedown = =>
+            @isAbilityTargeting = true
         else
           @abilityToken.click = => @emit 'hero-cast-ability', @
 
@@ -88,9 +91,9 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       #TODO: Fancy status-specific animations
       animation = new Animation()
       animation.on 'complete', =>
-        console.log @hero.getStatus()
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
         @getTokenSprite().setUsed('used' in @hero.getStatus())
+        @getAbilityTokenSprite().setUsed('ability-used' in @hero.getStatus())
       return animation
 
     animateStatusRemove: (status) ->
@@ -99,6 +102,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.on 'complete', =>
         @getTokenSprite().setFrozen('frozen' in @hero.getStatus())
         @getTokenSprite().setUsed('used' in @hero.getStatus())
+        @getAbilityTokenSprite().setUsed('ability-used' in @hero.getStatus())
       return animation
 
     animateHealed: ->

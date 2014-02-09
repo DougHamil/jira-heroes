@@ -39,7 +39,6 @@ define ['gfx/heroabilitypopup','gfx/energyicon','gfx/styles', 'util', 'pixi', 't
       @.addChild @frameSprite
       @.addChild @frameHighlightSprite
       @.addChild @energyIcon
-      @.addChild @popup
       @.hitArea = new PIXI.Rectangle 0, 0, @width, @height
       @.interactive = true
 
@@ -56,6 +55,7 @@ define ['gfx/heroabilitypopup','gfx/energyicon','gfx/styles', 'util', 'pixi', 't
       @frameSprite.visible = isUsed
       @frameHighlightSprite.visible = !isUsed
 
+    getPopupSprite: -> return @popup
     setEnergy: (energy) -> @energyIcon.setEnergy(energy)
 
     getCenterPosition: ->

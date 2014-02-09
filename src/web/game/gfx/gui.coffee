@@ -22,6 +22,7 @@ define ['./gfx/herobutton',
         './gfx/win',
         './gfx/scanline',
         './gfx/heroabilitytoken',
+        './gfx/error',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -48,6 +49,7 @@ define ['./gfx/herobutton',
         Win,
         Scanline,
         HeroAbilityToken,
+        Error,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -74,6 +76,7 @@ define ['./gfx/herobutton',
     Win:Win
     Scanline:Scanline
     HeroAbilityToken:HeroAbilityToken
+    Error:Error
     STYLES: styles
 
   return GUI

@@ -4,6 +4,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
   PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400}
   PLAYER_HERO_ABILITY_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400 + GUI.HeroToken.Height + 20}
   ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240}
+  ENEMY_HERO_ABILITY_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240 - GUI.HeroToken.Height - 20}
   PLAYER_FIELD_CONFIG =
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
@@ -39,6 +40,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @animationQueue = []
       @activeAnimation = new Animation()
       @cards = {}
+      @errorDisplay = new GUI.Error()
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
       @uiLayer = new PIXI.DisplayObjectContainer()
@@ -73,6 +75,8 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       engine.updateCallbacks.push => @update()
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @handleActions(actions)
+      @errorDisplay.position = {x:engine.WIDTH/2, y:engine.HEIGHT/2}
+      @uiLayer.addChild @errorDisplay
 
     animateAction: (action) ->
       switch action.type
@@ -238,16 +242,19 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
           @battle.emitUseCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
             if err?
               console.log err
+              @errorDisplay.showError(err)
           return
       if @playerHero.containsPoint(position)
         @battle.emitUseCardEvent battleCard.getId(), {hero:@playerHero.getId()}, (err) =>
           if err?
             console.log err
+            @errorDisplay.showError(err)
         return
       if @enemyHero.containsPoint(position)
         @battle.emitUseCardEvent battleCard.getId(), {hero:@enemyHero.getId()}, (err) =>
           if err?
             console.log err
+            @errorDisplay.showError(err)
         return
 
     onCardTarget: (battleCard, position) ->
@@ -257,59 +264,67 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
             @battle.emitPlayCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
               if err?
                 console.log err
+                @errorDisplay.showError(err)
             return
         if @playerHero.containsPoint(position)
           @battle.emitPlayCardEvent battleCard.getId(), {hero:@playerHero.getId()}, (err) =>
             if err?
               console.log err
+              @errorDisplay.showError(err)
           return
         if @enemyHero.containsPoint(position)
           @battle.emitPlayCardEvent battleCard.getId(), {hero:@enemyHero.getId()}, (err) =>
             if err?
               console.log err
+              @errorDisplay.showError(err)
           return
 
     onHeroTarget: (hero, position) ->
       for targetCard in @getBattleCardsOnField()
         if targetCard.containsPoint(position)
-          @battle.emitHeroAttackEvent hero.getId(), {card:targetCard.getId()}, (err) =>
+          @battle.emitHeroAttackEvent {card:targetCard.getId()}, (err) =>
             if err?
               console.log err
+              @errorDisplay.showError(err)
           return
       if @enemyHero.containsPoint(position)
-        @battle.emitHeroAttackEvent hero.getId(), {hero:@enemyHero.getId()}, (err) =>
+        @battle.emitHeroAttackEvent {hero:@enemyHero.getId()}, (err) =>
           if err?
             console.log err
+            @errorDisplay.showError(err)
         return
 
     onHeroAbilityTarget: (hero, position) ->
       for targetCard in @getBattleCardsOnField()
         if targetCard.containsPoint(position)
-          @battle.emitUseHeroEvent hero.getId(), {card:targetCard.getId()}, (err) =>
+          @battle.emitUseHeroEvent {card:targetCard.getId()}, (err) =>
             if err?
               console.log err
+              @errorDisplay.showError(err)
           return
       if @enemyHero.containsPoint(position)
-        @battle.emitUseHeroEvent hero.getId(), {hero:@enemyHero.getId()}, (err) =>
+        @battle.emitUseHeroEvent {hero:@enemyHero.getId()}, (err) =>
           if err?
             console.log err
+            @errorDisplay.showError(err)
         return
 
     # Called when the player wants to cast the hero's ability (and it doesn't requrie a target)
     onHeroCastAbility: (hero) ->
-      @battle.emitUseHeroEvent hero.getId(), (err) =>
+      @battle.emitUseHeroEvent null, (err) =>
         if err?
           console.log err
+          @errorDisplay.showError(err)
 
     # Called when a card is dropped from the player's hand (ie, player wants to play card)
     onCardDropped: (battleCard, position) ->
       if @playerField.containsPoint(position)
         @battle.emitPlayCardEvent battleCard.getId(), null, (err) =>
           if err?
+            @errorDisplay.showError(err)
             @playerHand.returnCardToHand(battleCard).play()
           else if battleCard.cardClass.rushAbility? and battleCard.cardClass.rushAbility.requiresTarget
             @playerField.beginTokenTarget battleCard
-
       else
         @playerHand.returnCardToHand(battleCard).play()
 
@@ -365,8 +380,12 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       sprite.position = PLAYER_HERO_POSITION
       abilitySprite = @playerHero.getAbilityTokenSprite()
       abilitySprite.position = PLAYER_HERO_ABILITY_POSITION
+      abilityPopup = abilitySprite.getPopupSprite()
+      abilityPopup.position = Util.clone PLAYER_HERO_ABILITY_POSITION
+      abilityPopup.position.x -= (abilityPopup.width + 20)
       @tokenSpriteLayer.addChild sprite
       @tokenSpriteLayer.addChild abilitySprite
+      @uiLayer.addChild abilityPopup
       @playerHero.on 'hero-target', (hero, position) => @onHeroTarget(hero, position)
       @playerHero.on 'hero-ability-target', (hero, position) => @onHeroAbilityTarget(hero, position)
       @playerHero.on 'hero-cast-ability', (hero) => @onHeroCastAbility(hero)
@@ -375,7 +394,14 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @enemyHero = new BattleHero(heroModel, @heroClasses[heroModel.class], false, @uiLayer)
       sprite = @enemyHero.getTokenSprite()
       sprite.position = ENEMY_HERO_POSITION
+      abilitySprite = @enemyHero.getAbilityTokenSprite()
+      abilitySprite.position = ENEMY_HERO_ABILITY_POSITION
+      abilityPopup = abilitySprite.getPopupSprite()
+      abilityPopup.position = Util.clone ENEMY_HERO_ABILITY_POSITION
+      abilityPopup.position.x -= (abilityPopup.width + 20)
       @tokenSpriteLayer.addChild sprite
+      @tokenSpriteLayer.addChild abilitySprite
+      @uiLayer.addChild abilityPopup
 
     addCardId:(cardId) ->
       battleCard = new BattleCard(cardId, null,null)

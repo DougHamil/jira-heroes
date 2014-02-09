@@ -213,5 +213,5 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
     emitEndTurnEvent: -> @socket.emit 'end-turn'
     emitPlayCardEvent: (cardId, target, cb) -> @socket.emit 'play-card', cardId, target, cb
     emitUseCardEvent: (cardId, target, cb) -> @socket.emit 'use-card', cardId, target, cb
-    emitHeroAttackEvent: (heroId, target, cb) -> @socket.emit 'hero-attack', target, cb
-    emitUseHeroEvent: (heroId, target, cb) -> @socket.emit 'use-hero', target, cb
+    emitHeroAttackEvent: (target, cb) -> @socket.emit 'hero-attack', target, cb
+    emitUseHeroEvent: (target, cb) -> @socket.emit 'use-hero', target, cb
