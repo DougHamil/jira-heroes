@@ -55,9 +55,11 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @setFrozen ('frozen' in hero.getStatus())
       @setUsed ('used' in hero.getStatus())
 
+    getHealth: -> return @healthIcon.health
     setHealth: (health) ->
       @healthIcon.setHealth(health)
 
+    getDamage: -> return @damageIcon.damage
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
       @damageIcon.visible = damage isnt 0

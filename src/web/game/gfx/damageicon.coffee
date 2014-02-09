@@ -7,6 +7,7 @@ define ['gfx/icon', 'gfx/styles', 'util', 'pixi', 'tween'], (Icon, STYLES, Util)
       @setDamage(damage)
 
     setDamage:(damage) ->
+      @damage = damage
       @setText(damage.toString())
       if damage > @default
         @setStyle STYLES.ICON_TEXT_GOOD

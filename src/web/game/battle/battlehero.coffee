@@ -54,7 +54,10 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     animateDamaged:(amount)->
       animation = new Animation()
       animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
-      animation.on 'complete', => @getTokenSprite().setHealth(@hero.health)
+      health = if amount then @getTokenSprite().getHealth() - amount else @hero.health
+      if health < @hero.health
+        health = @hero.health
+      animation.on 'complete', => @getTokenSprite().setHealth(health)
       return animation
 
     animateWeaponEquip: (weapon) ->
@@ -105,9 +108,12 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getAbilityTokenSprite().setUsed('ability-used' in @hero.getStatus())
       return animation
 
-    animateHealed: ->
+    animateHealed: (amount)->
       animation = new Animation()
-      animation.on 'complete', => @getTokenSprite().setHealth(@hero.health)
+      health = if amount then @getTokenSprite().getHealth() + amount else @hero.health
+      if health > @hero.health
+        health = @hero.health
+      animation.on 'complete', => @getTokenSprite().setHealth(health)
       return animation
 
     animateDestroyed: ->

@@ -112,7 +112,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     animateDamaged: (amount)->
       animation = new Animation()
       animation.addUnchainedAnimationStep @damageIndicator.animate(amount)
-      animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
+      health = if amount? then @getTokenSprite().getHealth() - amount else @card.health
+      animation.on 'complete', => @getTokenSprite().setHealth(health)
       return animation
 
     flipCard: ->

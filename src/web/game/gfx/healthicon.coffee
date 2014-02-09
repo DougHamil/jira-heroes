@@ -7,6 +7,7 @@ define ['gfx/icon', 'gfx/styles', 'util', 'pixi', 'tween'], (Icon, STYLES, Util)
       @setHealth(health)
 
     setHealth:(health) ->
+      @health = health
       @setText(health.toString())
       if health > @default
         @setStyle STYLES.ICON_TEXT_GOOD

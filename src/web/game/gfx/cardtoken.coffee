@@ -82,9 +82,11 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
         @tauntFrameSprite.visible = isUsed
         @tauntHighlightSprite.visible = !isUsed
 
+    getHealth: -> return @healthIcon.health
     setHealth: (health) ->
       @healthIcon.setHealth(health)
 
+    getDamage: -> return @damageIcon.damage
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
 
