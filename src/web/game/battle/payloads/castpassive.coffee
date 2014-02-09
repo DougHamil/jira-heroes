@@ -14,8 +14,6 @@ define ['battle/fx/factory','battle/animation', 'util'], (FxFactory, Animation, 
     animate: (animator, battle) ->
       animation = new Animation()
 
-      console.log "PASSIVE FX"
-      console.log @fx
       if @fx?
         fx = @_buildFx(@fx)
         if fx?

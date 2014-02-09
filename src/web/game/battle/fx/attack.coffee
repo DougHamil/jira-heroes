@@ -9,52 +9,65 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
       super
 
     # Animate the source card moving to the target and then moving back
-    _animateSingleTarget: (animator, sSprite, tSprite, animation)->
+    _animateSingleTarget: (animator, source, target, animation)->
+      _data = {}
       animation.on 'start', =>
+        sSprite = animator.getSprite(source)
         parent = sSprite.parent
         parent.removeChild sSprite
         parent.addChild sSprite
-        animation.attackFxData = {sourcePosition:Util.clone(sSprite.position)}
+        _data.sSprite = sSprite
+        _data.tSprite = animator.getSprite(target)
+        _data.sPosition = Util.clone(sSprite.position)
       moveSourceTo = ->
-        Util.spriteTween(sSprite, sSprite.position, Util.clone(tSprite.position), MOVE_TO_TARGET_TIME)
-      animation.addTweenStep moveSourceTo, 'hit-target', @targets
-      animation.addUnchainedAnimationStep @_tremble(tSprite)
+        Util.spriteTween(_data.sSprite, _data.sSprite.position, Util.clone(_data.tSprite.position), MOVE_TO_TARGET_TIME)
+      animation.addTweenStep moveSourceTo, 'hit-target', target
+      animation.addUnchainedAnimationStep =>
+        return @_tremble(_data.tSprite)
       animation.addTweenStep ->
-        Util.spriteTween(sSprite, sSprite.position, animation.attackFxData.sourcePosition, RETURN_POS_TIME)
+        Util.spriteTween(_data.sSprite, _data.sSprite.position, _data.sPosition, RETURN_POS_TIME)
 
-    _animateMultiTarget: (animator, sSprite, animation)->
+    _animateMultiTarget: (animator, source, targets, animation)->
+      _data = {}
       animation.on 'start', =>
+        sSprite = animator.getSprite(source)
         parent = sSprite.parent
         parent.removeChild sSprite
         parent.addChild sSprite
-      sourcePosition = Util.clone(sSprite.position)
+        _data.sSprite = sSprite
+        _data.sPosition = Util.clone(sSprite.position)
       moveSourceTo = (target)-> ->
-        Util.spriteTween(sSprite, sSprite.position, Util.clone(target.position), MOVE_TO_TARGET_TIME)
-      for target in @targets
+        tSprite = animator.getSprite(target)
+        Util.spriteTween(_data.sSprite, _data.sSprite.position, Util.clone(tSprite.position), MOVE_TO_TARGET_TIME)
+      for target in targets
         animation.addTweenStep moveSourceTo(target), 'hit-target', target
-        animation.addUnchainedAnimationStep @_tremble(target)
+        animation.addUnchainedAnimationStep => return @_tremble(animator.getSprite(target))
       animation.addTweenStep ->
-        Util.spriteTween(sSprite, sSprite.position, sourcePosition, RETURN_POS_TIME)
+        Util.spriteTween(_data.sSprite, _data.sSprite.position, _data.sPosition, RETURN_POS_TIME)
 
-    _animateNoTarget: (animator, sSprite, animation)->
+    _animateNoTarget: (animator, source, animation)->
+      _data = {}
       animation.on 'start', =>
+        sSprite = animator.getSprite(source)
         parent = sSprite.parent
         parent.removeChild sSprite
         parent.addChild sSprite
-      sourceScale = Util.clone(sSprite.scale)
+        _data.sSprite = sSprite
+        _data.sScale = Util.clone(sSprite.scale)
       animation.addTweenStep ->
-        Util.scaleSpriteTween sSprite, NO_TARGET_SCALE_FACTOR, NO_TARGET_ANIM_TIME
+        Util.scaleSpriteTween _data.sSprite, NO_TARGET_SCALE_FACTOR, NO_TARGET_ANIM_TIME
       animation.addTweenStep ->
-        Util.scaleSpriteTween sSprite, sourceScale, NO_TARGET_ANIM_TIME
+        Util.scaleSpriteTween _data.sSprite, _data.sScale, NO_TARGET_ANIM_TIME
 
     _tremble: (sprite) ->
       animation = new Animation()
+      animation.on 'start', =>
+        animation.trembleFxData = {sourcePosition: sprite.position}
       jitterSteps = 5
-      initialPosition = Util.clone(sprite.position)
       for i in [0...5]
         animation.addTweenStep ->
           return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 50
       animation.addTweenStep =>
-        return Util.spriteTween sprite, sprite.position, initialPosition, 50
+        return Util.spriteTween sprite, sprite.position, animation.trembleFxData.sourcePosition, 50
       return animation
 

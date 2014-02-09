@@ -26,9 +26,14 @@ define ['eventemitter', 'util', 'pixi'], (EventEmitter, Util) ->
     addUnchainedAnimationStep:(animation, id, cbData...) ->
       if not animation?
         return
+      animationFunc = null
+      if typeof animation is 'function'
+        animationFunc = animation
+        animation = null
       step =
         id: id
         animation: animation
+        animationFunc: animationFunc
         chained: false
         cbData:cbData
       @steps.push step

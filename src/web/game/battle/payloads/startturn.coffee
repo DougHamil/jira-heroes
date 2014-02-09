@@ -15,10 +15,7 @@ define ['battle/animation', 'util'], (Animation, Util) ->
       animation.addAnimationStep battleAnimator.animateAction(@startTurnAction)
 
       _addDrawAnim = (action) =>
-        if action.player is battle.getPlayerId()
-          return => battleAnimator.putCardInHand(action.card, true)
-        else
-          return => battleAnimator.putCardInEnemyHand(action.card, true)
+        return => battleAnimator.animateAction(action)
 
       for action in @actions
         if not action.animated and action.type is 'draw-card'

@@ -18,35 +18,39 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
       super
 
     # Animate the source card moving to the target and then moving back
-    _animateSingleTarget: (animator, sSprite, tSprite, animation)->
-      animation.addAnimationStep @_beamTo(sSprite, tSprite)
+    _animateSingleTarget: (animator, source, target, animation)->
+      animation.addAnimationStep => @_beamTo(animator, source, target)
 
-    _animateMultiTarget: (animator, sSprite, animation)->
-      animation.on 'start', =>
-        parent = sSprite.parent
-        parent.removeChild sSprite
-        parent.addChild sSprite
-      sourcePosition = Util.clone(sSprite.position)
-      moveSourceTo = (target)-> ->
-        Util.spriteTween(sSprite, sSprite.position, Util.clone(target.position), MOVE_TO_TARGET_TIME)
-      for target in @targets
-        animation.addTweenStep moveSourceTo(target), 'hit-target', target
-        animation.addUnchainedAnimationStep @_tremble(target)
-      animation.addTweenStep ->
-        Util.spriteTween(sSprite, sSprite.position, sourcePosition, RETURN_POS_TIME)
+    _animateMultiTarget: (animator, source, targets, animation)->
+      subAnim = new Animation()
+      for target, index in targets
+        if index is 0
+          subAnim.addAnimationStep => @_beamTo(animator, source, target)
+        else
+          subAnim.addUnchainedAnimationStep => @_beamTo(animator, source, target)
+      animation.addAnimationStep subAnim
 
-    _animateNoTarget: (animator, sSprite, animation)->
-      animation.on 'start', =>
-        parent = sSprite.parent
-        parent.removeChild sSprite
-        parent.addChild sSprite
-      sourceScale = Util.clone(sSprite.scale)
-      animation.addTweenStep ->
-        Util.scaleSpriteTween sSprite, NO_TARGET_SCALE_FACTOR, NO_TARGET_ANIM_TIME
-      animation.addTweenStep ->
-        Util.scaleSpriteTween sSprite, sourceScale, NO_TARGET_ANIM_TIME
+    _animateNoTarget: (animator, source, animation)->
+      animation.addAnimationStep => @_expandingRing(animator, source)
 
-    _beamTo: (source, target) ->
+    _expandingRing:(animator, source) ->
+      sSprite = animator.getSprite(source)
+      animation = new Animation()
+      emitter = new Proton.Emitter()
+      emitter.rate = new Proton.Rate(20, new Proton.Span(0.0001))
+      emitter.addInitialize(new Proton.Mass(1))
+      emitter.addInitialize(new Proton.ImageTarget(ZERO_TEXTURE))
+      emitter.addInitialize(new Proton.Life(1, 2))
+      emitter.addInitialize(new Proton.Velocity(new Proton.Span(1, 2), new Proton.Span(0,360, true), 'polar'))
+      emitter.addBehaviour(new Proton.Rotate(0, Proton.getSpan(-8, 9), 'add'))
+
+      animation.on 'start', ->
+        emitter.emit 'once'
+      return animation
+
+    _beamTo: (animator, source, target) ->
+      sSprite = animator.getSprite(source)
+      tSprite = animator.getSprite(target)
       animation = new Animation()
       emitter1 = new Proton.Emitter()
       emitter0 = new Proton.Emitter()
@@ -69,7 +73,7 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
       emitter1.addBehaviour(new Proton.Color('#00FF00', ['#ffff00', '#ffff11'], Infinity, Proton.easeOutSine))
       emitter0.addBehaviour(new Proton.Rotate(0, Proton.getSpan(-8, 9), 'add'))
       emitter1.addBehaviour(new Proton.Rotate(0, Proton.getSpan(-8, 9), 'add'))
-      sPos = source.getCenterPosition()
+      sPos = sSprite.getCenterPosition()
       emitter0.p.x = sPos.x
       emitter0.p.y = sPos.y
       emitter1.p.x = sPos.x
@@ -77,10 +81,10 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
       engine.proton.addEmitter(emitter0)
       engine.proton.addEmitter(emitter1)
       animation.addTweenStep =>
-        sPos = Util.clone(source.getCenterPosition())
+        sPos = Util.clone(sSprite.getCenterPosition())
         tween0 = new TWEEN.Tween({x:0.0}).to({x:1.0}, CAST_TWEEN_TIME)
         tween0.onUpdate ->
-          tPos = Util.clone(target.getCenterPosition())
+          tPos = Util.clone(tSprite.getCenterPosition())
           dir = Util.pointSubtract(tPos, sPos)
           unitDir = Util.vectorNormalize(dir)
           perp = {x:unitDir.y, y:-unitDir.x}
@@ -91,7 +95,7 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
           emitter0.p.y = sPos.y + dir.y * percent + perp.y * delta
         tween1 = new TWEEN.Tween({x:0.0}).to({x:1.0}, CAST_TWEEN_TIME)
         tween1.onUpdate ->
-          tPos = Util.clone(target.getCenterPosition())
+          tPos = Util.clone(tSprite.getCenterPosition())
           dir = Util.pointSubtract(tPos, sPos)
           unitDir = Util.vectorNormalize(dir)
           perp = {x:-unitDir.y, y:unitDir.x}

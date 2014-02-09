@@ -6,21 +6,21 @@ define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, e
       if @targets? and @targets not instanceof Array
         @target = @targets
 
-    _animateSingleTarget: (animator, sourceSprite, animation)->
+    _animateSingleTarget: (animator, source, target, animation)->
 
-    _animateMultiTarget: (animator, sourceSprite, animation)->
+    _animateMultiTarget: (animator, source, targets, animation)->
 
-    _animateNoTarget: (animator, sourceSprite, animation)->
+    _animateNoTarget: (animator, source, animation)->
 
     animate: (battleAnimator)->
       animation = new Animation()
       sourceSprite = battleAnimator.getSprite(@source)
       if not @targets?
-        @_animateNoTarget(battleAnimator, sourceSprite, animation)
+        @_animateNoTarget(battleAnimator, @source, animation)
       else if @targets instanceof Array
-        @_animateMultiTarget(battleAnimator, sourceSprite, animation)
+        @_animateMultiTarget(battleAnimator, @source, @targets, animation)
       else
-        @_animateSingleTarget(battleAnimator, sourceSprite, battleAnimator.getSprite(@targets), animation)
+        @_animateSingleTarget(battleAnimator, @source, @targets, animation)
       return animation
 
 

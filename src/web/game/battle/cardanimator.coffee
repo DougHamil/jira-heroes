@@ -1,4 +1,6 @@
-define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], ( BasicTargetFx, PayloadFactory, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
+define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'battle/battlecard', 'battle/playerfield', 'battle/playerhand', 'jquery', 'gui', 'engine', 'util', 'pixi'], (PayloadFactory, Animation, BattleHero, BattleCard, PlayerField, PlayerHand, $, GUI, engine, Util) ->
+  PLAYER_DECK_ORIGIN = {x:engine.WIDTH + GUI.Card.Width/2, y:engine.HEIGHT - GUI.Card.Height}
+  ENEMY_DECK_ORIGIN = {x:engine.WIDTH + GUI.Card.Width/2, y:GUI.Card.Height}
   DISCARD_ORIGIN = {x:-200, y: 0}
   DEFAULT_TWEEN_TIME = 200
   PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400}
@@ -102,9 +104,16 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
         when 'draw-card'
           animation = new Animation()
           if action.player is @userId
-            animation.addAnimationStep => @putCardInHand(action.card, true)
+            animation.addAnimationStep =>
+              bCard = @getBattleCard(action.card)
+              bCard.setCardPosition(PLAYER_DECK_ORIGIN)
+              bCard.setTokenPosition(PLAYER_DECK_ORIGIN)
+              return @putCardInHand(action.card, true)
           else
-            animation.addAnimationStep => @putCardInEnemyHand(action.card, true)
+            animation.addAnimationStep =>
+              bCard = @getBattleCard(action.card)
+              bCard.setCardPosition(ENEMY_DECK_ORIGIN)
+              @putCardInEnemyHand(action.card, true)
           return animation
         when 'destroy'
           return @getBattleObject(action.target).animateDestroyed()
@@ -160,10 +169,6 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
         animation.addAnimationStep battleCard.flipCard(true)
       else if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
-      # TODO: Build spell FX classes to create animations for spells
-      if targets.length > 0
-        castFx = new BasicTargetFx(card, targets)
-        animation.addAnimationStep castFx.buildAnimation(@), 'cast-spell'
       animation.addAnimationStep battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
       return animation
 
