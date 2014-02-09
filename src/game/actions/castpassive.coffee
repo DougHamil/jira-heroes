@@ -3,7 +3,7 @@
 # This is considered a higher-order action
 ###
 class CastPassiveAction
-  constructor: (@source, @targets, @actions, @name) ->
+  constructor: (@source, @targets, @actions, @fx) ->
 
   enact: (battle)->
     actions = []
@@ -11,7 +11,7 @@ class CastPassiveAction
       type: 'cast-passive'
       source: @source
       targets: @targets
-      name: @name
+      fx:@fx
     return [PAYLOAD, @actions]
 
 module.exports = CastPassiveAction

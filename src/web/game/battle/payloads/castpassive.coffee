@@ -5,6 +5,7 @@ define ['battle/fx/factory','battle/animation', 'util'], (FxFactory, Animation, 
       @source = action.source
       @targets = action.targets
       @name = action.name
+      @fx = action.fx
       @actions = []
 
     # Just accumulate actions for now
@@ -13,9 +14,12 @@ define ['battle/fx/factory','battle/animation', 'util'], (FxFactory, Animation, 
     animate: (animator, battle) ->
       animation = new Animation()
 
-      fx = @_buildFx(animator.getCardClass(@source))
-      if fx?
-        animation.addAnimationStep fx.animate(animator)
+      console.log "PASSIVE FX"
+      console.log @fx
+      if @fx?
+        fx = @_buildFx(@fx)
+        if fx?
+          animation.addAnimationStep fx.animate(animator)
 
       # Animated any actions that occur after the spell is cast
       for action in @actions
@@ -26,12 +30,7 @@ define ['battle/fx/factory','battle/animation', 'util'], (FxFactory, Animation, 
 
       return animation
 
-    _buildFx: (cardClass) ->
-      if not cardClass?
+    _buildFx: (fxModel) ->
+      if not fxModel? or not fxModel.type
         return null
-      fx = null
-      if cardClass.media.fx? and cardClass.media.fx.type?
-        fx = FxFactory.create cardClass.media.fx.type, @source, @targets, cardClass.media.fx.data
-      else
-        fx = FxFactory.create 'cast', @source, @targets, cardClass.media.fx?.data
-      return fx
+      return FxFactory.create fxModel.type, @source, @targets, fxModel.data

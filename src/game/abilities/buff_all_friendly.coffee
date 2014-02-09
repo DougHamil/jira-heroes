@@ -26,7 +26,7 @@ class BuffAllFriendly
         if payload.type is 'play-card' and payload.player is player.userId and payload.card isnt @source
           subActions = []
           subActions.push new AddModifierAction(@model.modifierId, payload.card, @data)
-          actions.push new CastPassiveAction(@source, payload.card, subActions, 'buff')
+          actions.push new CastPassiveAction(@source, payload.card, subActions, @model.fx)
           return true
     return false
 

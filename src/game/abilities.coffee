@@ -17,7 +17,7 @@ class Abilities
   @Attack: (abilityId, sourceCard) -> return @New(abilityId, 'attack', sourceCard)
   @HeroAttack: (abilityId, sourceHero) -> return @New(abilityId, 'heroattack', sourceHero)
 
-  @New: (abilityId, type, sourceCard, data) ->
+  @New: (abilityId, type, sourceCard, data, fx) ->
     if not @cache[type]
       @cache[type] = require('./abilities/'+type)
     clazz = @cache[type]
@@ -30,10 +30,11 @@ class Abilities
       data:data
       sourceId: sourceCard._id
       source: sourceCard
+      fx:fx
     return new clazz(model, false)
 
   @NewFromModel: (abilityId, sourceCard, model) ->
-    return @New(abilityId, model.class, sourceCard, model.data)
+    return @New(abilityId, model.class, sourceCard, model.data, model.fx)
 
   # Restore an ability instance from a model
   @RestoreFromModel: (sourceCard, model) ->

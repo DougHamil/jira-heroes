@@ -14,6 +14,9 @@
 												"data":{
 																"amount":2,
 																"healMinions":true
+												},
+												"fx":{
+													"type":"heal_shout"
 												}
 								}
 				],

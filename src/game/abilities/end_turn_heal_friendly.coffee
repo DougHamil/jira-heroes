@@ -30,7 +30,7 @@ class EndTurnHealFriendly
             myActions.push new HealAction(@sourceModel, hero, @amount)
             targets.push hero
           if myActions.length > 0
-            actions.push new CastPassiveAction(@sourceModel, targets, myActions, 'heal-all-friendly')
+            actions.push new CastPassiveAction(@sourceModel, targets, myActions, @model.fx)
           return true
     return false
 

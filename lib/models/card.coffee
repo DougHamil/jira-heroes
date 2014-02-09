@@ -8,7 +8,8 @@ _abilitySchemaOpts =
   class:String
   requiresTarget: Boolean
   text:String
-  data: mongoose.Schema.Types.Mixed
+  data: {}
+  fx: {}
 _abilitySchema = new mongoose.Schema _abilitySchemaOpts
 
 _schema = new mongoose.Schema

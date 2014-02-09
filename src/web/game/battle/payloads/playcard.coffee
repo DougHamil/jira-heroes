@@ -15,7 +15,7 @@ define ['battle/animation', 'util'], (Animation, Util) ->
       # If the card is the enemy's then we need to reveal it
       if @player isnt battle.getPlayerId()
         battleCard = animator.getBattleCard @card
-        animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 1000, false)
+        animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 500, false)
         animation.addAnimationStep battleCard.flipCard()
         animation.addPauseStep 500
 
