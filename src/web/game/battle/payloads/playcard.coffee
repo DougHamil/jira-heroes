@@ -1,4 +1,4 @@
-define ['battle/animation', 'util'], (Animation, Util) ->
+define ['battle/animation', 'util', 'engine'], (Animation, Util, engine) ->
   class PlayCardPayload
     constructor: (action) ->
       @type = 'play-card'
@@ -15,7 +15,7 @@ define ['battle/animation', 'util'], (Animation, Util) ->
       # If the card is the enemy's then we need to reveal it
       if @player isnt battle.getPlayerId()
         battleCard = animator.getBattleCard @card
-        animation.addAnimationStep battleCard.moveFlippedCardTo({x:400, y:100}, 500, false)
+        animation.addAnimationStep battleCard.moveFlippedCardAndTokenTo({x:engine.WIDTH/2, y:engine.HEIGHT/2 - 200}, 500, false)
         animation.addAnimationStep battleCard.flipCard()
         animation.addPauseStep 500
 

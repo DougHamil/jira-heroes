@@ -1,4 +1,5 @@
 define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (EventEmitter, Animation, GUI, engine, Util) ->
+  POPUP_PADDING = 20
   ###
   # A battle card contains the card's sprite, the token sprite and the backside card sprite for a single card
   # It also provides convenience methods for animating the card
@@ -123,16 +124,14 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @cardSprite.position = @flippedCardSprite.position
         sprite = @cardSprite
         flippedSprite = @flippedCardSprite
-        startx = flippedSprite.position.x
         tweenOut = new TWEEN.Tween({scale:1.0}).to({scale:0}, 300).easing(TWEEN.Easing.Quadratic.Out).onUpdate ->
-          flippedSprite.position.x = startx + ((1.0 - @scale) * (flippedSprite.width/2))
           flippedSprite.scale.x = @scale
         tweenIn = new TWEEN.Tween({scale:0}).to({scale:1.0}, 300).easing(TWEEN.Easing.Quadratic.InOut).onUpdate ->
-          sprite.position.x = startx + ((1.0 - @scale) * (flippedSprite.width/2))
           sprite.scale.x = @scale
         innerAnim.addTweenStep tweenOut, 'flipOut'
         innerAnim.addTweenStep tweenIn, 'flipIn'
         innerAnim.on 'complete-step-flipOut', =>
+          @flippedCardSprite.scale = {x:1.0, y:1.0}
           @setFlippedCardVisible(false)
           @setCardVisible(true)
         return innerAnim
@@ -154,11 +153,28 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       if @tokenSprite.visible
         return new Animation()
       else
-        # TODO: Create some animation for turning the card into a token
-        @setTokenVisible(true)
-        @setCardVisible(false)
-        @setFlippedCardVisible(false)
-        return new Animation()
+        animation = new Animation()
+        animation.on 'start', =>
+          @getTokenSprite().scale = {x:0, y:0}
+          @getTokenSprite().anchor = {x:0.5, y:0.5}
+          @getAvailableCardSprite().scale = {x:1, y:1}
+          @getAvailableCardSprite().anchor = {x:0.5, y:0.5}
+          @setTokenVisible(true)
+        animation.addTweenStep =>
+          tween = Util.scaleSpriteTween @getAvailableCardSprite(), {x:0, y:0}, 400
+          return tween
+        animation.addTweenStep =>
+          tween2 = Util.scaleSpriteTween @getTokenSprite(), {x:1.0, y:1.0}, 400
+          tween2.easing(TWEEN.Easing.Elastic.Out)
+          return tween2
+        animation.on 'complete', =>
+          @getCardSprite().scale = {x:1, y:1}
+          @getFlippedCardSprite().scale = {x:1, y:1}
+          @setTokenVisible(true)
+          @setCardVisible(false)
+          @setFlippedCardVisible(false)
+          @updatePopupPosition()
+        return animation
 
     ###
     # enable/disable the interactivity of a card (ie can the player cast/play it?)
@@ -181,6 +197,8 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     # enable/disable the interactivity of a token (ie can the player cast/play it?)
     ###
     setTokenInteractive: (isInteractive) ->
+      cardSprite = @getAvailableCardSprite()
+      cardSprite.visible = false
       tokenSprite = @getTokenSprite()
       if isInteractive
         tokenSprite.onHoverStart => @emit 'token-hover-start', @
@@ -205,10 +223,22 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         buildTween = ->
           tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
           tween.easing(TWEEN.Easing.Cubic.Out)
-          if disableInteraction
-            @setCardInteractive(false)
-            tween.onComplete => @setCardInteractive(true)
           return tween
+        animation.addTweenStep buildTween, 'card-move'
+        return animation
+
+    moveCardAndTokenTo: (position, animTime, disableInteraction) ->
+      return =>
+        animation = new Animation()
+        buildTween = =>
+          cardSprite = @getAvailableCardSprite()
+          tokenSprite = @getTokenSprite()
+          tweenCard = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          tweenCard.easing(TWEEN.Easing.Cubic.Out)
+          if tokenSprite?
+            tweenToken = Util.spriteTween tokenSprite, cardSprite.position, position, animTime
+            tweenToken.easing(TWEEN.Easing.Cubic.Out)
+          return [tweenCard, tweenToken]
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
@@ -219,25 +249,47 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         buildTween = ->
           tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
           tween.easing(TWEEN.Easing.Cubic.Out)
-          if disableInteraction
-            @setCardInteractive(false)
-            tween.onComplete => @setCardInteractive(true)
           return tween
+        animation.addTweenStep buildTween, 'card-move'
+        return animation
+
+    moveFlippedCardAndTokenTo: (position, animTime, disableInteraction) ->
+      return =>
+        animation = new Animation()
+        buildTween = =>
+          cardSprite = @getFlippedCardSprite()
+          tokenSprite = @getTokenSprite()
+          tweenCard = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          tweenCard.easing(TWEEN.Easing.Cubic.Out)
+          if tokenSprite?
+            tweenToken = Util.spriteTween tokenSprite, cardSprite.position, position, animTime
+            tweenToken.easing(TWEEN.Easing.Cubic.Out)
+          return [tweenCard, tweenToken]
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
     moveTokenTo: (position, animTime, disableInteraction) ->
       return =>
         animation = new Animation()
-        tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
-        tween.easing(TWEEN.Easing.Cubic.Out)
+
+        animation.addTweenStep =>
+          tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
+          tween.easing(TWEEN.Easing.Cubic.Out)
+          return tween
+
         if disableInteraction
-          @setTokenInteractive(false)
-        animation.addTweenStep tween, 'token-move'
-        if disableInteraction
+          animation.on 'start', =>
+            @getAvailableCardSprite().visible = false
           animation.on 'complete', =>
-            @setTokenInteractive(true)
+            @updatePopupPosition()
         return animation
+
+    updatePopupPosition: ->
+      cardSprite = @getCardSprite()
+      cardSprite.position = {x:@tokenSprite.position.x + @tokenSprite.width/2 + @cardSprite.width/2 + POPUP_PADDING, y:@tokenSprite.position.y}
+      # if popup is off screen, move it to the left of the token
+      if (cardSprite.position.x + cardSprite.width) > engine.WIDTH
+        cardSprite.position = {x:@tokenSprite.position.x - cardSprite.width - POPUP_PADDING, y:@tokenSprite.position.y}
 
     buildCastAnimation: (target) ->
       animation = new Animation()
@@ -276,7 +328,7 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @cardClass = cardClass
       @cardSprite = new GUI.Card cardClass, cardClass.damage, cardClass.health, card.getStatus()
       @tokenSprite = new GUI.CardToken card, cardClass
-      @damageIndicator.position = {x:@tokenSprite.width/2, y:@tokenSprite.height/2}
+      @damageIndicator.position = {x:0, y:0}
       @tokenSprite.addChild @damageIndicator
       @cardSprite.visible = false
       @tokenSprite.visible = false

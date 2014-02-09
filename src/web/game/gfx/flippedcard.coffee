@@ -16,4 +16,5 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (STYLES, Util) ->
       @faceSprite = new PIXI.Sprite FACE_TEXTURE
       @faceSprite.width = @width
       @faceSprite.height = @height
+      @faceSprite.position = {x:-@width/2, y:-@height/2}
       @.addChild @faceSprite

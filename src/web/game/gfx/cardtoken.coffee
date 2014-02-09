@@ -26,31 +26,37 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @sleepingSprite = new PIXI.Sprite SLEEPING_OVERLAY_TEXTURE
       @sleepingSprite.width = TOKEN_WIDTH
       @sleepingSprite.height = TOKEN_HEIGHT
+      @sleepingSprite.position = {x:-@sleepingSprite.width/2, y:-@sleepingSprite.height/2}
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = TOKEN_WIDTH
       @imageSprite.height = TOKEN_HEIGHT
       @imageSprite.mask = @createImageMask()
+      @imageSprite.position = {x:-@imageSprite.width/2, y:-@imageSprite.height/2}
       @frameHighlightSprite = new PIXI.Sprite FRAME_HIGHLIGHT_TEXTURE
       @frameHighlightSprite.width = TOKEN_WIDTH
       @frameHighlightSprite.height = TOKEN_HEIGHT
       @frameHighlightSprite.visible = false
+      @frameHighlightSprite.position = {x:-@frameHighlightSprite.width/2, y:-@frameHighlightSprite.height/2}
       @frameSprite = new PIXI.Sprite FRAME_TEXTURE
       @frameSprite.width = TOKEN_WIDTH
       @frameSprite.height = TOKEN_HEIGHT
+      @frameSprite.position = {x:-@frameSprite.width/2, y:-@frameSprite.height/2}
       @tauntFrameSprite = new PIXI.Sprite TAUNT_FRAME_TEXTURE
       @tauntFrameSprite.width = TOKEN_WIDTH
       @tauntFrameSprite.height = TOKEN_HEIGHT
       @tauntFrameSprite.visible = false
+      @tauntFrameSprite.position = {x:-@tauntFrameSprite.width/2, y:-@tauntFrameSprite.height/2}
       @tauntHighlightSprite = new PIXI.Sprite TAUNT_FRAME_HIGHLIGHT_TEXTURE
       @tauntHighlightSprite.width = TOKEN_WIDTH
       @tauntHighlightSprite.height = TOKEN_HEIGHT
       @tauntHighlightSprite.visible = false
+      @tauntHighlightSprite.position = {x:-@tauntHighlightSprite.width/2, y:-@tauntHighlightSprite.height/2}
       @damageIcon = new DamageIcon card.getDamage(), cardClass.damage
       @healthIcon = new HealthIcon card.health, cardClass.health
       @damageIcon.anchor = {x:0.5, y:0.5}
       @healthIcon.anchor = {x:0.5, y:0.5}
-      @damageIcon.position = {x:0, y:@height - @damageIcon.height}
-      @healthIcon.position = {x:@width - @healthIcon.width, y:@height - @healthIcon.height}
+      @damageIcon.position = {x:-@damageIcon.width, y:@height/2 - @damageIcon.height/2}
+      @healthIcon.position = {x:@width/2 - @healthIcon.width, y:@height/2 - @healthIcon.height/2}
 
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
@@ -62,7 +68,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @healthIcon
       @.addChild @damageIcon
 
-      @.hitArea = new PIXI.Rectangle 0, 0, @width, @height
+      @.hitArea = new PIXI.Rectangle -@width/2, -@height/2, @width, @height
       @.interactive = true
 
       @setTaunt ('taunt' in card.getStatus())
@@ -107,8 +113,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
 
     setSleeping: (isSleeping) -> @sleepingSprite.visible = isSleeping
 
-    getCenterPosition: ->
-      return {x:@.position.x + @width/2, y:@.position.y + @height/2}
+    getCenterPosition: -> return {x:@.position.x, y:@.position.y}
 
     onHoverStart: (cb) -> @.mouseover = => cb @
     onHoverEnd: (cb) -> @.mouseout = => cb @
@@ -125,6 +130,6 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
-      mask.drawCircle(TOKEN_WIDTH/2, TOKEN_HEIGHT/2, TOKEN_WIDTH/2-10)
+      mask.drawCircle(0, 0, TOKEN_WIDTH/2-10)
       mask.endFill()
       return mask

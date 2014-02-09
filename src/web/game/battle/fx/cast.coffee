@@ -17,27 +17,29 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
         parent = sSprite.parent
         parent.removeChild sSprite
         parent.addChild sSprite
-      sourcePosition = Util.clone(sSprite.position)
+        animation.castFxData = {sourcePosition:Util.clone(sSprite.position)}
+        console.log "CAST POSITION"
+        console.log sSprite.position
       moveSourceTo = ->
         Util.spriteTween(sSprite, sSprite.position, Util.clone(tSprite.position), MOVE_TO_TARGET_TIME)
       animation.addTweenStep moveSourceTo, 'hit-target', @targets
       animation.addUnchainedAnimationStep @_tremble(tSprite)
       animation.addTweenStep ->
-        Util.spriteTween(sSprite, sSprite.position, sourcePosition, RETURN_POS_TIME)
+        Util.spriteTween(sSprite, sSprite.position, animation.castFxData.sourcePosition, RETURN_POS_TIME)
 
     _animateMultiTarget: (animator, sSprite, animation)->
       animation.on 'start', =>
         parent = sSprite.parent
         parent.removeChild sSprite
         parent.addChild sSprite
-      sourcePosition = Util.clone(sSprite.position)
+        animation.castFxData = {sourcePosition:Util.clone(sSprite.position)}
       moveSourceTo = (target)-> ->
         Util.spriteTween(sSprite, sSprite.position, Util.clone(target.position), MOVE_TO_TARGET_TIME)
       for target in @targets
         animation.addTweenStep moveSourceTo(target), 'hit-target', target
         animation.addUnchainedAnimationStep @_tremble(target)
       animation.addTweenStep ->
-        Util.spriteTween(sSprite, sSprite.position, sourcePosition, RETURN_POS_TIME)
+        Util.spriteTween(sSprite, sSprite.position, animation.castFxData.sourcePosition, RETURN_POS_TIME)
 
     _animateNoTarget: (animator, sSprite, animation)->
       animation.on 'start', =>

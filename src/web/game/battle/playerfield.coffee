@@ -16,16 +16,17 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       animation = null
       if doAnimation
         animation = new Animation()
-        animation.addAnimationStep battleCard.makeTokenVisible(), 'token-visible'
-        animation.addAnimationStep battleCard.moveTokenTo(@tokenRow.getNextPosition(), @animTime, false), 'token-moved'
-        animation.on 'complete-step-token-moved', =>
+        animation.addAnimationStep battleCard.moveCardAndTokenTo(@tokenRow.getNextPosition(), @animTime, false), 'token-moved'
+        animation.addAnimationStep =>
+          return battleCard.makeTokenVisible()
+
+        # Position the card sprite next to the token
+        animation.on 'complete', =>
+          battleCard.updatePopupPosition()
           if enableInteraction
             @_addTokenInteraction(battleCard)
           else
             @_addPopupInteraction(battleCard)
-        # Position the card sprite next to the token
-        animation.on 'complete', =>
-          battleCard.setCardPosition(Util.pointAdd(battleCard.getTokenSprite().position, @hoverOffset))
       else
         battleCard.setTokenVisible(true)
         battleCard.setCardVisible(false)
@@ -34,7 +35,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
           @_addTokenInteraction(battleCard)
         else
           @_addPopupInteraction(battleCard)
-        battleCard.setCardPosition(Util.pointAdd(battleCard.getTokenSprite().position, @hoverOffset))
+        battleCard.updatePopupPosition()
       @tokenRow.add battleCard
       return animation
 
@@ -57,34 +58,36 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
 
     buildReorderAnimation: ->
       animation = new Animation()
-      # Use the row to determine what the new positions should be
-      newPositions = @tokenRow.getElementPositions()
-      newPositionsByCardId = {}
-      for pos in newPositions
-        newPositionsByCardId[pos.element.getId()] = pos.position
-      updateBattleCard = (bCard) =>
-        =>
-          bCard.setCardPosition(Util.pointAdd(bCard.getTokenSprite().position, @hoverOffset))
-          if @interactionEnabled
-            @_addTokenInteraction(bCard)
-      for cardId, battleCard of @tokens
-        cardSprite = battleCard.getTokenSprite()
-        currentPosition = cardSprite.position
-        newPosition = newPositionsByCardId[cardId]
-        if not Util.pointsEqual(currentPosition, newPosition)
-          subAnim = new Animation()
-          subAnim.addAnimationStep battleCard.moveTokenTo(newPosition, @animTime, true), 'token-reorder'
-          subAnim.on 'complete', updateBattleCard(battleCard)
-          animation.addAnimationStep subAnim
+      animation.addAnimationStep =>
+        innerAnim = new Animation()
+        # Use the row to determine what the new positions should be
+        newPositions = @tokenRow.getElementPositions()
+        newPositionsByCardId = {}
+        for pos in newPositions
+          newPositionsByCardId[pos.element.getId()] = pos.position
+        updateBattleCard = (bCard) => => bCard.updatePopupPosition()
+        for cardId, battleCard of @tokens
+          cardSprite = battleCard.getTokenSprite()
+          currentPosition = cardSprite.position
+          newPosition = newPositionsByCardId[cardId]
+          if not Util.pointsEqual(currentPosition, newPosition)
+            subAnim = new Animation()
+            subAnim.addAnimationStep battleCard.moveTokenTo(newPosition, @animTime, true), 'token-reorder'
+            subAnim.on 'complete', updateBattleCard(battleCard)
+            innerAnim.addAnimationStep subAnim
+        return innerAnim
       return animation
 
     containsPoint: (point) ->
       point = Util.pointSubtract(point, @origin)
+      point.x += GUI.CardToken.Width/2
+      point.y += GUI.CardToken.Height/2
       return @fieldArea.contains(point.x, point.y)
 
     getBattleCards: -> (card for id, card of @tokens)
 
     _removeTokenInteraction: (battleCard) ->
+      battleCard.setCardInteractive(false)
       battleCard.setTokenInteractive(false)
       battleCard.setCardVisible(false)
 

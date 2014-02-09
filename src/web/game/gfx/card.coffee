@@ -15,8 +15,8 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
     width: IMAGE_SIZE.width
     height: IMAGE_SIZE.height - 60
   IMAGE_POS =
-    x: (CARD_SIZE.width - IMAGE_SIZE.width)/2
-    y: 10
+    x: 0
+    y: -IMAGE_SIZE.height/2 + 20
   SHADOW_OFFSET =
     x: 5
     y: 5
@@ -40,26 +40,28 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       @shadowSprite = new PIXI.Sprite SHADOW_TEXTURE
       @shadowSprite.width = CARD_SIZE.width
       @shadowSprite.height = CARD_SIZE.height
-      @shadowSprite.position = SHADOW_OFFSET
+      @shadowSprite.position = {x:-@shadowSprite.width/2 + SHADOW_OFFSET.x, y:-@shadowSprite.height/2 + SHADOW_OFFSET.y}
       @backgroundSprite = new PIXI.Sprite BACKGROUND_TEXTURE
       @backgroundSprite.width = CARD_SIZE.width
       @backgroundSprite.height = CARD_SIZE.height
+      @backgroundSprite.position = {x:-@backgroundSprite.width/2, y:-@backgroundSprite.height/2}
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = IMAGE_SIZE.width
       @imageSprite.height = IMAGE_SIZE.height
+      @imageSprite.position = {x:-@imageSprite.width/2 + IMAGE_POS.x, y:-@imageSprite.height/2 + IMAGE_POS.y}
       @overlaySprite = new PIXI.Sprite OVERLAY_TEXTURE
       @overlaySprite.width = CARD_SIZE.width
       @overlaySprite.height = CARD_SIZE.height
+      @overlaySprite.position = {x:-@overlaySprite.width/2, y:-@overlaySprite.height/2}
       @titleText = new PIXI.Text cardClass.displayName, styles.CARD_TITLE
       if @titleText.width >= @backgroundSprite.width - 20
         @titleText.width = @backgroundSprite.width - 20
       @energyIcon = new EnergyIcon cardClass.energy, cardClass.energy
       @description = @buildAbilityText cardClass
-      @description.position = {x:15, y: @backgroundSprite.height / 2 + 30}
+      @description.position = {x:-@backgroundSprite.width/2 + 15, y: @titleText.height + 5}
       @titleText.anchor = {x: 0.5, y:0}
-      @titleText.position = {x:@backgroundSprite.width / 2, y: 395 * CARD_SCALE.y}
-      @energyIcon.position = {x:0, y:0}
-      @imageSprite.position = {x: IMAGE_POS.x, y: IMAGE_POS.y}
+      @titleText.position = {x:0, y: 3}
+      @energyIcon.position = {x:@backgroundSprite.width/2 - @energyIcon.width, y:-@backgroundSprite.height/2}
 
       @.addChild @shadowSprite
       @.addChild @backgroundSprite
@@ -73,14 +75,14 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       if not cardClass.playAbility?
         @healthIcon = new HealthIcon health, cardClass.health
         @damageIcon = new DamageIcon damage, cardClass.damage
-        @healthIcon.position = {x:@backgroundSprite.width - @healthIcon.width, y: @backgroundSprite.height - @healthIcon.height}
-        @damageIcon.position = {x:0, y: @backgroundSprite.height - @damageIcon.height}
+        @healthIcon.position = {x:@backgroundSprite.width/2 - @healthIcon.width, y: @backgroundSprite.height/2 - @healthIcon.height/2}
+        @damageIcon.position = {x:-@backgroundSprite.width/2, y: @backgroundSprite.height/2 - @damageIcon.height/2}
         @.addChild @healthIcon
         @.addChild @damageIcon
 
       @width = CARD_SIZE.width
       @height = CARD_SIZE.height
-      @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
+      @.hitArea = new PIXI.Rectangle(-@width/2, -@height/2, @width, @height)
       @.interactive = true
 
     setHealth: (health) -> @healthIcon.setHealth(health) if @healthIcon?
@@ -152,5 +154,4 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
         string += (chunk + ' ')
       return new PIXI.Text string, styles.CARD_DESCRIPTION
 
-    getCenterPosition: ->
-      return {x:@.position.x + @width/2, y:@.position.y + @height/2}
+    getCenterPosition: -> return {x:@position.x, y:@position.y}

@@ -83,7 +83,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       updateStatus()
       @initUI @battle.getPhase()
       @updateEnergy()
-      @setYourTurn(@battle.isYourTurn())
 
     activate: (@battle) ->
       @myStage.addChild @

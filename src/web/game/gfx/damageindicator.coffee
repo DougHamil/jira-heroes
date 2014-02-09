@@ -15,12 +15,13 @@ define ['battle/animation', 'gfx/icon', 'gfx/styles', 'util', 'pixi', 'tween'], 
       @text.setText(damage.toString())
 
     animate: (damage)->
-      @text.setText "-#{damage}"
-      if damage is 0
-        @text.setText ""
-      @text.alpha = 1.0
-      @visible = true
       animation = new Animation()
+      animation.on 'start', =>
+        @text.setText "-#{damage}"
+        if damage is 0
+          @text.setText ""
+        @text.alpha = 1.0
+        @visible = true
       animation.addPauseStep 1000, 'pause'
       animation.addTweenStep Util.fadeSpriteTween(@text, 0.0, FADE_TIME)
       animation.on 'complete', =>

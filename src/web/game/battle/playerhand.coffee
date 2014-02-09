@@ -23,7 +23,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
         animation.addAnimationStep battleCard.makeCardVisible(), 'card-visible'
         animation.addAnimationStep battleCard.moveCardTo(@cardRow.getNextPosition(), @animTime, false), 'card-moved'
         if enableInteraction
-          animation.on 'complete-step-card-moved', => @_addCardInteraction(battleCard)
+          animation.on 'complete', => @_addCardInteraction(battleCard)
       else
         battleCard.setCardVisible(true)
         battleCard.setTokenVisible(false)
@@ -107,15 +107,18 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
 
     buildReorderAnimation: ->
       animation = new Animation()
-      # Use the row to determine what the new positions should be
-      newPositions = @cardRow.getElementPositions()
-      newPositionsByCardId = {}
-      for pos in newPositions
-        newPositionsByCardId[pos.element.getId()] = pos.position
-      for cardId, battleCard of @cards
-        cardSprite = battleCard.getAvailableCardSprite()
-        currentPosition = cardSprite.position
-        newPosition = newPositionsByCardId[cardId]
-        if not Util.pointsEqual(currentPosition, newPosition)
-          animation.addAnimationStep battleCard.moveCardTo(newPosition, @animTime, false), 'card-reorder'
+      animation.addAnimationStep =>
+        innerAnim = new Animation()
+        # Use the row to determine what the new positions should be
+        newPositions = @cardRow.getElementPositions()
+        newPositionsByCardId = {}
+        for pos in newPositions
+          newPositionsByCardId[pos.element.getId()] = pos.position
+        for cardId, battleCard of @cards
+          cardSprite = battleCard.getAvailableCardSprite()
+          currentPosition = cardSprite.position
+          newPosition = newPositionsByCardId[cardId]
+          if not Util.pointsEqual(currentPosition, newPosition)
+            innerAnim.addAnimationStep battleCard.moveCardTo(newPosition, @animTime, false), 'card-reorder'
+        return innerAnim
       return animation

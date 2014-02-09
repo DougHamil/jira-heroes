@@ -9,26 +9,26 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
     fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 160)
-    origin: {x:20, y:engine.HEIGHT/2}
+    origin: {x:20 + GUI.CardToken.Width/2, y:engine.HEIGHT/2 + GUI.CardToken.Height/2}
     padding: 20
     interactionEnabled:true
   ENEMY_FIELD_CONFIG =
     animationTime: 500
     hoverOffset: {x:GUI.CardToken.Width + 20, y:0}
     fieldArea: new PIXI.Rectangle(0, 0, engine.WIDTH - 20, 160)
-    origin: {x:20, y:engine.HEIGHT/2 - 160}
+    origin: {x:20 + GUI.CardToken.Width/2, y:engine.HEIGHT/2 - 160 + GUI.CardToken.Height/2}
     padding: 20
     interactionEnabled:false
   ENEMY_HAND_CONFIG =
     handHoverOffset: 50
-    origin: {x:20, y: -100}
+    origin: {x:20 + GUI.Card.Width/2, y: -100 + GUI.Card.Height/2}
     padding: 20
     animationTime: DEFAULT_TWEEN_TIME
   PLAYER_HAND_CONFIG =
     animationTime: DEFAULT_TWEEN_TIME
-    origin: {x:20, y:engine.HEIGHT + 50 - GUI.Card.Height}
+    origin: {x:20 + GUI.Card.Width/2, y:engine.HEIGHT + 50 - GUI.Card.Height/2}
     padding: 20
-    hoverOffset: {x: 0, y: -50}
+    hoverOffset: {x: 0, y: -70}
 
   ###
   # Manages all card sprites in the battle by positioning and animating them
@@ -214,7 +214,6 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       reorder = false
       if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
-        battleCard.setTokenPosition(battleCard.getFlippedCardSprite().position)
         reorder = true
       animation = new Animation()
       animation.addAnimationStep @enemyField.addCard(battleCard, animate, false)
