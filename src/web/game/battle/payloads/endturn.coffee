@@ -14,5 +14,7 @@ define ['battle/animation', 'util'], (Animation, Util) ->
       for action in @actions
         if action.target and not action.animated
           animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateAction(action)
-      animation.on 'complete', => animator.animateActions(@actions)
+      animation.on 'complete', =>
+        animator.animateActions(@actions)
+        animator.enqueueAnimation animator.buildReorderAnimations()
       return animation

@@ -20,8 +20,8 @@ define ['gfx/card','gfx/textbutton', 'gfx/styles','util', 'engine', 'pixi', 'twe
       cardIndex = 0
       for card in @cardSprites
         pageContainer.addChild card
-        xpos = @padding + ((cardIndex % @cardsPerRow) * (@padding + card.width))
-        ypos = Math.floor(cardIndex / @cardsPerRow) * (@padding + card.height) + @padding
+        xpos = @padding + ((cardIndex % @cardsPerRow) * (@padding + card.width)) + card.width/2
+        ypos = Math.floor(cardIndex / @cardsPerRow) * (@padding + card.height) + @padding + card.height/2
         card.position = {x:xpos, y:ypos}
         cardIndex++
         if cardIndex is (@cardsPerRow * @rowsPerPage)

@@ -80,8 +80,13 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
 
     animateCasted: ->
       animation = new Animation()
-      sprite = @getCardSprite()
-      animation.addTweenStep Util.fadeSpriteTween(sprite, 0, 500)
+      animation.addTweenStep =>
+        sprite = @getCardSprite()
+        sprite.pivot = {x:0, y:0}
+        tween = new TWEEN.Tween({rot:sprite.rotation}).to({rot:(Math.PI/180)*359}, 1000).onUpdate ->
+          sprite.rotation = @rot
+        tweenFade = Util.fadeSpriteTween(sprite, 0, 1000)
+        return [tween, tweenFade]
       animation.on 'complete', =>
         @setTokenInteractive(false)
         @setCardInteractive(false)

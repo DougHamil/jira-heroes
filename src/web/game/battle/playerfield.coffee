@@ -50,7 +50,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       @_endTokenTarget(position) if @targetSourceCard?
 
     update: ->
-      if @targetSourceCard?
+      if @targetSourceCard? and @targetSourceCard.getTokenSprite().visible
         if @targettingGraphics?
           @uiLayer.removeChild @targettingGraphics
         @targettingGraphics = Util.drawArrow(@targetSourceCard.getTokenSprite().getCenterPosition(), @uiLayer.stage.getMousePosition())

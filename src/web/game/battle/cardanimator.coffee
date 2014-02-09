@@ -194,13 +194,15 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       for action in actions
         if not action.animated
           animation.addAnimationStep @animateAction(action)
+      @enqueueAnimation(animation)
+
+    buildReorderAnimations: ->
       subAnim = new Animation()
       subAnim.addAnimationStep @playerHand.buildReorderAnimation()
       subAnim.addUnchainedAnimationStep @enemyHand.buildReorderAnimation()
       subAnim.addUnchainedAnimationStep @playerField.buildReorderAnimation()
       subAnim.addUnchainedAnimationStep @enemyField.buildReorderAnimation()
-      animation.addAnimationStep subAnim
-      @enqueueAnimation(animation)
+      return subAnim
 
     enqueueAnimation: (animation) ->
       animation.on 'complete', => @playNextAnimation()
@@ -222,8 +224,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         reorder = true
       animation = new Animation()
       animation.addAnimationStep @enemyField.addCard(battleCard, animate, false)
-      if reorder and animate
-        animation.addUnchainedAnimationStep @enemyHand.buildReorderAnimation()
       return animation
 
     putCardOnField: (card, animate) ->
@@ -236,8 +236,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         reorder = true
       animation = new Animation()
       animation.addAnimationStep @playerField.addCard(battleCard, animate, true)
-      if animate and reorder
-        animation.addUnchainedAnimationStep @playerHand.buildReorderAnimation()
       return animation
 
     putCardInEnemyHand: (cardId, animate) ->

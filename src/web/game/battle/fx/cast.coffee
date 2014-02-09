@@ -2,7 +2,7 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
   MOVE_TO_TARGET_TIME = 400
   RETURN_POS_TIME = 300
   NO_TARGET_SCALE_FACTOR = 1.5
-  NO_TARGET_ANIM_TIME = 500
+  NO_TARGET_ANIM_TIME = 200
 
   ###
   # Very basic Cast animation where a little ring appears on the hero and then a ring appears on all affected targets

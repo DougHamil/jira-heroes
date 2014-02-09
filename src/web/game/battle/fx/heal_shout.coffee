@@ -10,17 +10,18 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
       super
 
     # Animate the source card moving to the target and then moving back
-    _animateSingleTarget: (animator, sSprite, tSprite, animation)->
-      animation.addAnimationStep @_shout(sSprite)
+    _animateSingleTarget: (animator, source, target, animation)->
+      animation.addAnimationStep @_shout(animator, source)
 
-    _animateMultiTarget: (animator, sSprite, animation)->
-      animation.addAnimationStep @_shout(sSprite)
+    _animateMultiTarget: (animator, source, targets, animation)->
+      animation.addAnimationStep @_shout(animator, source)
 
-    _animateNoTarget: (animator, sSprite, animation)->
-      animation.addAnimationStep @_shout(sSprite)
+    _animateNoTarget: (animator, source, animation)->
+      animation.addAnimationStep @_shout(animator, source)
 
-    _shout: (source) ->
+    _shout: (animator, sourceObj) ->
       =>
+        source = animator.getSprite(sourceObj)
         animation = new Animation()
         emitter1 = new Proton.Emitter()
         emitter1.rate = new Proton.Rate(10, new Proton.Span(0.001, 2))
