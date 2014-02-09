@@ -5,6 +5,11 @@ define ['jquery', 'pixi', 'tween'], ($) ->
   UTILS =
     clone:copy
     copy:copy
+    vectorLength: (a) ->
+      return Math.sqrt((a.x*a.x) + (a.y*a.y))
+    vectorNormalize: (a) ->
+      len = UTILS.vectorLength(a)
+      return {x:a.x/len, y:a.y/len}
     pointsEqual: (a, b) -> return a.x is b.x and a.y is b.y
     pointSubtract: (a, b) -> return {x: a.x - b.x, y: a.y - b.y}
     pointAdd: (a, b) -> return {x: a.x + b.x, y: a.y + b.y}

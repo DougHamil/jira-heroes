@@ -24,9 +24,7 @@ define ['battle/fx/factory', 'battle/animation', 'util'], (FxFactory, Animation,
           animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateAction(action)
         else if action.hero?
           animation.addUnchainedAnimationStep animator.getBattleObject(action.hero).animateAction(action)
-
       animation.on 'complete', => animator.animateActions(@actions)
-
       return animation
 
     _buildFx: (heroClass) ->

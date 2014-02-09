@@ -47,6 +47,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @.addChild @tokenSpriteLayer
       @.addChild @cardSpriteLayer
       @.addChild @uiLayer
+      @.addChild engine.fxLayer # All particles will be drawn on this layer
       @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
       @playerEnergyIcon.anchor = {x:1,y:0}
       @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:0}

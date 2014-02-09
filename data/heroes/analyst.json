@@ -13,6 +13,9 @@
 			"amount":1
 		},
 		"media":{
+			"fx":{
+				"type":"binary"
+			},
 			"image":"nullpointerexception.png"
 		}
 	},
