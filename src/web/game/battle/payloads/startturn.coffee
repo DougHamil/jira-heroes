@@ -1,6 +1,7 @@
 define ['battle/animation', 'util'], (Animation, Util) ->
   class StartTurnPayload
     constructor: (action, battle) ->
+      @startTurnAction = action
       @type = 'start-turn'
       @player = action.player
       @actions = []
@@ -9,6 +10,10 @@ define ['battle/animation', 'util'], (Animation, Util) ->
 
     animate: (battleAnimator, battle) ->
       animation = new Animation()
+
+      # Animates the "Your Turn" graphic
+      animation.addAnimationStep battleAnimator.animateAction(@startTurnAction)
+
       _addDrawAnim = (action) =>
         if action.player is battle.getPlayerId()
           return => battleAnimator.putCardInHand(action.card, true)

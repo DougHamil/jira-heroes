@@ -30,6 +30,7 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
         @.removeChild @innerStage
       @innerStage = new PIXI.DisplayObjectContainer
       if phase is 'game'
+        @statusText.visible = false
         @endTurnButton = new GUI.EndTurnButton()
         @endTurnButton.position = {x: engine.WIDTH - 20 - @endTurnButton.width, y: engine.HEIGHT/2 - @endTurnButton.height/2}
         @endTurnButton.onClick => @battle.emitEndTurnEvent()
@@ -76,8 +77,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       updateStatus = =>
       @battle.on 'player-connected', => updateStatus()
       @battle.on 'player-disconnected', => updateStatus()
-      @battle.on 'your-turn', => @setYourTurn(true)
-      @battle.on 'opponent-turn', => @setYourTurn(false)
       @battle.on 'phase', (o, n) => @initUI(n)
       @battle.on 'action-energy', => @updateEnergy()
       @battle.on 'action-max-energy', => @updateEnergy()
@@ -85,12 +84,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       @initUI @battle.getPhase()
       @updateEnergy()
       @setYourTurn(@battle.isYourTurn())
-
-    setYourTurn: (isYourTurn) ->
-      if isYourTurn
-        @setStatusText("It's your turn!")
-      else
-        @setStatusText("Opponent's turn")
 
     activate: (@battle) ->
       @myStage.addChild @

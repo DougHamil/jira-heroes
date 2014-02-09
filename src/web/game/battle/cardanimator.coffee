@@ -41,6 +41,7 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       @activeAnimation = new Animation()
       @cards = {}
       @errorDisplay = new GUI.Error()
+      @yourTurnGraphic = new GUI.YourTurn()
       @cardSpriteLayer = new PIXI.DisplayObjectContainer()
       @tokenSpriteLayer = new PIXI.DisplayObjectContainer()
       @uiLayer = new PIXI.DisplayObjectContainer()
@@ -77,7 +78,12 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @handleActions(actions)
       @errorDisplay.position = {x:engine.WIDTH/2, y:engine.HEIGHT/2}
+
       @uiLayer.addChild @errorDisplay
+      @uiLayer.addChild @yourTurnGraphic
+
+    deactivate: ->
+      document.body.onmouseup = ->
 
     animateAction: (action) ->
       switch action.type
@@ -104,6 +110,9 @@ define ['battle/fx/basic_target', 'battle/payloads/factory', 'battle/animation',
           return @getBattleObject(action.target).animateDestroyed()
         when 'discard-card'
           return @discardCard action.card
+        when 'start-turn'
+          if action.player is @battle.getPlayerId()
+            return @yourTurnGraphic.animate()
       if action.target?
         target = @getBattleObject(action.target)
         if target?

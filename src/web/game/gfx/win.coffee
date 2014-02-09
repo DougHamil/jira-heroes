@@ -44,24 +44,24 @@ define ['battle/animation', 'gfx/styles', 'util', 'engine', 'pixi', 'tween'], (A
 
     animate: (emit)->
       animation = new Animation()
-      sprite = @sprite
-      tween = new TWEEN.Tween(@sprite).to({rotation:3.14}, 800).repeat(Infinity).yoyo(false).onUpdate ->
-        sprite.rotation = @rotation
-      #tween.easing(TWEEN.Easing.Elastic.Out)
-      tween.start()
-
       if emit
+        sprite = @sprite
+        tween = new TWEEN.Tween(@sprite).to({rotation:3.14}, 800).repeat(Infinity).yoyo(false).onUpdate ->
+          sprite.rotation = @rotation
+        #tween.easing(TWEEN.Easing.Elastic.Out)
+        tween.start()
+
         for emitter in @emitters
           emitter.emit()
 
-      text = @text
-      tween2 = new TWEEN.Tween({start:1}).to({start:1.8}, 800).repeat(Infinity).yoyo(true).onUpdate ->
-        sprite.scale = {x:@start, y:@start}
-      tween2.easing(TWEEN.Easing.Elastic.Out)
-      tween2.start()
-      tween2 = new TWEEN.Tween({start:1}).to({start:2.0}, 800).repeat(Infinity).yoyo(true).onUpdate ->
-        text.scale = {x:@start, y:@start}
-      tween2.easing(TWEEN.Easing.Elastic.Out)
-      tween2.start()
+        text = @text
+        tween2 = new TWEEN.Tween({start:1}).to({start:1.8}, 800).repeat(Infinity).yoyo(true).onUpdate ->
+          sprite.scale = {x:@start, y:@start}
+        tween2.easing(TWEEN.Easing.Elastic.Out)
+        tween2.start()
+        tween2 = new TWEEN.Tween({start:1}).to({start:2.0}, 800).repeat(Infinity).yoyo(true).onUpdate ->
+          text.scale = {x:@start, y:@start}
+        tween2.easing(TWEEN.Easing.Elastic.Out)
+        tween2.start()
       return animation
 

@@ -24,6 +24,7 @@ define ['./gfx/herobutton',
         './gfx/heroabilitytoken',
         './gfx/error',
         './gfx/glowline',
+        './gfx/yourturn',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -52,6 +53,7 @@ define ['./gfx/herobutton',
         HeroAbilityToken,
         Error,
         GlowLine,
+        YourTurn,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -80,6 +82,7 @@ define ['./gfx/herobutton',
     HeroAbilityToken:HeroAbilityToken
     Error:Error
     GlowLine:GlowLine
+    YourTurn:YourTurn
     STYLES: styles
 
   return GUI
