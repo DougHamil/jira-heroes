@@ -14,7 +14,8 @@ define ['jquery', 'pixi', 'tween'], ($, PIXI) ->
     particleSprite.alpha = particle.alpha
     particleSprite.rotation = particle.rotation * Math.PI / 180
     # Proton uses CSS color strings
-    particleSprite.tint = parseInt("0x"+particle.color.substring(1), 16)
+    if particle.color?
+      particleSprite.tint = parseInt("0x"+particle.color.substring(1), 16)
 
   proton = new Proton()
   protonRenderer = new Proton.Renderer('other', proton)

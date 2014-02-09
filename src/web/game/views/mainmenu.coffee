@@ -75,6 +75,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
 
     deactivate: ->
       @myStage.removeChild @
+      @myStage.removeChild engine.fxLayer
       if JH.walletGraphic?
         @.removeChild JH.walletGraphic
       if JH.nameText?
@@ -87,6 +88,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       activate = (battles, user, usersById) =>
         JH.user = user
         @myStage.addChild @
+        @myStage.addChild engine.fxLayer
         JH.nameText = new PIXI.Text "#{user.name}", GUI.STYLES.TEXT
         JH.nameText.position = {x: engine.WIDTH - JH.nameText.width, y:0}
         if not JH.walletGraphic?

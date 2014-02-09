@@ -10,6 +10,7 @@ define ['jquery', 'pixi', 'tween'], ($) ->
     vectorNormalize: (a) ->
       len = UTILS.vectorLength(a)
       return {x:a.x/len, y:a.y/len}
+    hexColorToString: (color) -> return '#' + ('00000' + (color | 0).toString(16)).substr(-6)
     pointsEqual: (a, b) -> return a.x is b.x and a.y is b.y
     pointSubtract: (a, b) -> return {x: a.x - b.x, y: a.y - b.y}
     pointAdd: (a, b) -> return {x: a.x + b.x, y: a.y + b.y}
