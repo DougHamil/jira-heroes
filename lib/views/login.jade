@@ -1,17 +1,22 @@
 doctype html
 html(lang="en")
-	include includes/head
+	head
+		title JIRA Heroes - Login
+		script(src="http://code.jquery.com/jquery-1.10.1.min.js")
+		link(rel="stylesheet",href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css")
+		script(src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js")
+		link(rel="stylesheet/less",type="text/css",href="/styles/defines.less")
+		link(rel="stylesheet/less",type="text/css",href="/styles/login.less")
+		script(src="/lib/less.js")
 	body
 		include includes/header
-		if failed
-			h4 Login failed, please check your username and password is correct
-		h3 Login
-		p Please login using your JIRA username and password
-		form(action="/user/login",method="post")
-			label Username:
-				input(type="text",name="username")
+		#content
+			img(src="/media/images/logo.png")
+			if failed
+				h4 Login failed, please check your username and password is correct
+			form(action="/user/login",method="post")
+				input.form-control(placeholder="Username",type="text",name="username")
 				br
-			label Password:
-				input(type="password",name="password")
+				input.form-control(placeholder="Password",type="password",name="password")
 				br
-			input(type="submit",value="Login")
+				input.form-control(type="submit",value="Login")
