@@ -80,7 +80,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @handleActions(actions)
       @errorDisplay.position = {x:engine.WIDTH/2, y:engine.HEIGHT/2}
-
       @uiLayer.addChild @errorDisplay
       @uiLayer.addChild @yourTurnGraphic
 
@@ -117,8 +116,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
           return animation
         when 'destroy'
           return @getBattleObject(action.target).animateDestroyed()
-        when 'discard-card'
-          return @discardCard action.card
         when 'start-turn'
           if action.player is @battle.getPlayerId()
             return @yourTurnGraphic.animate()
@@ -136,10 +133,11 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       for action in actions
         @preprocessAction(action)
       animation = new Animation()
-      payloads = PayloadFactory.processActions(@battle, actions)
+      payloads = PayloadFactory.processActions(@battle, [].concat(actions))
       for payload in payloads
         if payload.animate?
           animation.addAnimationStep payload.animate(@, @battle)
+      animation.addAnimationStep @buildReorderAnimation(actions)
       @enqueueAnimation animation
 
     preprocessAction:(action) ->
@@ -172,8 +170,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       animation.addAnimationStep battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
       return animation
 
-    discardCard: (card, animation) ->
-      animation = new Animation() if not animation?
+    discardCard: (card) ->
       battleCard = @getBattleCard(card)
       if not battleCard?
         return null
@@ -187,7 +184,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         @playerField.removeCard(battleCard)
       else if @enemyField.hasCard(battleCard)
         @enemyField.removeCard(battleCard)
-      return animation
 
     animateActions:(actions) ->
       animation = new Animation()
@@ -196,13 +192,40 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
           animation.addAnimationStep @animateAction(action)
       @enqueueAnimation(animation)
 
-    buildReorderAnimations: ->
-      subAnim = new Animation()
-      subAnim.addAnimationStep @playerHand.buildReorderAnimation()
-      subAnim.addUnchainedAnimationStep @enemyHand.buildReorderAnimation()
-      subAnim.addUnchainedAnimationStep @playerField.buildReorderAnimation()
-      subAnim.addUnchainedAnimationStep @enemyField.buildReorderAnimation()
-      return subAnim
+    buildReorderAnimation: (actions)->
+      =>
+        console.log "BUILD REORDER"
+        console.log actions
+        animation = new Animation()
+        animSet = {}
+        for action in actions
+          switch action.type
+            when 'discard-card'
+              console.log "DISCARD"
+              @buildReorderForCard(animSet, @getBattleCard(action.card))
+              @discardCard action.card
+              console.log animSet
+            when 'play-card'
+              @buildReorderForCard(animSet, @getBattleCard(action.card))
+        index = 0
+        for key, anim of animSet
+          if index is 0
+            animation.addAnimationStep anim
+          else
+            animation.addUnchainedAnimationStep anim
+          index++
+        return animation
+
+    buildReorderForCard: (animSet, battleCard) ->
+      if @playerHand.hasCard(battleCard)
+        animSet.playerHand = @playerHand.buildReorderAnimation()
+      else if @playerField.hasCard(battleCard)
+        animSet.playerField = @playerField.buildReorderAnimation()
+      else if @enemyHand.hasCard(battleCard)
+        animSet.enemyHand = @enemyHand.buildReorderAnimation()
+      else if @enemyField.hasCard(battleCard)
+        animSet.enemyField = @enemyField.buildReorderAnimation()
+      console.log animSet
 
     enqueueAnimation: (animation) ->
       animation.on 'complete', => @playNextAnimation()
