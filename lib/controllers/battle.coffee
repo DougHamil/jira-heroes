@@ -31,7 +31,6 @@ module.exports = (app, Users) ->
                     res.send 500, err
                   else
                     res.json battle.getPublicData()
-          console.log "ADD BOT FLAG #{addBotFlag}"
           if addBotFlag
             battle.users.push user._id + 'BOT'
             battle.addBot 'montecarlonaive', user._id + "BOT", deck, (err, bot) ->

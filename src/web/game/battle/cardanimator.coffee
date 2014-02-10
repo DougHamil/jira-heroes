@@ -156,6 +156,8 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
             @setCard action.card._id, action.card
+        when 'discard-card'
+          @discardCard(action.card)
 
     castCard: (card, targets) ->
       battleCard = @getBattleCard(card)
@@ -194,17 +196,20 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
 
     buildReorderAnimation: (actions)->
       =>
-        console.log "BUILD REORDER"
-        console.log actions
+        animation = new Animation()
+        animation.addAnimationStep @playerHand.buildReorderAnimation()
+        animation.addAnimationStep @enemyHand.buildReorderAnimation()
+        animation.addAnimationStep @playerField.buildReorderAnimation()
+        animation.addAnimationStep @enemyField.buildReorderAnimation()
+        return animation
+        ###
         animation = new Animation()
         animSet = {}
         for action in actions
           switch action.type
             when 'discard-card'
-              console.log "DISCARD"
               @buildReorderForCard(animSet, @getBattleCard(action.card))
               @discardCard action.card
-              console.log animSet
             when 'play-card'
               @buildReorderForCard(animSet, @getBattleCard(action.card))
         index = 0
@@ -215,6 +220,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
             animation.addUnchainedAnimationStep anim
           index++
         return animation
+        ###
 
     buildReorderForCard: (animSet, battleCard) ->
       if @playerHand.hasCard(battleCard)

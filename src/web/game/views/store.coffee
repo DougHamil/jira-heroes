@@ -90,7 +90,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         cardSprite.costSprite.update(@canAfford(card.cost, JH.user.wallet), @library[cardId]?)
       else
         costSprite = @createCostSprite(cardSprite, card.cost, @canAfford(card.cost, JH.user.wallet), @library[cardId]?)
-        costSprite.position = {x:cardSprite.width/2, y:cardSprite.height/2 - costSprite.height}
+        costSprite.position = {x:0, y:-costSprite.height/2}
         cardSprite.costSprite = costSprite
         cardSprite.addChild costSprite
 

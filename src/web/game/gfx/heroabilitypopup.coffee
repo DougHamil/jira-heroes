@@ -25,6 +25,7 @@ define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, st
   OVERLAY_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_overlay.png'
   SHADOW_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'card_shadow.png'
   MISSING_TEXTURE = PIXI.Texture.fromImage IMAGE_PATH + 'missing.png'
+  ABILITY_IMAGE_PATH = '/media/images/heroes/'
 
   ###
   # Draws everything for a card, showing the image, damage, heatlh, status, etc.
@@ -36,7 +37,7 @@ define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, st
       return new HeroAbilityPopup heroClass, heroClass.ability
     constructor: (heroClass, heroAbility) ->
       super()
-      imageTexture = PIXI.Texture.fromImage IMAGE_PATH + heroAbility.media.image
+      imageTexture = PIXI.Texture.fromImage ABILITY_IMAGE_PATH + heroAbility.media.image
       @shadowSprite = new PIXI.Sprite SHADOW_TEXTURE
       @shadowSprite.width = CARD_SIZE.width
       @shadowSprite.height = CARD_SIZE.height
