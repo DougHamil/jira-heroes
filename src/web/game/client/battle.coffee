@@ -112,7 +112,6 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
             hero = @getHero(action.target)
             if hero?
               hero.health -= action.damage
-              console.log hero.health
         when 'discard-card'
           card = @getCard(action.card)
           if card?
@@ -221,7 +220,6 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
     isYourTurn: -> return @model.activePlayer is @userId
     hasValidMoves: ->
       for card in @getMyCards()
-        console.log card
         switch card.position
           when 'field'
             console.log card.getStatus()

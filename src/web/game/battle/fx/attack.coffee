@@ -62,12 +62,14 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
     _tremble: (sprite) ->
       animation = new Animation()
       animation.on 'start', =>
-        animation.trembleFxData = {sourcePosition: sprite.position}
+        console.log sprite.position
+        animation.trembleFxData = {sourcePosition: Util.clone(sprite.position)}
       jitterSteps = 5
       for i in [0...5]
         animation.addTweenStep ->
           return Util.spriteTween sprite, sprite.position, Util.pointJitter(sprite.position, 10), 50
       animation.addTweenStep =>
+        console.log animation.trembleFxData
         return Util.spriteTween sprite, sprite.position, animation.trembleFxData.sourcePosition, 50
       return animation
 

@@ -279,9 +279,14 @@ class PlayerHandler extends EventEmitter
                 moves.push new AIActions.HeroAttackAction @getHero(), target
 
             handler.getValidUseTargets (err, targets) =>
-              if not err? and targets?
-                for target in targets
-                  moves.push new AIActions.UseHeroAction @getHero(), target
+              if not err?
+                if targets?
+                  for target in targets
+                    moves.push new AIActions.UseHeroAction @getHero(), target
+                else if not handler._validateUse(null, handler.heroClass)?
+                  moves.push new AIActions.UseHeroAction @getHero(), null
+
+
               cb null, moves
 
   getPossibleUseCards: ->

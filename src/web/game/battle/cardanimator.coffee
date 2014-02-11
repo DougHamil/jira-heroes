@@ -171,8 +171,8 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       battleCard = @getBattleCard(card)
       if not battleCard?
         return null
-      battleCard.setCardInteractive(false)
-      battleCard.setTokenInteractive(false)
+      #battleCard.setCardInteractive(false)
+      #battleCard.setTokenInteractive(false)
       if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
       else if @enemyHand.hasCard(battleCard)
