@@ -4,6 +4,7 @@ require.config
     tween:
       exports: 'TWEEN'
   paths:
+    emitters: './battle/fx/emitters/factory'
     jquery: '../../lib/jquery'
     pixi: '../../lib/pixi'
     tween: '../../lib/tween'

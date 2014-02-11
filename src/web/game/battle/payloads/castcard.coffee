@@ -19,17 +19,16 @@ define ['battle/fx/factory', 'battle/animation', 'util', 'engine'], (FxFactory, 
         animation.addAnimationStep battleCard.flipCard()
         animation.addPauseStep 500
 
+      animation.addAnimationStep animator.getBattleCard(@card).animateCasted()
       cardClass = animator.getCardClass(@card)
 
       fx = @_buildFx(cardClass)
       animation.addAnimationStep fx.animate(animator)
 
-      animation.addAnimationStep animator.getBattleCard(@card).animateCasted()
-
       # Animated any actions that occur after the spell is cast
       for action in @actions
         if action.target?
-          animation.addUnchainedAnimationStep animator.getBattleObject(action.target).animateAction(action)
+          animation.addAnimationStep animator.getBattleObject(action.target).animateAction(action)
 
       animation.on 'complete', => animator.animateActions(@actions)
 

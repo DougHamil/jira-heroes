@@ -1,5 +1,7 @@
-define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (EventEmitter, Animation, GUI, engine, Util) ->
+define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (Emitters, EventEmitter, Animation, GUI, engine, Util) ->
   POPUP_PADDING = 20
+  HEAL_TEXTURE = PIXI.Texture.fromImage '/media/images/fx/cross.png'
+  CAST_ANIM_TIME = 500
   ###
   # A battle card contains the card's sprite, the token sprite and the backside card sprite for a single card
   # It also provides convenience methods for animating the card
@@ -83,9 +85,9 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       animation.addTweenStep =>
         sprite = @getCardSprite()
         sprite.pivot = {x:0, y:0}
-        tween = new TWEEN.Tween({rot:sprite.rotation}).to({rot:(Math.PI/180)*359}, 1000).onUpdate ->
+        tween = new TWEEN.Tween({rot:sprite.rotation}).to({rot:(Math.PI/180)*359}, CAST_ANIM_TIME).onUpdate ->
           sprite.rotation = @rot
-        tweenFade = Util.fadeSpriteTween(sprite, 0, 1000)
+        tweenFade = Util.fadeSpriteTween(sprite, 0, CAST_ANIM_TIME)
         return [tween, tweenFade]
       animation.on 'complete', =>
         @setTokenInteractive(false)
@@ -105,13 +107,24 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getTokenSprite().parent.removeChild(@getTokenSprite())
       return animation
 
-    animateHealed: ->
+    animateHealed: (amount)->
       animation = new Animation()
+      if amount? and amount > 0
+        animation.on 'start', =>
+          emitter = Emitters.SpriteRing {texture:HEAL_TEXTURE,tint:0x22B222,life:[0.5,1]}
+          emitter.p.x = @getTokenSprite().position.x
+          emitter.p.y = @getTokenSprite().position.y
+          emitter.emit 'once'
       animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
       return animation
 
     animateOverhealed: ->
       animation = new Animation()
+      animation.on 'start', =>
+        emitter = Emitters.SpriteRing {texture:HEAL_TEXTURE,tint:0x22B222,life:[0.5,1]}
+        emitter.p.x = @getTokenSprite().position.x
+        emitter.p.y = @getTokenSprite().position.y
+        emitter.emit 'once'
       animation.on 'complete', => @getTokenSprite().setHealth(@card.health)
       return animation
 
@@ -203,7 +216,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
     ###
     setTokenInteractive: (isInteractive) ->
       cardSprite = @getAvailableCardSprite()
-      cardSprite.visible = false
       tokenSprite = @getTokenSprite()
       if isInteractive
         tokenSprite.onHoverStart => @emit 'token-hover-start', @

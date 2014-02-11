@@ -3,9 +3,9 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
   ENEMY_DECK_ORIGIN = {x:engine.WIDTH + GUI.Card.Width/2, y:GUI.Card.Height}
   DISCARD_ORIGIN = {x:-200, y: 0}
   DEFAULT_TWEEN_TIME = 200
-  PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400}
+  PLAYER_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width/2 - 40, y: 400 + GUI.HeroToken.Height/2}
   PLAYER_HERO_ABILITY_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 400 + GUI.HeroToken.Height + 20}
-  ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240}
+  ENEMY_HERO_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width/2 - 40, y: 240 + GUI.HeroToken.Height/2}
   ENEMY_HERO_ABILITY_POSITION = {x:engine.WIDTH - GUI.HeroToken.Width - 40, y: 240 - GUI.HeroToken.Height - 20}
   PLAYER_FIELD_CONFIG =
     animationTime: 500
@@ -91,15 +91,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         when 'energy'
           if action.player is @battle.getPlayerId()
             @playerEnergyIcon.setEnergy(@battle.getEnergy())
-            tween = Util.scaleSpriteTween @playerEnergyIcon, 2, 200
-            animation = new Animation()
-            animation.addTweenStep tween
-            animation.addAnimationStep =>
-              tween = Util.scaleSpriteTween @playerEnergyIcon, 0.5, 200
-              anim = new Animation()
-              anim.addTweenStep tween
-              return anim
-            return animation
         when 'draw-card'
           animation = new Animation()
           if action.player is @userId
@@ -158,19 +149,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
             @setCard action.card._id, action.card
         when 'discard-card'
           @discardCard(action.card)
-
-    castCard: (card, targets) ->
-      battleCard = @getBattleCard(card)
-      battleCard.setCardInteractive(false)
-      battleCard.setTokenInteractive(false)
-      animation = new Animation()
-      if @enemyHand.hasCard(battleCard)
-        @enemyHand.removeCard(battleCard)
-        animation.addAnimationStep battleCard.flipCard(true)
-      else if @playerHand.hasCard(battleCard)
-        @playerHand.removeCard(battleCard)
-      animation.addAnimationStep battleCard.moveCardTo(DISCARD_ORIGIN, DEFAULT_TWEEN_TIME, false)
-      return animation
 
     discardCard: (card) ->
       battleCard = @getBattleCard(card)

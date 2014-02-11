@@ -1,11 +1,9 @@
 define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (BaseFx, Animation, GUI, engine, Util) ->
-  MOVE_TO_TARGET_TIME = 400
-  RETURN_POS_TIME = 300
   NO_TARGET_SCALE_FACTOR = 1.5
   NO_TARGET_ANIM_TIME = 500
   TWINE_FREQUENCY = 5
-  TWINE_AMPLITUDE = 20
-  CAST_TWEEN_TIME = 1500
+  TWINE_AMPLITUDE = 40
+  CAST_TWEEN_TIME = 1000
 
   ONE_TEXTURE = PIXI.Texture.fromImage '/media/images/fx/one.png'
   ZERO_TEXTURE = PIXI.Texture.fromImage '/media/images/fx/zero.png'

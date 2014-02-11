@@ -40,7 +40,6 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       if deckName?
         @createBtn.disable()
         JH.CreateNewDeck deckName, @selectedHero._id, =>
-          console.log "HERE"
           @manager.activateView 'Decks'
 
     activate: ->

@@ -1,4 +1,5 @@
-define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (EventEmitter, Animation, GUI, engine, Util) ->
+define ['emitters','eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (Emitters, EventEmitter, Animation, GUI, engine, Util) ->
+  HEAL_TEXTURE = PIXI.Texture.fromImage '/media/images/fx/cross.png'
   class BattleHero extends EventEmitter
     constructor: (@hero, @heroClass, @interactive, @uiLayer) ->
       super
@@ -6,7 +7,6 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
       @abilityToken = new GUI.HeroAbilityToken @hero, @heroClass.ability, @heroClass
       @damageIndicator = new GUI.DamageIndicator 0
       @damageIndicator.visible = false
-      @damageIndicator.position = {x:@token.width/2, y:@token.height/2}
       @isAbilityTargeting = false
       @isTargeting = false
       @token.addChild @damageIndicator
@@ -108,11 +108,30 @@ define ['eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (E
         @getAbilityTokenSprite().setUsed('ability-used' in @hero.getStatus())
       return animation
 
+    animateOverhealed: (amount)->
+      animation = new Animation()
+      health = if amount then @getTokenSprite().getHealth() + amount else @hero.health
+      if health > @hero.health
+        health = @hero.health
+      animation.on 'start', =>
+        emitter = Emitters.SpriteRing {texture:HEAL_TEXTURE,tint:0x22B222,life:[0.5,1]}
+        emitter.p.x = @getTokenSprite().position.x
+        emitter.p.y = @getTokenSprite().position.y
+        emitter.emit 'once'
+      animation.on 'complete', => @getTokenSprite().setHealth(health)
+      return animation
+
     animateHealed: (amount)->
       animation = new Animation()
       health = if amount then @getTokenSprite().getHealth() + amount else @hero.health
       if health > @hero.health
         health = @hero.health
+      animation.on 'start', =>
+        emitter = Emitters.SpriteRing {texture:HEAL_TEXTURE, life:[0.5,1], tint:0x22B222}
+        emitter.p.x = @getTokenSprite().position.x
+        emitter.p.y = @getTokenSprite().position.y
+        emitter.emit('once')
+
       animation.on 'complete', => @getTokenSprite().setHealth(health)
       return animation
 

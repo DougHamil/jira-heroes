@@ -13,31 +13,28 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     @Height: TOKEN_HEIGHT
     constructor: (hero, heroClass) ->
       super
-      console.log heroClass
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + heroClass.media.image
       @width = TOKEN_WIDTH
       @height = TOKEN_HEIGHT
       @frozenSprite = new PIXI.Text "FROZEN", STYLES.DAMAGE_TEXT
       @frozenSprite.anchor = {x:0.5, y:0.5}
       @frozenSprite.visible = false
-      @frozenSprite.position = {x:@width/2,y:@height/2}
       @usedSprite = new PIXI.Text "USED", STYLES.DAMAGE_TEXT
       @usedSprite.anchor = {x:0.5, y:0.5}
       @usedSprite.visible = false
-      @usedSprite.position = {x:@width/2,y:@height/2}
       @imageSprite = new PIXI.Sprite imageTexture
       @imageSprite.width = TOKEN_WIDTH
       @imageSprite.height = TOKEN_HEIGHT
+      @imageSprite.position = {x:-@imageSprite.width/2, y:-@imageSprite.height/2}
       @imageSprite.mask = @createImageMask()
       @frameSprite = new PIXI.Sprite FRAME_TEXTURE
       @frameSprite.width = TOKEN_WIDTH
       @frameSprite.height = TOKEN_HEIGHT
+      @frameSprite.position = {x:-@frameSprite.width/2, y:-@frameSprite.height/2}
       @damageIcon = new DamageIcon hero.getDamage(), heroClass.damage
       @healthIcon = new HealthIcon hero.health, heroClass.health
-      @damageIcon.anchor = {x:0, y:0}
-      @healthIcon.anchor = {x:0, y:0}
-      @damageIcon.position = {x:0, y:@height - @damageIcon.height}
-      @healthIcon.position = {x:@width - @healthIcon.width, y:@height - @healthIcon.height}
+      @damageIcon.position = {x:-@width/2, y:@height/2 - @damageIcon.height}
+      @healthIcon.position = {x:@width/2 - @healthIcon.width, y:@height/2 - @healthIcon.height}
 
       @.addChild @imageSprite
       @.addChild @imageSprite.mask
@@ -47,7 +44,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @healthIcon
       @.addChild @damageIcon
 
-      @hitArea = new PIXI.Rectangle 0, 0, @width, @height
+      @hitArea = new PIXI.Rectangle -@width/2, -@height/2, @width, @height
       @interactive = true
 
       @setHealth(hero.health)
@@ -74,12 +71,11 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       point = {x:point.x - @position.x, y:point.y - @position.y}
       return @visible and @hitArea.contains(point.x, point.y)
 
-    getCenterPosition: ->
-      return {x:@.position.x + @width/2, y:@.position.y + @height/2}
+    getCenterPosition: -> return {x:@position.x, y:@position.y}
 
     createImageMask: ->
       mask = new PIXI.Graphics()
       mask.beginFill()
-      mask.drawRect(0,0,TOKEN_WIDTH, TOKEN_HEIGHT)
+      mask.drawRect(-TOKEN_WIDTH/2,-TOKEN_HEIGHT/2,TOKEN_WIDTH, TOKEN_HEIGHT)
       mask.endFill()
       return mask
