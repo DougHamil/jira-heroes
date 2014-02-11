@@ -17,6 +17,8 @@ class PlayCardAction
       actions.push new PermStatusAddAction(@cardModel, 'sleeping')
     if 'taunt' in @cardClass.traits
       actions.push new PermStatusAddAction(@cardModel, 'taunt')
+    if @cardClass.rushAbility? and @cardClass.rushAbility.class? and @cardClass.rushAbility.requiresTarget
+      actions.push new PermStatusAddAction(@cardModel, 'can-rush')
     PAYLOAD =
       type: 'play-card'
       player: @cardModel.userId

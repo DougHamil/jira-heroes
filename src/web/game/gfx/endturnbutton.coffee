@@ -46,6 +46,9 @@ define ['gfx/styles', 'util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine)
 
       @.mouseup = => @_released() if @dragging
 
+    setNoMoreMoves:(noMoreMoves) ->
+      if noMoreMoves
+        @bg.tint = YOUR_TURN_NO_OPTIONS_TINT
     setIsYourTurn: (isYourTurn) ->
       @interactive = isYourTurn
       if isYourTurn

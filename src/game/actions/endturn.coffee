@@ -10,6 +10,8 @@ class EndTurnAction
         actions.push new PermStatusRemoveAction(card, 'sleeping')
       if 'used' in card.status
         actions.push new PermStatusRemoveAction(card, 'used')
+      if 'can-rush' in card.status
+        actions.push new PermStatusRemoveAction(card, 'can-rush')
     hero = battle.getHeroOfPlayer(@player)
     if 'ability-used' in hero.status
       actions.push new PermStatusRemoveAction(hero, 'ability-used')

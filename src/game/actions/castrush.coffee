@@ -1,3 +1,5 @@
+PermStatusRemoveAction = require './permstatusremove'
+
 ###
 # Used to indicate a card has used its rush ability
 ###
@@ -5,7 +7,7 @@ class CastRushAction
   constructor: (@cardModel, @cardClass, @targets) ->
 
   enact: (battle)->
-    actions = []
+    actions = [new PermStatusRemoveAction(@cardModel, 'can-rush')]
     PAYLOAD =
       type: 'cast-rush'
       player: @cardModel.userId

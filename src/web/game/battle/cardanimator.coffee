@@ -55,6 +55,8 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @endTurnTab.position = {x:engine.WIDTH/2, y:0}
       @endTurnTab.onClick => @battle.emitEndTurnEvent()
       @endTurnTab.setIsYourTurn(@battle.isYourTurn())
+      if @battle.isYourTurn()
+        @endTurnTab.setNoMoreMoves(!@battle.hasValidMoves())
       @yourTurnGraphic.onAnimationComplete => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
       @uiLayer.addChild @endTurnTab
       @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
@@ -139,6 +141,11 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         if payload.animate?
           animation.addAnimationStep payload.animate(@, @battle)
       animation.addAnimationStep @buildReorderAnimation(actions)
+      anim = new Animation()
+      anim.on 'start', =>
+        if @battle.isYourTurn() and not @battle.hasValidMoves()
+          @endTurnTab.setNoMoreMoves(true)
+      animation.addAnimationStep anim
       @enqueueAnimation animation
 
     preprocessAction:(action) ->

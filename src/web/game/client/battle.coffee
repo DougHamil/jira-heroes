@@ -134,12 +134,16 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
             added[action.card._id] = true
+          @cardsById[action.card._id].position = action.card.position
           @getPlayer(action.player).field.push action.card
         when 'cast-card'
           if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card
             BattleHelpers.addCardMethods(action.card)
             added[action.card._id] = true
+          @cardsById[action.card._id].position = action.card.position
+        when 'discard-card'
+          @cardsById[action.card] = 'discard'
       console.log action
       @emit 'action-'+action.type, action
 
@@ -206,9 +210,34 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       if heroId?
         return @getHeroById(heroId)
       return @getMyHero()
+    getMyCards: ->
+      cards = []
+      for id, card of @cardsById
+        if card.userId is @userId
+          cards.push card
+      return cards
     getMyHero: -> return @model.you.hero
     getEnemyHero: -> return @model.opponents[0].hero
     isYourTurn: -> return @model.activePlayer is @userId
+    hasValidMoves: ->
+      for card in @getMyCards()
+        console.log card
+        switch card.position
+          when 'field'
+            console.log card.getStatus()
+            if 'used' not in card.getStatus() and 'frozen' not in card.getStatus() and 'sleeping' not in card.getStatus()
+              return true
+            else if 'sleeping' in card.getStatus() and 'can-rush' in card.getStatus()
+              return true
+          when 'hand'
+            if card.getEnergy() <= @getEnergy()
+              return true
+      hero = @getMyHero()
+      if hero.getAbilityEnergy() <= @getEnergy() and 'ability-used' not in hero.getStatus()
+        return true
+      if hero.getDamage() > 0 and 'used' not in hero.getStatus()
+        return true
+      return false
 
     emitEndTurnEvent: -> @socket.emit 'end-turn'
     emitPlayCardEvent: (cardId, target, cb) -> @socket.emit 'play-card', cardId, target, cb
