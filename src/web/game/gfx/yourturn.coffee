@@ -41,12 +41,16 @@ define ['battle/animation', 'gfx/styles', 'util', 'engine', 'pixi', 'tween'], (A
     _bgHoldPos: -> {x:POS.x - @bg.width/2, y:POS.y - @bg.height/2}
     _bgEndPos: -> {x:-@bg.width, y:POS.y - @bg.height/2}
 
+    onAnimationComplete: (@completeCallback) ->
+
     animate: ->
       animation = new Animation()
       animation.on 'start', =>
-        console.log "STARTING"
         @bg.position = @_bgStartPos()
         @text.position = @_textStartPos()
+
+      animation.on 'complete', =>
+        @completeCallback?()
 
       # Move in
       animation.addTweenStep =>

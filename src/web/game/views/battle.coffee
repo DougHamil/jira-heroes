@@ -31,16 +31,11 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
       @innerStage = new PIXI.DisplayObjectContainer
       if phase is 'game'
         @statusText.visible = false
-        @endTurnButton = new GUI.EndTurnButton()
-        @endTurnButton.position = {x: engine.WIDTH - 20 - @endTurnButton.width, y: engine.HEIGHT/2 - @endTurnButton.height/2}
-        @endTurnButton.onClick => @battle.emitEndTurnEvent()
-
         @energySprite = new PIXI.Text @battle.getEnergy() + " energy",  GUI.STYLES.TEXT
         @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
         @cardAnimator = new CardAnimator(JH.heroes, JH.cards, JH.user._id, @battle)
         #@uiLayer.addChild @energySprite
         @gfxLayer.addChild @cardAnimator
-        @uiLayer.addChild @endTurnButton
 
         @battle.on 'action-win-battle', (action) =>
           if action.player is JH.user._id
@@ -49,7 +44,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
             @.removeChild @gfxLayer
             @.removeChild @backdropImage
             @uiLayer.addChild @winBattleText
-            @uiLayer.removeChild @endTurnButton
             @winBattleText.animate(true).play()
         @battle.on 'action-lose-battle', (action) =>
           if action.player is JH.user._id
@@ -57,7 +51,6 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
             @.removeChild @gfxLayer
             @.removeChild @backdropImage
             @uiLayer.addChild @loseBattleText
-            @uiLayer.removeChild @endTurnButton
             @loseBattleText.animate(false).play()
 
       @.addChild @innerStage

@@ -51,6 +51,12 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @.addChild @cardSpriteLayer
       @.addChild @uiLayer
       @.addChild engine.fxLayer # All particles will be drawn on this layer
+      @endTurnTab = new GUI.EndTurnButton(true)
+      @endTurnTab.position = {x:engine.WIDTH/2, y:0}
+      @endTurnTab.onClick => @battle.emitEndTurnEvent()
+      @endTurnTab.setIsYourTurn(@battle.isYourTurn())
+      @yourTurnGraphic.onAnimationComplete => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
+      @uiLayer.addChild @endTurnTab
       @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
       @playerEnergyIcon.anchor = {x:1,y:0}
       @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:0}
@@ -110,6 +116,10 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         when 'start-turn'
           if action.player is @battle.getPlayerId()
             return @yourTurnGraphic.animate()
+          else
+            anim = new Animation()
+            anim.on 'complete', => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
+            return anim
       if action.target?
         target = @getBattleObject(action.target)
         if target?
@@ -352,6 +362,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @enemyHand.update()
       @playerField.update()
       @playerHero.update()
+      @endTurnTab.update()
 
     onMouseUp: ->
       position = @stage.getMousePosition().clone()
@@ -360,6 +371,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @playerField.onMouseUp(position)
       @enemyField.onMouseUp(position)
       @playerHero.onMouseUp(position)
+      @endTurnTab.onMouseUp(position)
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 
