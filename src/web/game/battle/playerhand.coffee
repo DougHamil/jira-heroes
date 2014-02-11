@@ -1,11 +1,11 @@
-define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util', 'pixi'], (Animation, Row, EventEmitter, GUI, engine, Util) ->
+define ['battle/animation', 'battle/fan', 'eventemitter', 'gui', 'engine', 'util', 'pixi'], (Animation, Fan, EventEmitter, GUI, engine, Util) ->
   class PlayerHand extends EventEmitter
     constructor: (config, @uiLayer) ->
       super
       @hoverOffset = config.hoverOffset
       @animTime = config.animationTime
       @cards = {}
-      @cardRow = new Row config.origin, GUI.Card.Width, config.padding
+      @cardRow = new Fan config.origin, GUI.Card.Width/5, config.padding
       @requiresReorder = false
 
     removeCard: (battleCard) ->
@@ -21,13 +21,14 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
       if doAnimation
         animation = new Animation()
         animation.addAnimationStep battleCard.makeCardVisible(), 'card-visible'
-        animation.addAnimationStep battleCard.moveCardTo(@cardRow.getNextPosition(), @animTime, false), 'card-moved'
+        animation.addAnimationStep battleCard.moveCardTo(@cardRow.getNextPosition(), @animTime, false, @cardRow.getNextRotation()), 'card-moved'
         if enableInteraction
           animation.on 'complete', => @_addCardInteraction(battleCard)
       else
         battleCard.setCardVisible(true)
         battleCard.setTokenVisible(false)
         battleCard.setCardPosition(@cardRow.getNextPosition())
+        battleCard.setCardRotation(@cardRow.getNextRotation())
         @_addCardInteraction(battleCard) if enableInteraction
       @cardRow.add battleCard
       return animation
@@ -37,7 +38,7 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
     returnCardToHand: (battleCard, disableInteraction) ->
       if @cards[battleCard.getId()]?
         animation = new Animation()
-        animation.addAnimationStep battleCard.moveCardTo(@cardRow.getPositionOf(battleCard), @animTime, false), 'card-moved'
+        animation.addAnimationStep battleCard.moveCardTo(@cardRow.getPositionOf(battleCard), @animTime, false, @cardRow.getRotationOf(battleCard)), 'card-moved'
         if disableInteraction
           @_removeCardInteraction(battleCard)
           animation.on 'complete-step-card-moved', => @_addCardInteraction(battleCard)
@@ -51,18 +52,26 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
     _addCardInteraction: (battleCard) ->
       battleCard.setCardInteractive(true)
       battleCard.on 'card-hover-start', =>
+        cardSprite = battleCard.getCardSprite()
+        cardSprite.parent.addChild cardSprite
         hoveredPosition = Util.clone(@cardRow.getPositionOf(battleCard))
         hoveredPosition.x += @hoverOffset.x
         hoveredPosition.y += @hoverOffset.y
+        hoveredRotation = 0
         if battleCard.hoverAnimation?
           battleCard.hoverAnimation.stop()
-        battleCard.hoverAnimation = battleCard.moveCardTo(hoveredPosition, @animTime, false)()
+        battleCard.hoverAnimation = battleCard.moveCardTo(hoveredPosition, @animTime, false, hoveredRotation)()
         battleCard.hoverAnimation.play()
       battleCard.on 'card-hover-end', =>
+        for card in @cardRow.elements
+          sprite = card.getCardSprite()
+          sprite.parent.addChild sprite
+
         handPosition = Util.clone(@cardRow.getPositionOf(battleCard))
+        handRotation = @cardRow.getRotationOf(battleCard)
         if battleCard.hoverAnimation?
           battleCard.hoverAnimation.stop()
-        battleCard.hoverAnimation = battleCard.moveCardTo(handPosition, @animTime, false)()
+        battleCard.hoverAnimation = battleCard.moveCardTo(handPosition, @animTime, false, handRotation)()
         battleCard.hoverAnimation.play()
       # Minion cards are draggable
       if battleCard.isMinionCard() or (battleCard.isSpellCard() and not battleCard.requiresTarget())
@@ -113,12 +122,13 @@ define ['battle/animation', 'battle/row', 'eventemitter', 'gui', 'engine', 'util
         newPositions = @cardRow.getElementPositions()
         newPositionsByCardId = {}
         for pos in newPositions
-          newPositionsByCardId[pos.element.getId()] = pos.position
+          newPositionsByCardId[pos.element.getId()] = pos
         for cardId, battleCard of @cards
           cardSprite = battleCard.getAvailableCardSprite()
           currentPosition = cardSprite.position
-          newPosition = newPositionsByCardId[cardId]
+          newPosition = newPositionsByCardId[cardId].position
+          newRotation = newPositionsByCardId[cardId].rotation
           if not Util.pointsEqual(currentPosition, newPosition)
-            innerAnim.addAnimationStep battleCard.moveCardTo(newPosition, @animTime, false), 'card-reorder'
+            innerAnim.addAnimationStep battleCard.moveCardTo(newPosition, @animTime, false, newRotation), 'card-reorder'
         return innerAnim
       return animation

@@ -233,66 +233,109 @@ define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util',
     ###
     # Generate the animation for moving a card to a position
     ###
-    moveCardTo: (position, animTime, disableInteraction) ->
+    moveCardTo: (position, animTime, disableInteraction, rotation) ->
+      rotation = if rotation? then rotation else 0
       return =>
         animation = new Animation()
         cardSprite = @getAvailableCardSprite()
         buildTween = ->
-          tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
+          tween = new TWEEN.Tween({x:cardSprite.position.x, y:cardSprite.position.y, rot:cardSprite.rotation})
+          tween.to({x:position.x, y:position.y, rot:rotation}, animTime)
           tween.easing(TWEEN.Easing.Cubic.Out)
+          tween.onUpdate ->
+            cardSprite.position.x = @x
+            cardSprite.position.y = @y
+            cardSprite.rotation = @rot
           return tween
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
-    moveCardAndTokenTo: (position, animTime, disableInteraction) ->
+    moveCardAndTokenTo: (position, animTime, disableInteraction, rotation) ->
+      rotation = if rotation? then rotation else 0
       return =>
         animation = new Animation()
         buildTween = =>
           cardSprite = @getAvailableCardSprite()
           tokenSprite = @getTokenSprite()
-          tweenCard = Util.spriteTween cardSprite, cardSprite.position, position, animTime
-          tweenCard.easing(TWEEN.Easing.Cubic.Out)
+          cardTween = new TWEEN.Tween({x:cardSprite.position.x, y:cardSprite.position.y, rot:cardSprite.rotation})
+          cardTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+          cardTween.easing(TWEEN.Easing.Cubic.Out)
+          cardTween.onUpdate ->
+            cardSprite.position.x = @x
+            cardSprite.position.y = @y
+            cardSprite.rotation = @rot
           if tokenSprite?
-            tweenToken = Util.spriteTween tokenSprite, cardSprite.position, position, animTime
-            tweenToken.easing(TWEEN.Easing.Cubic.Out)
-          return [tweenCard, tweenToken]
+            tokenTween = new TWEEN.Tween({x:tokenSprite.position.x, y:tokenSprite.position.y, rot:tokenSprite.rotation})
+            tokenTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+            tokenTween.easing(TWEEN.Easing.Cubic.Out)
+            tokenTween.onUpdate ->
+              tokenSprite.position.x = @x
+              tokenSprite.position.y = @y
+              tokenSprite.rotation = @rot
+          return [cardTween, tokenTween]
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
-    moveFlippedCardTo: (position, animTime, disableInteraction) ->
+    moveFlippedCardTo: (position, animTime, disableInteraction, rotation) ->
+      rotation = if rotation? then rotation else 0
       return =>
         animation = new Animation()
         cardSprite = @getFlippedCardSprite()
         buildTween = ->
-          tween = Util.spriteTween cardSprite, cardSprite.position, position, animTime
-          tween.easing(TWEEN.Easing.Cubic.Out)
-          return tween
+          cardTween = new TWEEN.Tween({x:cardSprite.position.x, y:cardSprite.position.y, rot:cardSprite.rotation})
+          cardTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+          cardTween.easing(TWEEN.Easing.Cubic.Out)
+          cardTween.onUpdate ->
+            cardSprite.position.x = @x
+            cardSprite.position.y = @y
+            cardSprite.rotation = @rot
+          return cardTween
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
-    moveFlippedCardAndTokenTo: (position, animTime, disableInteraction) ->
+    moveFlippedCardAndTokenTo: (position, animTime, disableInteraction, rotation) ->
+      rotation = if rotation? then rotation else 0
       return =>
         animation = new Animation()
         buildTween = =>
           cardSprite = @getFlippedCardSprite()
           tokenSprite = @getTokenSprite()
-          tweenCard = Util.spriteTween cardSprite, cardSprite.position, position, animTime
-          tweenCard.easing(TWEEN.Easing.Cubic.Out)
+          cardTween = new TWEEN.Tween({x:cardSprite.position.x, y:cardSprite.position.y, rot:cardSprite.rotation})
+          cardTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+          cardTween.easing(TWEEN.Easing.Cubic.Out)
+          cardTween.onUpdate ->
+            cardSprite.position.x = @x
+            cardSprite.position.y = @y
+            cardSprite.rotation = @rot
+          tweens = [cardTween]
           if tokenSprite?
-            tweenToken = Util.spriteTween tokenSprite, cardSprite.position, position, animTime
-            tweenToken.easing(TWEEN.Easing.Cubic.Out)
-          return [tweenCard, tweenToken]
+            tokenTween = new TWEEN.Tween({x:tokenSprite.position.x, y:tokenSprite.position.y, rot:tokenSprite.rotation})
+            tokenTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+            tokenTween.easing(TWEEN.Easing.Cubic.Out)
+            tokenTween.onUpdate ->
+              tokenSprite.position.x = @x
+              tokenSprite.position.y = @y
+              tokenSprite.rotation = @rot
+            tweens.push tokenTween
+          return tweens
+
         animation.addTweenStep buildTween, 'card-move'
         return animation
 
-    moveTokenTo: (position, animTime, disableInteraction) ->
+    moveTokenTo: (position, animTime, disableInteraction, rotation) ->
+      rotation = if rotation? then rotation else 0
       return =>
         animation = new Animation()
-
         animation.addTweenStep =>
-          tween = Util.spriteTween @tokenSprite, @tokenSprite.position, position, animTime
-          tween.easing(TWEEN.Easing.Cubic.Out)
-          return tween
+          tokenSprite = @tokenSprite
+          tokenTween = new TWEEN.Tween({x:tokenSprite.position.x, y:tokenSprite.position.y, rot:tokenSprite.rotation})
+          tokenTween.to({x:position.x, y:position.y, rot:rotation}, animTime)
+          tokenTween.easing(TWEEN.Easing.Cubic.Out)
+          tokenTween.onUpdate ->
+            tokenSprite.position.x = @x
+            tokenSprite.position.y = @y
+            tokenSprite.rotation = @rot
+          return tokenTween
 
         if disableInteraction
           animation.on 'start', =>
@@ -304,6 +347,7 @@ define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util',
     updatePopupPosition: ->
       cardSprite = @getCardSprite()
       cardSprite.position = {x:@tokenSprite.position.x + @tokenSprite.width/2 + @cardSprite.width/2 + POPUP_PADDING, y:@tokenSprite.position.y}
+      cardSprite.rotation = 0
       # if popup is off screen, move it to the left of the token
       if (cardSprite.position.x + cardSprite.width) > engine.WIDTH
         cardSprite.position = {x:@tokenSprite.position.x - cardSprite.width - POPUP_PADDING, y:@tokenSprite.position.y}
@@ -330,7 +374,11 @@ define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util',
     setCardPosition: (position) ->
       cardSprite = @getAvailableCardSprite()
       cardSprite.position = Util.clone(position)
+    setCardRotation: (rotation) ->
+      cardSprite = @getAvailableCardSprite()
+      cardSprite.rotation = rotation
     setTokenPosition: (position) -> @tokenSprite.position = Util.clone(position)
+    setTokenRotation: (rotation) -> @tokenSprite.rotation = rotation
     setFlippedCardVisible: (vis) -> @flippedCardSprite.visible = vis
     setCardVisible: (vis) ->
       cardSprite = @getAvailableCardSprite()
