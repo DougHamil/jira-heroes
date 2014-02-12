@@ -1,5 +1,6 @@
 {EventEmitter} = require 'events'
 AIActions = require './ai/actions'
+ConcedeAction = require './actions/concede'
 EndTurnAction = require './actions/endturn'
 CardCache = require '../../lib/models/cardcache'
 CardHandler = require './cardhandler'
@@ -29,6 +30,7 @@ class PlayerHandler extends EventEmitter
     @socket.on Events.PLAY_CARD, @onPlayCard()
     @socket.on Events.END_TURN, @onEndTurn()
     @socket.on Events.USE_CARD, @onUseCard()
+    @socket.on Events.CONCEDE, @onConcede()
     @socket.on Events.TEST, @onTest()
 
   validatePlayCard: (card, target) ->
@@ -69,6 +71,14 @@ class PlayerHandler extends EventEmitter
 
     # Valid move
     return null
+
+  onConcede: ->
+    (cb) =>
+      actions = [new ConcedeAction(@player)]
+      payloads = @battle.processActions(actions)
+      @emit Events.CONCEDE, payloads
+      if cb? and typeof cb is 'function'
+        cb()
 
   onHeroAttack: ->
     (target, cb) =>

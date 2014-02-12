@@ -57,8 +57,12 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @endTurnTab.setIsYourTurn(@battle.isYourTurn())
       if @battle.isYourTurn()
         @endTurnTab.setNoMoreMoves(!@battle.hasValidMoves())
-      @yourTurnGraphic.onAnimationComplete => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
       @uiLayer.addChild @endTurnTab
+      @concedeTab = new GUI.ConcedeButton()
+      @concedeTab.position = {x:engine.WIDTH - @concedeTab.width, y:0}
+      @concedeTab.onClick => @battle.emitConcedeEvent()
+      @uiLayer.addChild @concedeTab
+      @yourTurnGraphic.onAnimationComplete => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
       @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
       @playerEnergyIcon.anchor = {x:1,y:0}
       @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:0}
@@ -370,6 +374,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @playerField.update()
       @playerHero.update()
       @endTurnTab.update()
+      @concedeTab.update()
 
     onMouseUp: ->
       position = @stage.getMousePosition().clone()
@@ -379,6 +384,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @enemyField.onMouseUp(position)
       @playerHero.onMouseUp(position)
       @endTurnTab.onMouseUp(position)
+      @concedeTab.onMouseUp(position)
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
 

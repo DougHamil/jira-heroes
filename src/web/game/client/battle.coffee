@@ -222,7 +222,6 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       for card in @getMyCards()
         switch card.position
           when 'field'
-            console.log card.getStatus()
             if 'used' not in card.getStatus() and 'frozen' not in card.getStatus() and 'sleeping' not in card.getStatus()
               return true
             else if 'sleeping' in card.getStatus() and 'can-rush' in card.getStatus()
@@ -242,3 +241,4 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
     emitUseCardEvent: (cardId, target, cb) -> @socket.emit 'use-card', cardId, target, cb
     emitHeroAttackEvent: (target, cb) -> @socket.emit 'hero-attack', target, cb
     emitUseHeroEvent: (target, cb) -> @socket.emit 'use-hero', target, cb
+    emitConcedeEvent: (cb) -> @socket.emit 'concede', cb

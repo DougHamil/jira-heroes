@@ -8,5 +8,6 @@ EVENTS =
   TEST: 'test'
   USE_HERO: 'use-hero'
   HERO_ATTACK: 'hero-attack'
+  CONCEDE:'concede'
 
 module.exports = EVENTS

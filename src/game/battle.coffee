@@ -61,6 +61,7 @@ class Battle extends EventEmitter
     handler.on Events.USE_CARD, @onUseCard(userId)                 # Player used a card, targeting something
     handler.on Events.USE_HERO, @onUseHero(userId)                 # Player used a hero ability, targeting something
     handler.on Events.HERO_ATTACK, @onHeroAttack(userId)           # Player attacked with his hero
+    handler.on Events.CONCEDE, @onConcede(userId)                  # Player concedes
 
   ###
   # EVENTS
@@ -76,6 +77,10 @@ class Battle extends EventEmitter
     @players[user._id.toString()].connect socket
     @sockets[user._id] = socket
     @emitAllBut user._id.toString(), 'player-connected', user._id
+
+  onConcede: (userId) ->
+    (actions) =>
+      @emitActionsAll 'action', actions
 
   # Called when a player attacked with a hero
   onHeroAttack: (userId) ->

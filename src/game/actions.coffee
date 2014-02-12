@@ -2,6 +2,7 @@ PlayCardAction = require './actions/playcard'
 PlayHeroAction = require './actions/playhero'
 CastCardAction = require './actions/castcard'
 CastRushAction = require './actions/castrush'
+ConcedeAction = require './actions/concede'
 CastHeroAbilityAction = require './actions/castheroability'
 DiscardCardAction = require './actions/discardcard'
 PermAddStatusAction = require './actions/permstatusadd'
@@ -24,6 +25,8 @@ class Actions
     return new DiscardCardAction(cardModel)
   @Damage: (source, target, damage) ->
     return new DamageAction source, target, damage
+  @Concede: (source) ->
+    return new ConcedeAction source
 
   @_heroOrCard: (target) ->
     out = null
