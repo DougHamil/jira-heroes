@@ -50,7 +50,7 @@ else
           if modifier.data.removeStatus?
             idx = status.indexOf(modifier.data.removeStatus)
             if idx isnt -1
-              status.splice(i,1)
+              status.splice(idx,1)
         # Remove all instances of status that are removed via modifiers
         for modifier in @modifiers
           if modifier.data.removeStatusAll?
