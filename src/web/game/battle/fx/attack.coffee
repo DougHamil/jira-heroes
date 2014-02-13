@@ -20,7 +20,9 @@ define ['battle/fx/base', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], 
         _data.tSprite = animator.getSprite(target)
         _data.sPosition = Util.clone(sSprite.position)
       moveSourceTo = ->
-        Util.spriteTween(_data.sSprite, _data.sSprite.position, Util.clone(_data.tSprite.position), MOVE_TO_TARGET_TIME)
+        tween = Util.spriteTween(_data.sSprite, _data.sSprite.position, Util.clone(_data.tSprite.position), MOVE_TO_TARGET_TIME)
+        tween.easing(TWEEN.Easing.Cubic.In)
+        return tween
       animation.addTweenStep moveSourceTo, 'hit-target', target
       animation.addUnchainedAnimationStep =>
         return @_tremble(_data.tSprite)
