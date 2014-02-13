@@ -110,4 +110,5 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
             usersById = {}
             for userObj in users
               usersById[userObj._id] = userObj
+            JH.users = usersById
             activate battles, user, usersById

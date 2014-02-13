@@ -1,4 +1,4 @@
-define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engine, EventEmitter) ->
+define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (JH, Util, engine, EventEmitter) ->
   ###
   # Handles changes to the battle's state
   ###
@@ -217,6 +217,12 @@ define ['util', 'engine', 'eventemitter', 'battlehelpers', 'pixi'], (Util, engin
       return cards
     getMyHero: -> return @model.you.hero
     getEnemyHero: -> return @model.opponents[0].hero
+    getEnemyName: ->
+      userId = @model.opponents[0].userId
+      if not JH.users[userId]?
+        return "BOT"
+      else
+        return JH.users[userId].name
     isYourTurn: -> return @model.activePlayer is @userId
     hasValidMoves: ->
       for card in @getMyCards()

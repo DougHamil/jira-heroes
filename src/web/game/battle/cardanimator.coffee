@@ -51,6 +51,9 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @.addChild @cardSpriteLayer
       @.addChild @uiLayer
       @.addChild engine.fxLayer # All particles will be drawn on this layer
+      @enemyName = new PIXI.Text @battle.getEnemyName(), GUI.STYLES.TEXT
+      @enemyName.position = {x:engine.WIDTH - @enemyName.width, y:0}
+      @uiLayer.addChild @enemyName
       @endTurnTab = new GUI.EndTurnButton(true)
       @endTurnTab.position = {x:engine.WIDTH/2, y:0}
       @endTurnTab.onClick => @battle.emitEndTurnEvent()
@@ -59,13 +62,13 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         @endTurnTab.setNoMoreMoves(!@battle.hasValidMoves())
       @uiLayer.addChild @endTurnTab
       @concedeTab = new GUI.ConcedeButton()
-      @concedeTab.position = {x:engine.WIDTH - @concedeTab.width, y:0}
+      @concedeTab.position = {x:@concedeTab.width/2, y:0}
       @concedeTab.onClick => @battle.emitConcedeEvent()
       @uiLayer.addChild @concedeTab
       @yourTurnGraphic.onAnimationComplete => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
       @playerEnergyIcon = new GUI.EnergyIcon @battle.getEnergy()
       @playerEnergyIcon.anchor = {x:1,y:0}
-      @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:0}
+      @playerEnergyIcon.position = {x:engine.WIDTH - @playerEnergyIcon.width, y:engine.HEIGHT - @playerEnergyIcon.height}
       @uiLayer.addChild @playerEnergyIcon
       @playerHand = new PlayerHand PLAYER_HAND_CONFIG, @uiLayer
       @enemyHand = new PlayerHand ENEMY_HAND_CONFIG, @uiLayer
