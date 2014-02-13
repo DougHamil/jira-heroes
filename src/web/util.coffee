@@ -58,10 +58,29 @@ define ['jquery', 'pixi', 'tween'], ($) ->
       if onComplete?
         tween.onComplete(onComplete)
       return tween
+
     drawArrow: (src, tgt) ->
+      theta = Math.PI / 6
+      arrowLength = 30
       graphics = new PIXI.Graphics()
-      graphics.lineStyle 5, 0xFF0000
+      graphics.lineStyle 4, 0xFF0000
       graphics.moveTo src.x, src.y
+      graphics.lineTo tgt.x, tgt.y
+
+      a = tgt.x - src.x
+      o = tgt.y - src.y
+      lineAngle = Math.atan2(tgt.y - src.y, tgt.x - src.x)
+      alpha = lineAngle + Math.PI + theta
+      beta = lineAngle  + Math.PI - theta
+      aPt =
+        x: tgt.x + Math.cos(alpha) * arrowLength
+        y: tgt.y + Math.sin(alpha) * arrowLength
+      bPt =
+        x: tgt.x + Math.cos(beta) * arrowLength
+        y: tgt.y + Math.sin(beta) * arrowLength
+
+      graphics.lineTo aPt.x, aPt.y
+      graphics.lineTo bPt.x, bPt.y
       graphics.lineTo tgt.x, tgt.y
       return graphics
   ###
