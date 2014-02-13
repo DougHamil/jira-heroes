@@ -102,6 +102,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       document.body.onmouseup = ->
 
     animateAction: (action) ->
+      console.log "ANIMATING #{action.type}"
       switch action.type
         when 'energy'
           if action.player is @battle.getPlayerId()
@@ -129,6 +130,10 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
             anim = new Animation()
             anim.on 'complete', => @endTurnTab.setIsYourTurn(@battle.isYourTurn())
             return anim
+        when 'discard-card'
+          anim = new Animation()
+          anim.addUnchainedAnimationStep => @discardCard(action.card)
+          return anim
       if action.target?
         target = @getBattleObject(action.target)
         if target?
@@ -171,8 +176,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
             @setCard action.card._id, action.card
-        when 'discard-card'
-          @discardCard(action.card)
 
     discardCard: (card) ->
       battleCard = @getBattleCard(card)
@@ -182,12 +185,16 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       #battleCard.setTokenInteractive(false)
       if @playerHand.hasCard(battleCard)
         @playerHand.removeCard(battleCard)
-      else if @enemyHand.hasCard(battleCard)
+        return @playerHand.buildReorderAnimation()
+      if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
-      else if @playerField.hasCard(battleCard)
+        return @enemyHand.buildReorderAnimation()
+      if @playerField.hasCard(battleCard)
         @playerField.removeCard(battleCard)
-      else if @enemyField.hasCard(battleCard)
+        return @playerField.buildReorderAnimation()
+      if @enemyField.hasCard(battleCard)
         @enemyField.removeCard(battleCard)
+        return @enemyField.buildReorderAnimation()
 
     animateActions:(actions) ->
       animation = new Animation()
@@ -233,7 +240,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
         animSet.enemyHand = @enemyHand.buildReorderAnimation()
       else if @enemyField.hasCard(battleCard)
         animSet.enemyField = @enemyField.buildReorderAnimation()
-      console.log animSet
 
     enqueueAnimation: (animation) ->
       animation.on 'complete', => @playNextAnimation()
@@ -249,10 +255,8 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
     putCardOnEnemyField: (card, animate) ->
       animate = true if not animate?
       battleCard = @getBattleCard(card)
-      reorder = false
       if @enemyHand.hasCard(battleCard)
         @enemyHand.removeCard(battleCard)
-        reorder = true
       animation = new Animation()
       animation.addAnimationStep @enemyField.addCard(battleCard, animate, false)
       return animation

@@ -1,4 +1,8 @@
 define ['gfx/duraicon', 'gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], (DuraIcon, DamageIcon, HealthIcon, STYLES, Util) ->
+  FROZEN_TINT = 0xFF0000
+  DEFAULT_TINT = 0x77DDEE
+  USED_TINT = 0xBBBBBB
+
   TOKEN_WIDTH = 128
   TOKEN_HEIGHT = 128
   IMAGE_PATH = '/media/images/heroes/'
@@ -53,8 +57,8 @@ define ['gfx/duraicon', 'gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util'
       @setHealth(hero.health)
       @setDamage(hero.getDamage())
       @setWeaponDurability(hero.getWeaponDurability())
-      @setFrozen ('frozen' in hero.getStatus())
       @setUsed ('used' in hero.getStatus())
+      @setFrozen ('frozen' in hero.getStatus())
 
     getHealth: -> return @healthIcon.health
     setHealth: (health) ->
@@ -70,10 +74,13 @@ define ['gfx/duraicon', 'gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util'
       @duraIcon.visible = dura isnt 0
 
     setFrozen: (isFrozen) ->
-      @frozenSprite.visible = isFrozen
+      @frameSprite.tint = if isFrozen then FROZEN_TINT else DEFAULT_TINT
 
     setUsed: (isUsed) ->
-      @usedSprite.visible = isUsed
+      if isUsed
+        @frameSprite.tint = USED_TINT
+      else
+        @frameSprite.tint = DEFAULT_TINT
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
