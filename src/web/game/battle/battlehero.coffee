@@ -65,6 +65,7 @@ define ['emitters','eventemitter', 'battle/animation', 'gui', 'engine', 'util', 
       animation = new Animation()
       animation.on 'complete', =>
         @getTokenSprite().setDamage(@hero.getDamage())
+        @getTokenSprite().setWeaponDurability(@hero.getWeaponDurability())
       return animation
 
     animateWeaponDestroy: () ->
@@ -72,6 +73,7 @@ define ['emitters','eventemitter', 'battle/animation', 'gui', 'engine', 'util', 
       animation = new Animation()
       animation.on 'complete', =>
         @getTokenSprite().setDamage(@hero.getDamage())
+        @getTokenSprite().setWeaponDurability(@hero.getWeaponDurability())
       return animation
 
     animateModifierAdd: (status) ->

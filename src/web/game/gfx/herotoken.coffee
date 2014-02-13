@@ -1,4 +1,4 @@
-define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], (DamageIcon, HealthIcon, STYLES, Util) ->
+define ['gfx/duraicon', 'gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween'], (DuraIcon, DamageIcon, HealthIcon, STYLES, Util) ->
   TOKEN_WIDTH = 128
   TOKEN_HEIGHT = 128
   IMAGE_PATH = '/media/images/heroes/'
@@ -33,7 +33,9 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @frameSprite.position = {x:-@frameSprite.width/2, y:-@frameSprite.height/2}
       @damageIcon = new DamageIcon hero.getDamage(), heroClass.damage
       @healthIcon = new HealthIcon hero.health, heroClass.health
+      @duraIcon = new DuraIcon hero.getWeaponDurability(),  0
       @damageIcon.position = {x:-@width/2, y:@height/2 - @damageIcon.height}
+      @duraIcon.position = {x:-@width/2, y:@height/2 - @damageIcon.height - @duraIcon.height}
       @healthIcon.position = {x:@width/2 - @healthIcon.width, y:@height/2 - @healthIcon.height}
 
       @.addChild @imageSprite
@@ -43,12 +45,14 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @.addChild @usedSprite
       @.addChild @healthIcon
       @.addChild @damageIcon
+      @.addChild @duraIcon
 
       @hitArea = new PIXI.Rectangle -@width/2, -@height/2, @width, @height
       @interactive = true
 
       @setHealth(hero.health)
       @setDamage(hero.getDamage())
+      @setWeaponDurability(hero.getWeaponDurability())
       @setFrozen ('frozen' in hero.getStatus())
       @setUsed ('used' in hero.getStatus())
 
@@ -60,6 +64,10 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     setDamage: (damage) ->
       @damageIcon.setDamage(damage)
       @damageIcon.visible = damage isnt 0
+
+    setWeaponDurability:(dura) ->
+      @duraIcon.setDurability(dura)
+      @duraIcon.visible = dura isnt 0
 
     setFrozen: (isFrozen) ->
       @frozenSprite.visible = isFrozen

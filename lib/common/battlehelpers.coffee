@@ -85,6 +85,10 @@ else
       return @energy + @sumModifierProperty('energy')
     model.getAbilityEnergy = ->
       return @abilityEnergy + @sumModifierProperty('ability-energy')
+    model.getWeaponDurability = ->
+      if not @weapon? or not @weapon.durability?
+        return 0
+      return @weapon.durability
     model.getStatus = ->
       status = []
       status = status.concat(@status)
