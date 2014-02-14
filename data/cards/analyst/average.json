@@ -1,0 +1,23 @@
+{
+	"hidden":false,
+	"name":"average",
+	"displayName":"Average",
+	"cost":{
+		"bugsReported":2
+	},
+	"energy":3,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"analyst/average",
+		"text": "Average all enemy minions' health",
+		"requiresTarget":false,
+		"data":{
+			"overheal":false
+		}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "analyst/average.png"
+	}
+}
