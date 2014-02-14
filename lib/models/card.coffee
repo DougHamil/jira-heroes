@@ -20,6 +20,7 @@ _schema = new mongoose.Schema
     storyPoints:Number
     bugsClosed:Number
     bugsReported:Number
+  hidden:{type:Boolean, default:false}
   energy: {type:Number}
   displayName:{type:String}
   health:{type:Number}

@@ -124,6 +124,14 @@ define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi']
             BattleHelpers.addCardMethods(action.card)
             added[action.card._id] = true
           @getPlayer(action.player).hand.push action.card
+        when 'spawn-card'
+          @cardsById[action.card._id] = action.card
+          BattleHelpers.addCardMethods(action.card)
+          added[action.card._id] = true
+          if action.card.position is 'hand'
+            @getPlayer(action.player).hand.push action.card
+          else if action.card.position is 'field'
+            @getPlayer(action.player).field.push action.card
         when 'max-energy'
           @getPlayer(action.player).maxEnergy += action.amount
         when 'energy'

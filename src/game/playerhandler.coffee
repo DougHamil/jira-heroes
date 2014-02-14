@@ -191,6 +191,9 @@ class PlayerHandler extends EventEmitter
   getDeckCards: ->
     return @player.deck.cards.filter (c) -> c.position is 'deck'
 
+  getCards: ->
+    return @player.deck.cards
+
   getTauntCardsOnField: ->
     return @getFieldCards().filter (c) -> 'taunt' in c.status
 

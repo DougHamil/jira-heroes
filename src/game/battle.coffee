@@ -3,7 +3,9 @@ async = require 'async'
 {EventEmitter} = require 'events'
 Abilities = require './abilities'
 BattleHelpers = require '../../lib/common/battlehelpers'
+BattleModel = require '../../lib/models/battle'
 DrawCardAction = require './actions/drawcard'
+SpawnCardAction = require './actions/spawncard'
 StartTurnAction = require './actions/startturn'
 ActionProcessor = require './actionprocessor'
 CardCache = require '../../lib/models/cardcache'
@@ -20,6 +22,8 @@ ENERGY_INCREASE_PER_TURN = 1
 class Battle extends EventEmitter
   constructor: (@model) ->
     super
+    if @model.toObject?
+      @model = @model.toObject()
     BattleHelpers.addMethodsToBattle(@model)
     @players = {}
     @sockets = {}
@@ -252,6 +256,14 @@ class Battle extends EventEmitter
         out.push payload
     return out
 
+  createSpawnCardAction: (userId, cardName) ->
+    playerHandler = @getPlayerHandler(userId)
+    cardClass = CardCache.getCardByNameSync(cardName)
+    newCard = BattleModel.createNewCard(userId, cardClass)
+    playerHandler.player.deck.cards.push newCard
+    @cards[newCard._id] = new CardHandler(@, playerHandler, newCard)
+    return new SpawnCardAction(newCard, cardClass)
+
   assignNextActivePlayer: ->
     if @model.state.activePlayer?
       @model.state.activePlayer = @getNextPlayer(@model.state.activePlayer).userId
@@ -442,5 +454,7 @@ class Battle extends EventEmitter
   # Used to generate unique ability Ids
   getNextAbilityId: ->
     return @model.abilityId++
+  getNextCardId: ->
+    return @model.cardId++
 
 module.exports = Battle

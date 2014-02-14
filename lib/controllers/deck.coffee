@@ -20,6 +20,9 @@ validateCardsForDeck = (deck, cardIds, cb) ->
             else
               cardCounts[cardId]++
           for card in cards
+            if card.hidden? and card.hidden
+              cb "Card #{card.name} is a hidden card and cannot be used in a deck"
+              return
             if card.deckLimit? and cardCounts[card._id]? and cardCounts[card._id] > card.deckLimit
               cb "Limit of #{card.deckLimit} instances of #{card.name} per deck."
               return

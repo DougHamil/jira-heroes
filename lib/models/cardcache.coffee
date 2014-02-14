@@ -14,6 +14,11 @@ class CardCache
         for card in cards
           @cards[card._id] = card
         cb null
+  @getCardByNameSync:(name) ->
+    for id, card of @cards
+      if card.name is name
+        return card
+    return null
   @getCard: (cardId, cb) ->
     if @cards[cardId]?
       cb null, @cards[cardId]

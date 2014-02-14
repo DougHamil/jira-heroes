@@ -4,6 +4,24 @@ CardCache = require './cardcache'
 HeroCache = require './herocache'
 BattleHelpers = require '../common/battlehelpers'
 
+_newCardInstanceSync = (userId, card) ->
+  out =
+    _id:mongoose.Types.ObjectId()
+    name:card.name
+    isCard: true
+    isHero: false
+    turnPlayed: null
+    userId: userId
+    position: 'deck'
+    class:card._id.toString()
+    energy:card.energy
+    health:card.health
+    maxHealth:card.health
+    damage:card.damage
+    used: false
+    status: []
+    modifiers: []
+
 # Transform a card model into a card instance
 newCardInstance = (userId) ->
   (cardId, cb) ->
@@ -11,21 +29,7 @@ newCardInstance = (userId) ->
       if err?
         cb err
       else
-        out =
-          isCard: true
-          isHero: false
-          turnPlayed: null
-          userId: userId
-          position: 'deck'
-          class:cardId
-          energy:card.energy
-          health:card.health
-          maxHealth:card.health
-          damage:card.damage
-          used: false
-          status: []
-          modifiers: []
-        cb null, out
+        cb null, _newCardInstanceSync(userId, card)
 
 # Transform a hero model into a hero instance
 newHeroInstance = (userId, hero, cb) ->
@@ -135,6 +139,7 @@ _schema = new mongoose.Schema
   players: [_playerSchema]
   passiveAbilities: [mongoose.Schema.Types.Mixed]
   abilityId: {type:Number, default:0}
+  cardId: {type:Number, default:0}
   turnNumber: {type:Number, default:0}
   winner: String
   state:
@@ -208,3 +213,7 @@ module.exports =
   get:_get
   getAll:_getAll
   query:_query
+  createNewCard: (userId, cardClass)->
+    card = _newCardInstanceSync(userId, cardClass)
+    BattleHelpers.addCardMethods(card)
+    return card

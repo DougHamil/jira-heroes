@@ -33,7 +33,7 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
       activate = (cards) =>
         @updateLibrary JH.user.library
         JH.cards = cards
-        allCardIds = (id for id, card of JH.cards)
+        allCardIds = (id for id, card of cards when not card.hidden? or not card.hidden)
         allCardIds = allCardIds.filter (c) -> c not in JH.user.library
         @cardPicker = new GUI.CardPicker allCardIds, JH.cards
         @cardPicker.position = {x:20, y:100}

@@ -102,7 +102,6 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       document.body.onmouseup = ->
 
     animateAction: (action) ->
-      console.log "ANIMATING #{action.type}"
       switch action.type
         when 'energy'
           if action.player is @battle.getPlayerId()
@@ -120,6 +119,27 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
               bCard = @getBattleCard(action.card)
               bCard.setCardPosition(ENEMY_DECK_ORIGIN)
               @putCardInEnemyHand(action.card, true)
+          return animation
+        when 'spawn-card'
+          animation = new Animation()
+          if action.player is @userId
+            animation.addAnimationStep =>
+              bCard = @getBattleCard(action.card)
+              bCard.setCardPosition(PLAYER_DECK_ORIGIN)
+              bCard.setTokenPosition(PLAYER_DECK_ORIGIN)
+              if action.card.position is 'hand'
+                return @putCardInHand(action.card, true)
+              else
+                return @putCardOnField(action.card, true)
+          else
+            animation.addAnimationStep =>
+              bCard = @getBattleCard(action.card)
+              bCard.setCardPosition(ENEMY_DECK_ORIGIN)
+              bCard.setTokenPosition(ENEMY_DECK_ORIGIN)
+              if action.card.position is 'hand'
+                return @putCardInEnemyHand(action.card, true)
+              else
+                return @putCardOnEnemyField(action.card, true)
           return animation
         when 'destroy'
           return @getBattleObject(action.target).animateDestroyed()
@@ -176,6 +196,8 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
             @setCard action.card._id, action.card
+        when 'spawn-card'
+          @addCard(action.card)
 
     discardCard: (card) ->
       battleCard = @getBattleCard(card)

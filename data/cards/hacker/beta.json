@@ -1,0 +1,15 @@
+{
+	"hidden":true,
+	"name":"beta",
+	"displayName":"Beta",
+	"cost":{
+		"bugsClosed":0
+	},
+	"energy":1,
+	"health":1,
+	"damage":1,
+	"passiveAbilities":[],
+	"media": {
+		"image": "hacker/beta.png"
+	}
+}

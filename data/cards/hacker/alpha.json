@@ -1,0 +1,22 @@
+{
+	"name":"alpha",
+	"displayName":"Alpha",
+	"cost":{
+		"bugsClosed":2
+	},
+	"energy":2,
+	"health":2,
+	"damage":2,
+	"traits":[],
+	"passiveAbilities":[{
+			"class":"spawn_on_death",
+			"text":"Spawn 2 1/1 minions on death",
+			"data":{
+				"card":"beta",
+				"count":2
+			}
+	}],
+	"media": {
+		"image": "hacker/alpha.png"
+	}
+}
