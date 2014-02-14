@@ -1,0 +1,21 @@
+{
+	"hidden":false,
+	"name":"prototype",
+	"displayName":"Prototype",
+	"cost":{
+		"bugsClosed":2
+	},
+	"energy":3,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"hacker/prototype",
+		"text":"Copy enemy minion with half health",
+		"requiresTarget":true,
+		"data":{}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "hacker/prototype.png"
+	}
+}
