@@ -141,6 +141,19 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
               else
                 return @putCardOnEnemyField(action.card, true)
           return animation
+        when 'reveal-card'
+          animation = new Animation()
+          bCard = @getBattleCard(action.card)
+          if action.player is @battle.getPlayerId()
+            animation.addAnimationStep bCard.moveCardAndTokenTo({x:engine.WIDTH/2,y:engine.HEIGHT/2 + 200}, 500, false)
+            animation.addPauseStep 500
+            animation.addAnimationStep @playerHand.returnCardToHand(bCard)
+          else
+            animation.addAnimationStep bCard.moveFlippedCardAndTokenTo({x:engine.WIDTH/2, y:engine.HEIGHT/2 - 200}, 500, false)
+            animation.addAnimationStep bCard.flipCard()
+            animation.addPauseStep 500
+            animation.addAnimationStep @enemyHand.returnCardToHand(bCard)
+          return animation
         when 'destroy'
           return @getBattleObject(action.target).animateDestroyed()
         when 'start-turn'
@@ -193,6 +206,10 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
             # On play card, we'll finally know what the card data is for the enemy
             @setCard action.card._id, action.card
         when 'cast-card'
+          # Enemy casting a card will finally reveal the card data
+          if action.player isnt @userId
+            @setCard action.card._id, action.card
+        when 'reveal-card'
           # Enemy casting a card will finally reveal the card data
           if action.player isnt @userId
             @setCard action.card._id, action.card
@@ -328,6 +345,13 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
 
     onCardTarget: (battleCard, position) ->
       if battleCard.requiresTarget()
+        for targetCard in @getBattleCardsInHands()
+          if targetCard.containsPoint(position)
+            @battle.emitPlayCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
+              if err?
+                console.log err
+                @errorDisplay.showError(err)
+            return
         for targetCard in @getBattleCardsOnField()
           if targetCard.containsPoint(position)
             @battle.emitPlayCardEvent battleCard.getId(), {card:targetCard.getId()}, (err) =>
@@ -416,6 +440,7 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @concedeTab.onMouseUp(position)
 
     getBattleCardsOnField: -> return @playerField.getBattleCards().concat(@enemyField.getBattleCards())
+    getBattleCardsInHands: -> return @playerHand.getBattleCards().concat(@enemyHand.getBattleCards())
 
     getBattleObject: (id) ->
       if id._id?

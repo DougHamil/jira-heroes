@@ -400,8 +400,8 @@ define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util',
 
     # Getters make me feel better
     requiresTarget: -> return @hasCard and @cardClass.playAbility? and (not @cardClass.playAbility.requiresTarget? or @cardClass.playAbility.requiresTarget)
-    isCardVisible: -> return @cardSprite.visible
-    isTokenVisible: -> return @tokenSprite.visible
+    isCardVisible: -> return (@cardSprite? and @cardSprite.visible) or (@flippedCardSprite? and @flippedCardSprite.visible)
+    isTokenVisible: -> return @tokenSprite? and @tokenSprite.visible
     isMinionCard: -> return @hasCard and not @cardClass.playAbility?
     isSpellCard: -> return @hasCard and @cardClass.playAbility?
     getFlippedCardSprite: -> return @flippedCardSprite

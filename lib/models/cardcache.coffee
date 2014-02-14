@@ -19,6 +19,8 @@ class CardCache
       if card.name is name
         return card
     return null
+  @getCardSync: (cardId) ->
+    return @cards[cardId]
   @getCard: (cardId, cb) ->
     if @cards[cardId]?
       cb null, @cards[cardId]

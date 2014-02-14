@@ -163,6 +163,7 @@ class PlayerHandler extends EventEmitter
 
   ###
   # Override properties for automated tests
+  # playerId = card.userId
   ###
   onTest: ->
     (prop, value, cb) =>

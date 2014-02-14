@@ -336,6 +336,11 @@ class Battle extends EventEmitter
     playerId = playerId._id if playerId._id?
     return @getHero(playerId)
 
+  getHeroOfCard: (card) ->
+    playerId = card.userId
+    playerId = playerId._id if playerId._id?
+    return @getHero(playerId)
+
   # Given an ID, get the hero or card that correspond to it
   getCardOrHero: (id) ->
     if not id?
@@ -387,6 +392,11 @@ class Battle extends EventEmitter
       if card?
         return card
     return null
+
+  getCardClass: (cardId) ->
+    if cardId.class?
+      cardId = cardId.class
+    return CardCache.getCardSync(cardId)
 
   getFieldCards: (player) ->
     if player?

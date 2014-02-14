@@ -15,8 +15,11 @@ class SpawnOnDeathAbility
   filter: (battle, actions) ->
     for action in actions
       if action instanceof DestroyAction and action.target is @sourceModel
-        subActions = [battle.createSpawnCardAction(@sourceModel.userId, @cardName)]
-        actions.push new CastPassiveAction(@sourceModel, null, subActions, @model.fx)
+        subActions = []
+        for i in [0...@numberToSpawn]
+          subActions.push battle.createSpawnCardAction(@sourceModel.userId, @cardName)
+        if subActions.length > 0
+          actions.push new CastPassiveAction(@sourceModel, null, subActions, @model.fx)
         return true
     return false
 

@@ -18,3 +18,8 @@ define ['gfx/styles', 'util', 'pixi', 'tween'], (STYLES, Util) ->
       @faceSprite.height = @height
       @faceSprite.position = {x:-@width/2, y:-@height/2}
       @.addChild @faceSprite
+      @.hitArea = new PIXI.Rectangle(-@width/2, -@height/2, @width, @height)
+
+    contains: (point) ->
+      point = {x:point.x - @position.x, y:point.y - @position.y}
+      return @visible and @hitArea.contains(point.x, point.y)

@@ -143,6 +143,11 @@ define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi']
             added[action.card._id] = true
           @cardsById[action.card._id].position = action.card.position
           @getPlayer(action.player).field.push action.card
+        when 'reveal-card'
+          if action.player isnt @userId and action.card._id?
+            @cardsById[action.card._id] = action.card
+            BattleHelpers.addCardMethods(action.card)
+            added[action.card._id] = true
         when 'cast-card'
           if action.player isnt @userId and action.card._id?
             @cardsById[action.card._id] = action.card

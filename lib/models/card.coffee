@@ -44,6 +44,9 @@ _schema = new mongoose.Schema
 _schema.methods.isSpellCard = ->
   return @playAbility? and @playAbility.class?
 
+_schema.methods.isSpell = ->
+  return @playAbility? and @playAbility.class?
+
 _model = mongoose.model 'Card', _schema
 
 _validateCardData = (data) ->
