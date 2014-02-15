@@ -6,7 +6,7 @@ class RemoveModifierAction
 
   enact: (battle) ->
     preLength = @target.modifiers.length
-    @target.modifiers = @target.modifiers.filter (m) => m._id is @id
+    @target.modifiers = @target.modifiers.filter (m) => m._id isnt @id
     postLength = @target.modifiers.length
 
     # Only emit a payload if the modifier was actually removed

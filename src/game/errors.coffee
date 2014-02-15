@@ -32,6 +32,7 @@ errors =
   FROZEN: 'You cannot use a frozen card or hero'
   FULL_FIELD: 'Field is full, you cannot play any more minions on the field'
   NO_DAMAGE: 'Hero or card cannot attack because it does not have any damage'
+  ABILITY_PASSIVE: 'Ability cannot be casted, it is passive.'
 
 errorObjs = {}
 for id, message of errors

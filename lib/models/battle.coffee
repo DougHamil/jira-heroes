@@ -19,6 +19,7 @@ _newCardInstanceSync = (userId, card) ->
     maxHealth:card.health
     damage:card.damage
     used: false
+    properties: {}
     status: []
     modifiers: []
 

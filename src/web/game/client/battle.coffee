@@ -45,6 +45,12 @@ define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi']
         when 'weapon-equip'
           target = @getHero action.hero
           target.weapon = action.weapon
+        when 'card-prop'
+          target = @getCard action.target
+          if target?
+            if not target.properties?
+              target.properties = {}
+            target.properties[action.property] = action.value
         when 'add-modifier'
           target = @getCard action.target
           if target? and added[target._id]?

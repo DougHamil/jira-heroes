@@ -45,8 +45,10 @@ class Battle extends EventEmitter
 
     # Restore passive abilities
     for abilityModel in @model.passiveAbilities
-      source = @cards[abilityModel.sourceId]
-      source = source.model if source?
+      source = @getHero(abilityModel.sourceId)
+      if not source?
+        source = @cards[abilityModel.sourceId]
+        source = source.model if source?
       # Don't do the onregister callback again, because we're just restoring
       @registerPassiveAbility Abilities.RestoreFromModel(source, abilityModel), false
 
@@ -260,6 +262,7 @@ class Battle extends EventEmitter
     playerHandler = @getPlayerHandler(userId)
     cardClass = CardCache.getCardByNameSync(cardName)
     newCard = BattleModel.createNewCard(userId, cardClass)
+    newCard.turnPlayed = @getTurnNumber()
     playerHandler.player.deck.cards.push newCard
     @cards[newCard._id] = new CardHandler(@, playerHandler, newCard)
     return new SpawnCardAction(newCard, cardClass)

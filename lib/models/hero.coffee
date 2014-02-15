@@ -12,6 +12,7 @@ _schema = new Schema
   damage: Number
   energy: Number # Cost to play ability
   ability: {}
+  passiveAbilities: [{}]
   media:
     icon: {type:String}
     image: {type:String}

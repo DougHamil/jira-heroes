@@ -55,6 +55,10 @@ class HeroHandler
         for abilityModel in heroClass.passiveAbilities
           ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, abilityModel
           @passiveAbilities.push ability
+      # Hero's main ability may be passive too
+      if heroClass.ability?.isPassive? and heroClass.ability.isPassive
+        ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, heroClass.ability
+        @passiveAbilities.push ability
       actions = [Actions.PlayHero(@model, heroClass)]
       cb null, actions
 
@@ -68,6 +72,8 @@ class HeroHandler
   _validateUse: (target, heroClass) ->
     if heroClass.ability.requiresTarget and not target?
       return Errors.INVALID_TARGET
+    if heroClass.ability.isPassive? and heroClass.ability.isPassive
+      return Errors.ABILITY_PASSIVE
     if 'ability-used' in @model.getStatus()
       return Errors.HERO_ABILITY_USED
     if 'frozen' in @model.getStatus()
@@ -103,7 +109,8 @@ class HeroHandler
   # Determine which targets are valid if this card were to be used
   getValidUseTargets: (cb)->
     HeroCache.get @model.class, (err, heroClass) =>
-      if heroClass.ability?
+      # Only can use non-passive abilities
+      if heroClass.ability? and (not heroClass.ability.isPassive? or not heroClass.ability.isPasssive)
         ability = Abilities.NewFromModel @battle.getNextAbilityId(), @model, heroClass.ability
         targets = ability.getValidTargets(@battle)
         if targets?

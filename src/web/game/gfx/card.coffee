@@ -134,13 +134,15 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       return parent
 
     _buildAbilityText: (abilityText, abilityData) ->
-      chunks = abilityText.split ' '
+      chunks = abilityText.split /<(.+)>/
+      console.log chunks
       string = ""
       regex = /^(.*)<(.+)>$/
       for chunk in chunks
         # Extract a property from the metadata of the ability
         if regex.test(chunk)
           match = regex.exec(chunk)
+          console.log match
           chunk.replace regex, ''
           propString = match[2]
           props = propString.split '.'

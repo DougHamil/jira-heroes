@@ -70,6 +70,9 @@ define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, st
       @.addChild @description
       @.addChild @energyIcon
 
+      @isPassive = heroAbility.isPassive? and heroAbility.isPassive
+      if @isPassive
+        @energyIcon.visible = false
       @width = CARD_SIZE.width
       @height = CARD_SIZE.height
       @.hitArea = new PIXI.Rectangle(0, 0, @width, @height)
@@ -86,24 +89,18 @@ define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, st
       return parent
 
     _buildAbilityText: (abilityText, abilityData) ->
-      chunks = abilityText.split ' '
-      string = ""
-      regex = /^(.*)<(.+)>$/
-      for chunk in chunks
-        # Extract a property from the metadata of the ability
-        if regex.test(chunk)
-          match = regex.exec(chunk)
-          chunk.replace regex, ''
-          propString = match[2]
-          props = propString.split '.'
-          datum = abilityData
-          for prop in props
-            datum = datum[prop]
-          chunk = datum
-          if not chunk?
-            chunk = "[UNKNOWN: #{propString}]"
-          chunk = match[1] + chunk
-        string += (chunk + ' ')
+      string = abilityText.replace /<(.+?)>/g, (match) ->
+        match = match.replace /[<>]/g, ''
+        console.log match
+        props = match.split '.'
+        datum = abilityData
+        console.log props
+        for prop in props
+          datum = datum[prop]
+        if not datum?
+          return "[UNKNOWN: #{match}"
+        else
+          return ""+datum
       return new PIXI.Text string, styles.CARD_DESCRIPTION
 
     getCenterPosition: ->

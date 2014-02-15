@@ -33,6 +33,7 @@ define ['gfx/heroabilitypopup','gfx/energyicon','gfx/styles', 'util', 'pixi', 't
 
       @popup.position = {x: -20 - @popup.width, y:0}
       @popup.visible = false
+      @isPassive = heroAbility.isPassive? and heroAbility.isPassive
 
       @.addChild @imageSprite.mask
       @.addChild @imageSprite
@@ -43,9 +44,11 @@ define ['gfx/heroabilitypopup','gfx/energyicon','gfx/styles', 'util', 'pixi', 't
       @.interactive = true
 
       @setUsed ('ability-used' in hero.getStatus())
-
       @.mouseover = => @popup.visible = true
       @.mouseout = => @popup.visible = false
+      if @isPassive
+        @energyIcon.visible = false
+        @setUsed(true)
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
