@@ -1,0 +1,21 @@
+{
+	"hidden":false,
+	"name":"straighttoproduction",
+	"displayName":"Straight to Production",
+	"cost":{
+		"bugsClosed":2
+	},
+	"energy":3,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"hacker/sacrifice_and_damage",
+		"text":"Sacrifice minion and deal its damage to all minions",
+		"requiresTarget":true,
+		"data":{}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "hacker/straighttoproduction.png"
+	}
+}
