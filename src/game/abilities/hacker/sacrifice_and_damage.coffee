@@ -15,7 +15,7 @@ class SacrificeAndDamageAbility
   getValidTargets: (battle) -> return battle.getPlayerHandler(@source.userId).getFieldCards()
 
   cast: (battle, target) ->
-    if not target? or not target.isCard or not target.userId is @source.userId
+    if not target? or not target.isCard or target.userId isnt @source.userId
       throw Errors.INVALID_TARGET
 
     targetDamage = target.getDamage()
@@ -25,6 +25,6 @@ class SacrificeAndDamageAbility
       if minion isnt target
         targets.push minion
         subActions.push new DamageAction(target, minion, targetDamage)
-    return [new CastPassiveAction(@source, targets, subActions, @model.fx)]
+    return subActions
 
 module.exports = SacrificeAndDamageAbility
