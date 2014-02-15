@@ -1,6 +1,8 @@
 define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util', 'pixi'], (Emitters, EventEmitter, Animation, GUI, engine, Util) ->
   POPUP_PADDING = 20
   HEAL_TEXTURE = PIXI.Texture.fromImage '/media/images/fx/cross.png'
+  EXPLODE_TEXTURE_1 = PIXI.Texture.fromImage '/media/images/fx/one.png'
+  EXPLODE_TEXTURE_0 = PIXI.Texture.fromImage '/media/images/fx/zero.png'
   CAST_ANIM_TIME = 500
   ###
   # A battle card contains the card's sprite, the token sprite and the backside card sprite for a single card
@@ -99,6 +101,15 @@ define ['emitters', 'eventemitter', 'battle/animation', 'gui', 'engine', 'util',
     animateDestroyed: ->
       animation = new Animation()
       sprite = @getTokenSprite()
+      animation.on 'start', =>
+        emitter = Emitters.SpriteRing {texture:EXPLODE_TEXTURE_1, tint:0x77DDEE, life:[0.5, 1]}
+        emitter.p.x = @getTokenSprite().position.x
+        emitter.p.y = @getTokenSprite().position.y
+        emitter.emit 'once'
+        emitter = Emitters.SpriteRing {texture:EXPLODE_TEXTURE_0, vel0: 2.0, vel1:3.0,tint:0x77DDEE, life:[0.5, 1]}
+        emitter.p.x = @getTokenSprite().position.x
+        emitter.p.y = @getTokenSprite().position.y
+        emitter.emit 'once'
       animation.addTweenStep Util.fadeSpriteTween(sprite, 0, 500)
       animation.on 'complete', =>
         @setTokenInteractive(false)

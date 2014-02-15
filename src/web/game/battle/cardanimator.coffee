@@ -475,9 +475,10 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
 
     setCard:(cardId, card) ->
       battleCard = @cards[cardId]
-      battleCard.setCard(@cardClasses[card.class], card)
-      @cardSpriteLayer.addChild battleCard.getCardSprite()
-      @tokenSpriteLayer.addChild battleCard.getTokenSprite()
+      if not battleCard.hasCard
+        battleCard.setCard(@cardClasses[card.class], card)
+        @cardSpriteLayer.addChild battleCard.getCardSprite()
+        @tokenSpriteLayer.addChild battleCard.getTokenSprite()
 
     setPlayerHero: (heroModel) ->
       @playerHero = new BattleHero(heroModel, @heroClasses[heroModel.class], true, @uiLayer)

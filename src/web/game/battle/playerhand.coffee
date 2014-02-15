@@ -94,7 +94,7 @@ define ['battle/animation', 'battle/fan', 'eventemitter', 'gui', 'engine', 'util
         @targettingGraphics = Util.drawArrow(@targetSourceCard.getCardSprite().getCenterPosition(), @uiLayer.stage.getMousePosition())
         @uiLayer.addChild @targettingGraphics
 
-    getBattleCards: -> (card for id, card of @cards)
+    getBattleCards: -> @cardRow.getElements()
 
     _endCardTarget: (position) ->
       @emit 'card-target', @targetSourceCard, position

@@ -15,6 +15,8 @@ define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, e
     # Expanding ring of sprites with tint
     @SpriteRing: (config) ->
       emitter = @BasicEmitter()
+      velocityStart = config.vel0 || 0.5
+      velocityEnd = config.vel1 || 1.0
       config.rate = if config.rate? then config.rate else 100
       emitter.rate = new Proton.Rate(config.rate, new Proton.Span(0.0001, 2))
       emitter.addInitialize new Proton.ImageTarget(config.texture)
@@ -22,6 +24,6 @@ define ['battle/animation', 'gui', 'engine', 'util', 'pixi'], (Animation, GUI, e
       emitter.addBehaviour new Proton.Color(Util.hexColorToString(config.tint))
 
       emitter.addBehaviour new Proton.Alpha(2, 0.0)
-      emitter.addInitialize new Proton.Velocity(new Proton.Span(0.5, 1), new Proton.Span(0, 360, true), 'polar')
+      emitter.addInitialize new Proton.Velocity(new Proton.Span(velocityStart, velocityEnd), new Proton.Span(0, 360, true), 'polar')
       return emitter
 

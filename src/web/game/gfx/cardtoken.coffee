@@ -18,7 +18,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
   class CardToken extends PIXI.DisplayObjectContainer
     @Width: TOKEN_WIDTH
     @Height: TOKEN_HEIGHT
-    constructor: (card, cardClass) ->
+    constructor: (@card, cardClass) ->
       super
       imageTexture = PIXI.Texture.fromImage IMAGE_PATH + cardClass.media.image
       @width = TOKEN_WIDTH
@@ -75,6 +75,8 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
       @setFrozen ('frozen' in card.getStatus())
       @setSleeping ('sleeping' in card.getStatus())
       @setUsed ('used' in card.getStatus())
+      @.click = =>
+        console.log @card
 
     contains: (point) ->
       point = {x:point.x - @position.x, y:point.y - @position.y}
@@ -123,7 +125,7 @@ define ['gfx/damageicon', 'gfx/healthicon', 'gfx/styles', 'util', 'pixi', 'tween
     removeAllInteractions: ->
       @.mouseover = null
       @.mouseout = null
-      @.click = null
+      #@.click = null
       @.mousedown = null
       @.mouseup = null
 

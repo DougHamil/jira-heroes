@@ -91,10 +91,8 @@ define ['gfx/energyicon','gfx/styles', 'util', 'pixi', 'tween'], (EnergyIcon, st
     _buildAbilityText: (abilityText, abilityData) ->
       string = abilityText.replace /<(.+?)>/g, (match) ->
         match = match.replace /[<>]/g, ''
-        console.log match
         props = match.split '.'
         datum = abilityData
-        console.log props
         for prop in props
           datum = datum[prop]
         if not datum?

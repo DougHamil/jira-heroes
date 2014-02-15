@@ -29,6 +29,7 @@ define ['gfx/styles','util', 'engine', 'pixi', 'tween'], (STYLES, Util, engine) 
     remove: (el) ->
       @elements = @elements.filter (e) -> e isnt el
 
+    getElements: -> return @elements
     getElementPositions: ->
       positions = []
       for i in [0...@elements.length]

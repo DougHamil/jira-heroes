@@ -134,26 +134,16 @@ define ['gfx/damageicon', 'gfx/healthicon','gfx/energyicon','gfx/styles', 'util'
       return parent
 
     _buildAbilityText: (abilityText, abilityData) ->
-      chunks = abilityText.split /<(.+)>/
-      console.log chunks
-      string = ""
-      regex = /^(.*)<(.+)>$/
-      for chunk in chunks
-        # Extract a property from the metadata of the ability
-        if regex.test(chunk)
-          match = regex.exec(chunk)
-          console.log match
-          chunk.replace regex, ''
-          propString = match[2]
-          props = propString.split '.'
-          datum = abilityData
-          for prop in props
-            datum = datum[prop]
-          chunk = datum
-          if not chunk?
-            chunk = "[UNKNOWN: #{propString}]"
-          chunk = match[1] + chunk
-        string += (chunk + ' ')
+      string = abilityText.replace /<(.+?)>/g, (match) ->
+        match = match.replace /[<>]/g, ''
+        props = match.split '.'
+        datum = abilityData
+        for prop in props
+          datum = datum[prop]
+        if not datum?
+          return "[UNKNOWN: #{match}"
+        else
+          return ""+datum
       return new PIXI.Text string, styles.CARD_DESCRIPTION
 
     getCenterPosition: -> return {x:@position.x, y:@position.y}

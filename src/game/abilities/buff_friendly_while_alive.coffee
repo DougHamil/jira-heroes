@@ -32,7 +32,7 @@ class BuffFriendlyWhileAlive
     # Buff any played cards
     if @buffAdded
       for payload in payloads
-        if (payload.type is 'play-card' or playload.type is 'spawn-card') and payload.player is player.userId and payload.card isnt @source
+        if (payload.type is 'play-card' or payload.type is 'spawn-card') and payload.player is player.userId and payload.card isnt @source
           subActions = []
           subActions.push new AddModifierAction(@model.modifierId, payload.card, @data)
           actions.push new CastPassiveAction(@source, payload.card, subActions, @model.fx)
