@@ -1,7 +1,7 @@
 define ['util', 'engine', 'client/battle', 'eventemitter'], (Util, engine, Battle, EventEmitter) ->
   POLL_DELAY = 3000 # Poll for battle status every 3 seconds
   class BattleManager extends EventEmitter
-    constructor: (@user, @battleId) ->
+    constructor: (@user, @battleId, @cardClasses, @heroClasses) ->
       super
       @battleReady = false
       @socket = io.connect()
@@ -25,7 +25,7 @@ define ['util', 'engine', 'client/battle', 'eventemitter'], (Util, engine, Battl
     join: ->
       @socket.emit 'join', @battleId, (err, battleModel) =>
         if not err?
-          @battle = new Battle(@user._id, battleModel, @socket)
+          @battle = new Battle(@user._id, battleModel, @socket, @cardClasses, @heroClasses)
           @emit 'joined', @battle
     onConnected: -> @emit 'connected'
     onDisconnected: -> @emit 'disconnected'

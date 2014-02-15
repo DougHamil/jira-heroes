@@ -84,7 +84,7 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
 
     activate: (@battle) ->
       @myStage.addChild @
-      @battleManager = new BattleManager JH.user, @battle._id
+      @battleManager = new BattleManager JH.user, @battle._id, JH.cards, JH.heroes
       @battleManager.on 'connected', =>
       @battleManager.on 'battle-ready', =>
         @setStatusText 'Battle is ready!'

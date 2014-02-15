@@ -1,0 +1,21 @@
+{
+	"hidden":false,
+	"name":"decouple",
+	"displayName":"Decouple",
+	"cost":{
+		"storyPoints":3
+	},
+	"energy":4,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"engineer/duplicate_minion",
+		"text":"Duplicate a friendly minion and give both half health",
+		"requiresTarget":true,
+		"data":{}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "engineer/decouple.png"
+	}
+}

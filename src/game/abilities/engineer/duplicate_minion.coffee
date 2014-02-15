@@ -1,24 +1,20 @@
 CastPassiveAction = require '../../actions/castpassive'
+DamageAction = require '../../actions/damage'
 Errors = require '../../errors'
 
 ###
-# Duplicate an enemy field card, and give it to you with half health
+# Duplicate one of your minions and give both half health
 ###
-class PrototypeAbility
+class DuplicateMinionAbility
   constructor: (@model) ->
     @source = @model.source
     @data = @model.data
 
   getValidTargets: (battle) ->
-    targets = []
-    for otherPlayer in battle.getOtherPlayers(@source.userId)
-      otherPlayerHandler = battle.getPlayerHandler(otherPlayer)
-      for handCard in otherPlayerHandler.getFieldCards()
-        targets.push handCard
-    return targets
+    return battle.getPlayerHandler(@source.userId).getFieldCards()
 
   cast: (battle, target) ->
-    if not target? or not target.isCard
+    if not target? or not target.isCard or target.userId isnt @source.userId
       throw Errors.INVALID_TARGET
     targetCardClass = battle.getCardClass(target)
     spawnAction = battle.createSpawnCardAction(@source.userId, targetCardClass.name)
@@ -27,6 +23,9 @@ class PrototypeAbility
     if spawnedCard.health < 1
       spawnedCard.health = 1
     spawnedCard.health = Math.floor(spawnedCard.health)
-    return [spawnAction]
+    subActions = [spawnAction]
+    if target.health > spawnedCard.health
+      subActions.push new DamageAction(@source, target, target.health - spawnedCard.health)
+    return subActions
 
-module.exports = PrototypeAbility
+module.exports = DuplicateMinionAbility

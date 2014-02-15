@@ -3,7 +3,7 @@ define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi']
   # Handles changes to the battle's state
   ###
   class Battle extends EventEmitter
-    constructor:(@userId, @model, @socket) ->
+    constructor:(@userId, @model, @socket, @cardClasses, @heroClasses) ->
       super
       @cardsById = {}
       for card in @model.you.hand
@@ -255,7 +255,8 @@ define ['jiraheroes', 'util', 'engine', 'eventemitter', 'battlehelpers', 'pixi']
             if card.getEnergy() <= @getEnergy()
               return true
       hero = @getMyHero()
-      if hero.getAbilityEnergy() <= @getEnergy() and 'ability-used' not in hero.getStatus()
+      heroClass = @heroClasses[hero.class]
+      if hero.getAbilityEnergy() <= @getEnergy() and 'ability-used' not in hero.getStatus() and (not heroClass.ability.isPassive? or not heroClass.ability.isPassive)
         return true
       if hero.getDamage() > 0 and 'used' not in hero.getStatus()
         return true
