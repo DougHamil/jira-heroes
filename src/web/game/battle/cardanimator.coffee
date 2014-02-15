@@ -92,11 +92,18 @@ define ['battle/payloads/factory', 'battle/animation', 'battle/battlehero', 'bat
       @playerHand.on 'card-target', (battleCard, position) => @onCardTarget(battleCard, position)
       @playerField.on 'token-target', (battleCard, position) => @onTokenTarget(battleCard, position)
       engine.updateCallbacks.push => @update()
-      document.body.onmouseup = => @onMouseUp()
       @battle.on 'action', (actions) => @handleActions(actions)
       @errorDisplay.position = {x:engine.WIDTH/2, y:engine.HEIGHT/2}
       @uiLayer.addChild @errorDisplay
       @uiLayer.addChild @yourTurnGraphic
+
+    onStageMouseUp: ->
+      @onMouseUp()
+
+    onStageClick: ->
+
+    onStageMouseOut: ->
+      @onMouseUp()
 
     deactivate: ->
       document.body.onmouseup = ->

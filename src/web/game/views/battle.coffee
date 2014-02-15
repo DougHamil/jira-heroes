@@ -34,7 +34,12 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
         @energySprite = new PIXI.Text @battle.getEnergy() + " energy",  GUI.STYLES.TEXT
         @energySprite.position = {x:engine.WIDTH - 20 - @energySprite.width, y: 20}
         @cardAnimator = new CardAnimator(JH.heroes, JH.cards, JH.user._id, @battle)
-        #@uiLayer.addChild @energySprite
+        @myStage.mouseout = =>
+          @cardAnimator.onStageMouseOut()
+        @myStage.click = =>
+          @cardAnimator.onStageClick()
+        @myStage.mouseup = =>
+          @cardAnimator.onStageMouseUp()
         @gfxLayer.addChild @cardAnimator
 
         @battle.on 'action-win-battle', (action) =>
