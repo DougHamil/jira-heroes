@@ -1,0 +1,15 @@
+{
+	"hidden":false,
+	"name":"biggdata",
+	"displayName":"Bigg Data",
+	"cost":{
+		"storyPoints":2
+	},
+	"energy":3,
+	"health":4,
+	"damage":2,
+	"passiveAbilities":[],
+	"media": {
+		"image": "engineer/biggdata.png"
+	}
+}

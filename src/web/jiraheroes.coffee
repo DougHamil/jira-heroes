@@ -15,6 +15,17 @@ define ['jquery'], ($) ->
           console.log "Loaded #{cards.length} cards"
           cb()
 
+    # - Gift
+    @GetGifts: (cb) ->
+      $.get '/secure/gift', cb
+    @ClaimGift: (giftId, cb) ->
+      giftId = giftId._id if giftId._id?
+      $.post "/secure/gift/#{giftId}/claim", {}, cb
+    @CreateGift: (toName, gift, cb) ->
+      post = $.post '/secure/gift', {to:toName, gift:gift}, cb
+      post.fail (err)->
+        cb err
+
     # - Card
     @GetAllCards: (cb) ->
       $.get '/card', cb

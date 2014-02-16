@@ -110,6 +110,9 @@ User = (jira)->
     else
       _model.findOne {_id:id}, cb
 
+  _getByName = (name, cb) ->
+    _model.findOne {name:name}, cb
+
   _getOrCreate = (name, email, cb) ->
     _model.findOne {name:name}, (err, user) ->
       if err? or not user?
@@ -129,5 +132,6 @@ User = (jira)->
     updateWallet: _updateWallet
     get:_get
     fromSession:_fromSession
+    getByName: _getByName
 
 module.exports = User

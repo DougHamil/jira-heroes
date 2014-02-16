@@ -9,6 +9,7 @@ DeckController = require '../lib/controllers/deck'
 CardController = require '../lib/controllers/card'
 HeroController = require '../lib/controllers/hero'
 ViewsController = require '../lib/controllers/views'
+GiftController = require '../lib/controllers/gift'
 #GameServer = require './game/server'
 
 options = CONFIG
@@ -38,6 +39,7 @@ db.once 'open', ->
     CardController(server.app, Users)
     HeroController(server.app, Users)
     BattleController(server.app, Users)
+    GiftController(server.app, Users)
     ViewsController(server.app)
     GameServer server.app.listen(3001), server.sessionStore, server.cookieParser, Users
     console.log 'Listening on port 3001'

@@ -52,8 +52,6 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
         @myStage.addChild @
       JH.GetOpenBattles (battles) =>
         userIds = battles.map (b) -> b.users[0]
-        console.log JH.user
-        console.log battles
         battles = battles.filter (b) -> JH.user._id not in b.users
         JH.GetUsers userIds, (users) =>
           JH.GetAllDecks (decks) =>

@@ -6,6 +6,7 @@ define ['./views/mainmenu',
         './views/hostbattle',
         './views/joinbattle',
         './views/battle',
+        './views/gift',
         'jiraheroes', 'engine'], (
           MainMenu,
           Store,
@@ -15,6 +16,7 @@ define ['./views/mainmenu',
           HostBattle,
           JoinBattle,
           Battle,
+          Gift,
           JH) ->
   class MenuManager
     constructor: (@stage) ->
@@ -27,6 +29,7 @@ define ['./views/mainmenu',
         'HostBattle': new HostBattle @, @stage
         'JoinBattle': new JoinBattle @, @stage
         'Battle': new Battle @, @stage
+        'Gift': new Gift @, @stage
 
     activateView: (view, args...) ->
       if @activeView?

@@ -20,7 +20,6 @@ define ['jquery', 'jiraheroes', 'gui', 'engine', 'pixi'], ($, JH, GUI, engine) -
 
 
     activate: (@addBot)->
-      console.log @addBot
       activate = (decks) =>
         decks = decks.filter (d) -> d.cards.length is 30
         if decks.length > 0

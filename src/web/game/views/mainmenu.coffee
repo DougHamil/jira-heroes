@@ -2,6 +2,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
   BACKGROUND_TEXTURE = PIXI.Texture.fromImage '/media/images/background.png'
   LOGO_TEXTURE = PIXI.Texture.fromImage '/media/images/logo.png'
   LOGOUT_TEXTURE = PIXI.Texture.fromImage '/media/images/icons/logout.png'
+  GIFT_ICON_TEXTURE = PIXI.Texture.fromImage '/media/images/icons/gift.png'
 
   class MainMenu extends PIXI.DisplayObjectContainer
     constructor: (@manager, stage) ->
@@ -46,6 +47,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @decksBtn = new GUI.TextButton 'Decks'
       @storeBtn = new GUI.TextButton 'Store'
       @logoutBtn = new GUI.SpriteButton LOGOUT_TEXTURE
+      @giftBtn = new GUI.SpriteButton GIFT_ICON_TEXTURE
       @logoSprite = new PIXI.Sprite LOGO_TEXTURE
       @playBotBtn.position = {x:(engine.WIDTH/2) - @playBotBtn.width/2, y:(engine.HEIGHT/2) - 2 * @playBotBtn.height}
       @hostBtn.position = {x:(engine.WIDTH/2) - @hostBtn.width/2, y:(engine.HEIGHT/2)}
@@ -53,12 +55,14 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @decksBtn.position = {x:(engine.WIDTH/2) - @decksBtn.width/2, y:@joinBtn.position.y + 2 * @decksBtn.height}
       @storeBtn.position = {x:(engine.WIDTH/2) - @storeBtn.width/2, y:@decksBtn.position.y + 2 * @storeBtn.height}
       @logoutBtn.position = {x:20, y:engine.HEIGHT - @logoutBtn.height - 20}
+      @giftBtn.position = {x:engine.WIDTH - @giftBtn.width - 20, y:engine.HEIGHT - @giftBtn.height - 50}
 
       @storeBtn.onClick => @manager.activateView 'Store'
       @decksBtn.onClick => @manager.activateView 'Decks'
       @hostBtn.onClick => @manager.activateView 'HostBattle', false
       @playBotBtn.onClick => @manager.activateView 'HostBattle', true
       @joinBtn.onClick => @manager.activateView 'JoinBattle'
+      @giftBtn.onClick => @manager.activateView 'Gift', @gifts
       @logoutBtn.onClick => window.location = 'user/logout'
 
       @.addChild @logoSprite
@@ -68,6 +72,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
       @.addChild @decksBtn
       @.addChild @storeBtn
       @.addChild @logoutBtn
+      @.addChild @giftBtn
 
     onActiveBattlePicked: (battleId) ->
       JH.GetBattle battleId, (battle) =>
@@ -85,7 +90,7 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
         @activeBattlePicker = null
 
     activate: ->
-      activate = (battles, user, usersById) =>
+      activate = (battles, user, usersById, @gifts) =>
         JH.user = user
         @myStage.addChild @
         @myStage.addChild engine.fxLayer
@@ -104,11 +109,12 @@ define ['jiraheroes', 'engine', 'gui', 'pixi'], (JH, engine, GUI) ->
           @activeBattlePicker.position = {x:0, y:260}
           @.addChild @activeBattlePicker
       JH.GetUser (user) =>
-        JH.GetActiveBattles (battles) =>
-          userIds = battles.map (b) -> b.users[0]
-          JH.GetUsers userIds, (users) =>
-            usersById = {}
-            for userObj in users
-              usersById[userObj._id] = userObj
-            JH.users = usersById
-            activate battles, user, usersById
+        JH.GetGifts (gifts) =>
+          JH.GetActiveBattles (battles) =>
+            userIds = battles.map (b) -> b.users[0]
+            JH.GetUsers userIds, (users) =>
+              usersById = {}
+              for userObj in users
+                usersById[userObj._id] = userObj
+              JH.users = usersById
+              activate battles, user, usersById, gifts
