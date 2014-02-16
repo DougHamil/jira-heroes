@@ -1,0 +1,15 @@
+{
+	"hidden":false,
+	"name":"crossplatform",
+	"displayName":"Cross Platform",
+	"cost":{
+		"storyPoints":2
+	},
+	"energy":3,
+	"health":2,
+	"damage":3,
+	"passiveAbilities":[],
+	"media": {
+		"image": "engineer/crossplatform.png"
+	}
+}

@@ -26,7 +26,7 @@ class SumMinionDamageAbility
 
   respond: (battle, payloads, actions) ->
     for payload in payloads
-      if payload.type is 'spawn-card' or payload.type is 'play-card' and payload.player is @source.userId
+      if ((payload.type is 'spawn-card' or payload.type is 'play-card') and payload.player is @source.userId) or (payload.type is 'discard-card')
         playerHandler = battle.getPlayerHandler(@source.userId)
         minions = playerHandler.getFieldCards()
         subActions = @_buildModifiers(minions)

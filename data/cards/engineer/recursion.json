@@ -1,0 +1,21 @@
+{
+	"hidden":false,
+	"name":"recursion",
+	"displayName":"Recursion",
+	"cost":{
+		"storyPoints":1
+	},
+	"energy":2,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"engineer/health_from_damage",
+		"text":"Set target minion's health equal to its current damage",
+		"requiresTarget":true,
+		"data":{}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "engineer/recursion.png"
+	}
+}

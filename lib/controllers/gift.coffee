@@ -34,8 +34,6 @@ module.exports = (app, Users) ->
     return null
 
   _claimGift = (user, gift) ->
-    console.log "CLAIM"
-    console.log gift
     if gift.storyPoints?
       user.wallet.storyPoints += gift.storyPoints
     if gift.bugsReported?
