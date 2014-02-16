@@ -1,0 +1,19 @@
+{
+	"hidden":false,
+	"name":"redirect",
+	"displayName":"Redirect",
+	"cost":{
+		"bugsReported":2
+	},
+	"energy":4,
+	"health":2,
+	"damage":2,
+	"passiveAbilities":[{
+			"class":"analyst/redirect",
+			"text":"All damage taken is also given to enemy hero",
+			"data":{}
+	}],
+	"media": {
+		"image": "analyst/redirect.png"
+	}
+}

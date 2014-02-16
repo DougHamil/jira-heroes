@@ -1,0 +1,22 @@
+{
+	"hidden":false,
+	"name":"lowerbound",
+	"displayName":"Analysis: Lower Bound",
+	"cost":{
+		"bugsReported":4
+	},
+	"energy":5,
+	"health":0,
+	"damage":0,
+	"playAbility":{
+		"class":"analyst/lowerbound",
+		"text": "Set all enemy minions' health to the lowest.",
+		"requiresTarget":false,
+		"data":{
+		}
+	},
+	"passiveAbilities":[],
+	"media": {
+		"image": "analyst/lowerbound.png"
+	}
+}

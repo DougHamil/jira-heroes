@@ -1,7 +1,7 @@
 {
 	"hidden":false,
 	"name":"average",
-	"displayName":"Average",
+	"displayName":"Analysis: Average",
 	"cost":{
 		"bugsReported":2
 	},

@@ -1,0 +1,15 @@
+{
+	"hidden":false,
+	"name":"dataminer",
+	"displayName":"Data Miner",
+	"cost":{
+		"bugsReported":1
+	},
+	"energy":1,
+	"health":2,
+	"damage":1,
+	"passiveAbilities":[],
+	"media": {
+		"image": "analyst/dataminer.png"
+	}
+}
