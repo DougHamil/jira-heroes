@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["engineer"],
 	"name":"biggdata",
 	"displayName":"Bigg Data",
 	"cost":{

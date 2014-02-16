@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["engineer"],
 	"name":"recursion",
 	"displayName":"Recursion",
 	"cost":{

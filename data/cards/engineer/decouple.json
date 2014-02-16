@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["engineer"],
 	"name":"decouple",
 	"displayName":"Decouple",
 	"cost":{

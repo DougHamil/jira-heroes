@@ -1,5 +1,6 @@
 {
 	"hidden":true,
+	"heroRequirement":["hacker"],
 	"name":"beta",
 	"displayName":"Beta",
 	"cost":{

@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["analyst"],
 	"name":"average",
 	"displayName":"Analysis: Average",
 	"cost":{

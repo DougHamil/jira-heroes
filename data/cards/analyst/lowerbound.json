@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["analyst"],
 	"name":"lowerbound",
 	"displayName":"Analysis: Lower Bound",
 	"cost":{

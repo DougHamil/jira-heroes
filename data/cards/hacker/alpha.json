@@ -1,5 +1,6 @@
 {
 	"name":"alpha",
+	"heroRequirement":["hacker"],
 	"displayName":"Alpha",
 	"cost":{
 		"bugsClosed":2

@@ -4,7 +4,7 @@
 	"cost":{
 		"storyPoints":1
 	},
-	"heroRequirement":["hacker"],
+	"heroRequirement":[],
 	"energy":1,
 	"health":0,
 	"damage":0,

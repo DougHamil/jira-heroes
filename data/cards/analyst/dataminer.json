@@ -1,5 +1,6 @@
 {
 	"hidden":false,
+	"heroRequirement":["analyst"],
 	"name":"dataminer",
 	"displayName":"Data Miner",
 	"cost":{
