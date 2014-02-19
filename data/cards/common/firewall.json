@@ -12,7 +12,7 @@
 		"requiresTarget": true,
 		"text":"Add <amount> health, even above its max.",
 		"data":{
-			"amount":1
+			"amount":4
 		}
 	},
 	"media": {

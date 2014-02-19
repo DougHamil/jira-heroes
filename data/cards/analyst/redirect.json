@@ -9,6 +9,7 @@
 	"energy":4,
 	"health":2,
 	"damage":2,
+	"traits":["taunt"],
 	"passiveAbilities":[{
 			"class":"analyst/redirect",
 			"text":"All damage taken is also given to enemy hero",
