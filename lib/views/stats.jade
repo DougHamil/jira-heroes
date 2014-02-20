@@ -1,0 +1,20 @@
+doctype html
+html(lang="en")
+	head
+		title JIRA Heroes
+		link(rel="stylesheet/less",type="text/css",href="/styles/defines.less")
+		link(rel="stylesheet/less",type="text/css",href="/styles/stats.less")
+		script(src="/lib/less.js")
+		script(src="/lib/require.js",data-main="/js/"+entryModule+".js")
+		script(type="text/javascript").
+			window.cards = !{JSON.stringify(cards)}
+	body
+		h1
+			| Breakdown of the
+			= ' ' + cards.length + ' '
+			| cards in JIRA Heroes
+		hr
+		input(type="button",value="Size by Health",id="sizeByHealthBtn")
+		input(type="button",value="Size by Damage",id="sizeByDamageBtn")
+		input(type="button",value="Hide Spells",id="spellsToggleBtn")
+		input(type="button",value="Hide Minions",id="minionsToggleBtn")

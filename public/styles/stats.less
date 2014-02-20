@@ -1,0 +1,80 @@
+@import "defines.less";
+
+#content
+{
+	margin:0;
+	padding:0;
+	position:relative;
+	width:@canvas-width;
+	height:@canvas-height;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+* {
+	margin:0;
+	padding:0;
+}
+
+
+.spell {
+	color:#77DDEE;
+}
+#header-bar, #footer-bar
+{
+	background-color:@background;
+	display:block;
+	margin:0;
+	padding:10px;
+}
+
+#header-bar {
+	margin-bottom:10px;
+}
+
+#footer-bar {
+	margin-top:10px;
+	position:absolute;
+	bottom:0;
+	height:48px;
+	width:100%;
+}
+
+#title
+{
+	font-family:silly;
+	font-size: @title-font-size;
+	text-shadow: 1px 5px 3px @background, 0px 0px 0px #000, 1px 4px 6px @background, -1px -1px 1px @background-lighter, 1px 1px 1px @background-lighter;
+}
+
+body
+{
+	margin:20px;
+	color: #EEE;
+	font-family:regular;
+	background-color:@background;
+}
+
+@font-face
+{
+	font-family: "pixel";
+	src: url("@{pixel-font}");
+}
+
+@font-face
+{
+	font-family: "silly";
+	src: url("@{silly-font}");
+}
+
+@font-face
+{
+	font-family:title;
+	src: url("@{title-font}");
+}
+
+@font-face
+{
+	font-family:regular;
+	src: url("@{regular-font}");
+}

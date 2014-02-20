@@ -1,4 +1,5 @@
 Cards = require '../models/card'
+CardStatistics = require './cardstats'
 
 module.exports = (app, Users) ->
   FREE_CARDS = app.isTest? and app.isTest

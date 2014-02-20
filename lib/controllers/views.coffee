@@ -1,3 +1,5 @@
+Cards = require '../models/card'
+
 module.exports = (app) ->
   app.get '/', (req, res) ->
     if req.session.user?
@@ -6,6 +8,19 @@ module.exports = (app) ->
       res.render 'index', { entryModule: 'game/main', user: req.session.user, justLoggedIn:justLoggedIn}
     else
       res.redirect '/login'
+
+  app.get '/stats', (req, res) ->
+    Cards.getAll (err, cards) ->
+      if err?
+        res.send 500, err
+      else
+        modCards = []
+        for card in cards
+          cardObj = card.toObject()
+          cardObj.isSpell = card.isSpellCard()
+          cardObj.isMinion = !cardObj.isSpell
+          modCards.push cardObj
+        res.render 'stats', {entryModule: 'stats', cards:modCards}
 
   app.get '/login', (req, res) ->
     data =
