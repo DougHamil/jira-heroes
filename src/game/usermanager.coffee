@@ -1,5 +1,6 @@
 Errors = require './errors'
 BattleManager = require './battlemanager'
+AchievementTracker = require './achievements/tracker'
 
 ###
 ConnectionManager handles initial socket connections by routing battle hosting and joining
@@ -7,6 +8,13 @@ to the proper Battle instance
 ###
 class UserManager
   constructor: (@user, @socket, @Users) ->
+    @achievementTracker = new AchievementTracker @user
+    @achievementTracker.on 'achievement-earned', (achieve) =>
+      @user.save (err) =>
+        @socket.emit 'achievement-earned', achieve
+    @achievementTracker.on 'achievement-progress', (achieve) =>
+      @socket.emit 'achievement-progress', achieve
+    @achievementTracker.on 'request-save', => @user.save ->
     @socket.on 'join', (battleId, cb) => @onJoin(battleId, cb)
     @socket.on 'battle-status', (battleId, cb) => @onBattleStatus battleId, cb
 
@@ -20,6 +28,9 @@ class UserManager
   onDisconnected: ->
     if @battle?
       @battle.onDisconnect @user
+      @achievementTracker.onBattleLeft @battle
+    @user.save
+
   ###
   # Called when a user wants to join a battle
   ###
@@ -37,7 +48,10 @@ class UserManager
         else
           @battle = battle
           @battle.onConnect @user, @socket
-          @battle.on 'battle-over', (winnerId, loserIds) => @onBattleOver(winnerId, loserIds)
+          @achievementTracker.onBattleJoined @battle
+          @battle.on 'battle-over', (winnerId, loserIds) =>
+            @achievementTracker.onBattleLeft @battle
+            @onBattleOver(winnerId, loserIds)
           cb null, @battle.getData(@user)
 
   onBattleOver: (winnerId, loserIds) ->

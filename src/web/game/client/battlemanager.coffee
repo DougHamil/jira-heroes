@@ -7,6 +7,7 @@ define ['util', 'engine', 'client/battle', 'eventemitter'], (Util, engine, Battl
       @socket = io.connect()
       @socket.on 'connected', => @onConnected()
       @socket.on 'disconnect', => @onDisconnected()
+      @socket.on 'achievement-earned', (achieve) => @onAchievementEarned(achieve)
       pollStatus = => @pollBattleStatus()
       @pollTimeout = setTimeout(pollStatus, POLL_DELAY)
       @pollBattleStatus()
@@ -29,5 +30,6 @@ define ['util', 'engine', 'client/battle', 'eventemitter'], (Util, engine, Battl
           @emit 'joined', @battle
     onConnected: -> @emit 'connected'
     onDisconnected: -> @emit 'disconnected'
+    onAchievementEarned: (achieve)-> @emit 'achievement-earned', achieve
     disconnect: -> @socket.disconnect()
     getBattle: -> return @battle

@@ -1,0 +1,9 @@
+{
+	"name":"win2",
+	"displayName":"Two Down",
+	"description": "You've won two battles. Still not impressive.",
+	"module":"battlewin",
+	"data":{
+		"wins":2
+	}
+}

@@ -91,6 +91,14 @@ define ['jquery', 'jiraheroes', 'gui', 'battle/cardanimator', 'client/battlemana
         @battleManager.join()
       @battleManager.on 'battle-status', (status)=> @onBattleStatus(status)
       @battleManager.on 'joined', (battle) => @onBattleJoined(battle)
+      @battleManager.on 'achievement-earned', (achieve) =>
+        console.log "ACHEIVEMENT EARNED: "+achieve
+        achieveNote = new GUI.AchievementNote achieve
+        @.addChild achieveNote
+        anim = achieveNote.animate()
+        anim.on 'complete', =>
+          @.removeChild achieveNote
+        anim.play()
 
     @deactivate: ->
       @myStage.removeChild @

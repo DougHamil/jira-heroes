@@ -28,6 +28,7 @@ define ['./gfx/herobutton',
         './gfx/concedebutton',
         './gfx/duraicon',
         './gfx/giftbox',
+        './gfx/achievementnote',
         'engine',
         './gfx/styles'], (
         HeroButton,
@@ -60,6 +61,7 @@ define ['./gfx/herobutton',
         ConcedeButton,
         DuraIcon,
         GiftBox,
+        AchievementNote,
         engine, styles) ->
   GUI =
     HeroButton: HeroButton
@@ -92,6 +94,7 @@ define ['./gfx/herobutton',
     ConcedeButton:ConcedeButton
     DuraIcon:DuraIcon
     GiftBox:GiftBox
+    AchievementNote:AchievementNote
     STYLES: styles
 
   return GUI
