@@ -1,14 +1,24 @@
+Achievements = require '../models/achievement'
+
 module.exports = (app, Users) ->
   FAKE_LOGIN = app.isTest? and app.isTest
   app.post '/user/login', (req, res) ->
     username = req.body.username
     password = req.body.password
     onLoginSuccess = (user) ->
-      req.session.user = user
-      redir = if req.session.redir? then req.session.redir else '/'
-      req.session.justLoggedIn = true
-      delete req.session.redir
-      res.redirect redir
+      # Add any missing achievements
+      achieves = user.achievements.map (a) -> a.name
+      Achievements.getAll (err, allAchieves) ->
+        if not err?
+          for achieve in allAchieves
+            if achieve.name not in achieves
+              user.achievements.push achieve.toObject()
+        user.save (err) ->
+          req.session.user = user
+          redir = if req.session.redir? then req.session.redir else '/'
+          req.session.justLoggedIn = true
+          delete req.session.redir
+          res.redirect redir
     if FAKE_LOGIN
       console.log "LOGIN IS IN TEST MODE"
       Users.getOrCreate username, username + "@localhost.com", (err, user) ->

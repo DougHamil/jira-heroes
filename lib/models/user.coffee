@@ -1,4 +1,5 @@
 mongoose = require 'mongoose'
+Achievements = require('./achievement')
 moment = require 'moment'
 
 Schema = mongoose.Schema
@@ -20,6 +21,7 @@ _schema = new Schema
     storyPoints: {type:Number, default:0}
     bugsClosed: {type:Number, default:0}
     bugsReported: {type:Number, default:0}
+  achievements:[Achievements.schema]
 
 _schema.methods.getPublicData = ->
   out =

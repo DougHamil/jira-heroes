@@ -22,6 +22,7 @@ options.users = UserController
 server = Server(options)
 
 jira = require('../lib/jira/api')(options)
+Achievements = require '../lib/models/achievement'
 Users = require('../lib/models/user')(jira)
 Decks = require '../lib/models/deck'
 Cards = require '../lib/models/card'
@@ -33,7 +34,7 @@ mongoose.connect("mongodb://#{options.databaseServer}:#{options.databasePort}/#{
 db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once 'open', ->
-  async.series [Cards.load.bind(Cards), Heroes.load.bind(Heroes), CardCache.loadAll.bind(CardCache), HeroCache.loadAll.bind(HeroCache)], (err) ->
+  async.series [Cards.load.bind(Cards), Heroes.load.bind(Heroes), CardCache.loadAll.bind(CardCache), HeroCache.loadAll.bind(HeroCache), Achievements.load.bind(Achievements)], (err) ->
     UserController(server.app, Users)
     DeckController(server.app, Users)
     CardController(server.app, Users)
